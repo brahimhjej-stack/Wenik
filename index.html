@@ -141,7 +141,7 @@ $('send').onclick=async()=>{
   if(!f||!l)return $('msg').textContent='First and last name are required.';
   if(!$('terms').checked||!$('privacy').checked)return $('msg').textContent='Terms and Privacy are required.';
   const p=ph($('phone').value);
-  const{error}=await sb.auth.signInWithPassword({email:'test@wenik.co',password:'WenikTest#2026'});
+  const{error}=await sb.auth.signInWithPassword({email:'test2@wenik.co',password:'boblara@1271985'});
   if(error)return $('msg').textContent=error.message;
   enter();
 };
