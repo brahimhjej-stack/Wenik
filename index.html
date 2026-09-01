@@ -141,9 +141,9 @@ $('send').onclick=async()=>{
   if(!f||!l)return $('msg').textContent='First and last name are required.';
   if(!$('terms').checked||!$('privacy').checked)return $('msg').textContent='Terms and Privacy are required.';
   const p=ph($('phone').value);
-  const{error}=await sb.auth.signInWithPassword({email:'test2@wenik.co',password:'boblara@1271985'});
+  const{error}=await sb.auth.signInWithOtp({phone:p,options:{shouldCreateUser:true,data:{first_name:first,last_name:last,marketing_consent:$('marketing').checked,terms_accepted:true,privacy_accepted:true}}});
   if(error)return $('msg').textContent=error.message;
-  enter();
+  $('phone').dataset.p=p;$('otpBox').classList.remove('hidden');msg('Code sent.');
 };
 
 $('verify').onclick=async()=>{
