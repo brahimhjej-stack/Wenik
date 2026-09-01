@@ -1,11 +1,6 @@
 {
   "version": 2,
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "https://zkrnzwnbdoaqanqzznlw.supabase.co/functions/v1/customer-app-preview"
-    }
-  ],
+  
   "headers": [
     {
   "source": "/",
