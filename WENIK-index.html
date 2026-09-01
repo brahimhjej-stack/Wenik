@@ -1,0 +1,259 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="application-name" content="WENIK">
+<title>WENIK</title>
+<style>
+:root{--bg:#08080c;--panel:rgba(20,20,28,.82);--line:#2a2a36;--muted:#9b9ba8;--purple:#a56bff;--pink:#ff4fa1;--orange:#ff8a24;--yellow:#ffd54a}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 20% -10%,#28153d 0,transparent 28%),radial-gradient(circle at 100% 0,#3a1f12 0,transparent 24%),var(--bg);color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.app{max-width:590px;margin:auto;padding:20px 14px 110px}
+.top{position:sticky;top:0;z-index:10;padding:10px 0 12px;background:linear-gradient(180deg,rgba(8,8,12,.98),rgba(8,8,12,.72),transparent);backdrop-filter:blur(12px)}
+.brand{font-size:38px;line-height:.95;font-weight:1000;letter-spacing:-2px;background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange),var(--yellow));-webkit-background-clip:text;color:transparent}
+.tag{margin-top:5px;font-size:11px;letter-spacing:5px;color:#c8c8cf}
+.hero{padding:22px;border-radius:26px;background:linear-gradient(145deg,rgba(165,107,255,.18),rgba(255,79,161,.08) 38%,rgba(255,138,36,.08));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 60px rgba(0,0,0,.25)}
+.hero h2{font-size:30px;margin:6px 0 4px;letter-spacing:-1px}
+.card{padding:16px;border-radius:22px;background:var(--panel);border:1px solid var(--line);margin-top:12px;box-shadow:0 14px 35px rgba(0,0,0,.16);backdrop-filter:blur(14px)}
+.muted{color:var(--muted);font-size:13px}
+.hidden{display:none!important}
+.btn,.field{width:100%;border-radius:15px;padding:13px;margin-top:9px}
+.btn{border:0;font-weight:950;background:linear-gradient(90deg,#c992ff,#ff7e9d,#ffad55,#ffe16d);color:#0b0b0f;box-shadow:0 8px 20px rgba(255,126,157,.12);transition:transform .15s ease,filter .15s ease}
+.btn:active{transform:scale(.985)}
+.btn.secondary{background:#20202a;color:#fff;border:1px solid #343443;box-shadow:none}
+.field{border:1px solid #34343e;background:#0d0d12;color:#fff;outline:none}
+.field:focus{border-color:#a56bff;box-shadow:0 0 0 3px rgba(165,107,255,.12)}
+label{font-size:13px;color:#d5d5dc}
+.nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:50;width:min(560px,calc(100% - 18px));display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:rgba(14,14,20,.86);border:1px solid #2d2d38;padding:8px;border-radius:22px;backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.nav button{background:none;border:0;color:#858590;font-size:9px;font-weight:800;padding:8px 2px;border-radius:14px}
+.nav .active{color:#fff;background:linear-gradient(180deg,rgba(165,107,255,.2),rgba(255,138,36,.08))}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.selected{outline:2px solid #fff;box-shadow:0 0 0 4px rgba(165,107,255,.18)}
+.focus{border-color:#b66cff;box-shadow:0 0 0 1px #b66cff,0 16px 50px rgba(165,107,255,.18)}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.carousel{overflow:hidden;touch-action:pan-y;border-radius:26px}
+.track{display:flex;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+.slide{min-width:100%;padding:0;overflow:hidden;position:relative}
+.slide img,.offer img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:22px;display:block}
+.slide .overlay{position:absolute;left:0;right:0;bottom:0;padding:55px 16px 16px;background:linear-gradient(transparent,rgba(0,0,0,.88));border-radius:0 0 22px 22px}
+.slide .overlay b{font-size:20px}
+.dots{text-align:center;margin-top:6px}
+.dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#4b4b55;margin:5px 3px;transition:.2s}
+.dots i.on{width:18px;border-radius:9px;background:linear-gradient(90deg,var(--purple),var(--orange))}
+.badge{padding:4px 8px;border-radius:99px;background:#352645;font-size:11px}
+.dot{background:#ff5a77;border-radius:99px;padding:2px 5px}
+.unread{border-color:#7b4dac;background:linear-gradient(145deg,rgba(123,77,172,.18),rgba(20,20,28,.82))}
+#qrImage{width:240px;max-width:100%;background:#fff;padding:12px;border-radius:24px;display:block;margin:18px auto;box-shadow:0 18px 60px rgba(255,255,255,.08)}
+.sectionTitle{display:flex;justify-content:space-between;align-items:end;margin:24px 2px 8px}
+.sectionTitle h2,.sectionTitle h3{margin:0}
+.partnerHead{display:flex;gap:12px;align-items:center}
+.partnerLogo{width:46px;height:46px;border-radius:14px;background:#1c1c24;object-fit:cover}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.chip{padding:7px 9px;border-radius:999px;background:#1c1c24;border:1px solid #2c2c38;color:#ddd;font-size:11px;text-decoration:none}
+.offer{margin-top:12px}
+.price{font-size:24px;font-weight:950}
+.eyebrow{font-size:11px;letter-spacing:2px;color:#c69cff}
+@media(min-width:700px){.app{padding-top:28px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top"><div class="brand">WENIK</div><div class="tag">WIN WIN</div></div>
+
+  <section id="auth" class="hero">
+    <div class="eyebrow">WELCOME TO WENIK</div><h2>JOIN US</h2>
+    <p class="muted">One account. Rewards, wins, partners and IZA.</p>
+    <input id="first" class="field" placeholder="First name">
+    <input id="last" class="field" placeholder="Last name">
+    <input id="phone" class="field" placeholder="Mobile">
+    <div class="card" style="padding:12px;margin-top:10px">
+      <label><input id="terms" type="checkbox"> I accept Terms</label><br>
+      <label><input id="privacy" type="checkbox"> I accept Privacy</label><br>
+      <label><input id="marketing" type="checkbox"> Marketing updates (optional)</label>
+    </div>
+    <button id="send" class="btn">SEND CODE</button>
+    <div id="otpBox" class="hidden"><input id="otp" class="field" placeholder="Verification code"><button id="verify" class="btn">VERIFY & ENTER</button></div>
+    <div id="msg" class="muted"></div>
+  </section>
+
+  <section id="shell" class="hidden">
+    <section id="home">
+      <div class="hero"><div class="eyebrow">MORE TO DISCOVER</div><h2>Welcome to WENIK</h2><div class="muted">Offers, prizes and new opportunities in one place.</div></div>
+      <div class="sectionTitle"><h3>FEATURED</h3><span class="muted">Swipe</span></div>
+      <div id="carousel" class="carousel"><div id="track" class="track"></div><div id="dots" class="dots"></div></div>
+      <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+    </section>
+
+    <section id="win" class="hidden"><div class="hero"><div class="eyebrow">WENIK WIN</div><h2>Your chances. Your wins.</h2></div><div id="wins"></div><div class="sectionTitle"><h3>Recent Winners</h3></div><div id="recent"></div></section>
+
+    <section id="iza" class="hidden"><div class="hero"><div class="eyebrow">IZA | إذا</div><h2>If the deal works… decide.</h2><div class="muted">Choose I’M IN or I’M OUT. You can change your mind.</div></div><div id="izaList"></div></section>
+
+    <section id="qr" class="hidden"><div class="hero"><div class="eyebrow">YOUR ACCESS</div><h2>My QR</h2><div class="muted">Show this code to a WENIK partner.</div></div><div class="card"><img id="qrImage"><div id="qrExpiry" class="muted" style="text-align:center"></div><button id="refreshQr" class="btn">REFRESH QR</button></div></section>
+
+    <section id="partners" class="hidden"><div class="hero"><div class="eyebrow">DISCOVER</div><h2>WENIK Partners</h2></div><div id="partnerList"></div></section>
+
+    <section id="me" class="hidden"><div class="hero"><div class="eyebrow">YOUR WENIK</div><h2 id="meName"></h2><div id="meMobile" class="muted"></div></div><div class="sectionTitle"><h3>Activity</h3></div><div id="activity"></div><div class="sectionTitle"><h3>Notifications <span id="unread" class="badge">0</span></h3></div><div id="inbox"></div><button id="logout" class="btn secondary">LOG OUT</button></section>
+  </section>
+</main>
+
+<nav id="nav" class="nav hidden">
+  <button class="active" onclick="tab('home',this)">HOME</button>
+  <button onclick="tab('win',this)">WIN</button>
+  <button id="izaBtn" onclick="tab('iza',this)">IZA</button>
+  <button onclick="tab('qr',this)">QR</button>
+  <button onclick="tab('partners',this)">PARTNERS</button>
+  <button onclick="tab('me',this)">ME <span id="navUnread" class="dot hidden">0</span></button>
+</nav>
+
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+import QRCode from'https://esm.sh/qrcode@1.5.4';
+
+const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
+const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
+const sb=createClient(U,K),$=x=>document.getElementById(x),
+esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
+safeUrl=u=>/^https?:\/\//i.test(String(u||''))?String(u):'';
+
+let profile,focusId=new URLSearchParams(location.search).get('iza'),ads=[],slide=0,timer,touchX=0;
+async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+
+window.tab=(id,b)=>{
+  ['home','win','iza','qr','partners','me'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  b?.classList.add('active');
+  if(id==='qr')loadQr();
+  if(id==='win')loadWins();
+  if(id==='partners')loadPartners();
+  if(id==='me')loadMe();
+  scrollTo({top:0,behavior:'smooth'})
+};
+
+function ph(v){let d=v.replace(/\D/g,'');if(d.startsWith('961'))return'+'+d;if(d.startsWith('0'))d=d.slice(1);return'+961'+d}
+
+$('send').onclick=async()=>{
+  const f=$('first').value.trim(),l=$('last').value.trim();
+  if(!f||!l)return $('msg').textContent='First and last name are required.';
+  if(!$('terms').checked||!$('privacy').checked)return $('msg').textContent='Terms and Privacy are required.';
+  const p=ph($('phone').value);
+  const{error}=await sb.auth.signInWithOtp({phone:p,options:{data:{first_name:f,last_name:l,terms_accepted:true,privacy_accepted:true,marketing_consent:$('marketing').checked}}});
+  if(error)return $('msg').textContent=error.message;
+  $('phone').dataset.p=p;$('otpBox').classList.remove('hidden');$('msg').textContent='Verification code sent.'
+};
+
+$('verify').onclick=async()=>{
+  const{error}=await sb.auth.verifyOtp({phone:$('phone').dataset.p,token:$('otp').value,type:'sms'});
+  if(error)return $('msg').textContent=error.message;
+  enter()
+};
+
+$('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
+
+function showSlide(n){
+  if(!ads.length)return;
+  slide=(n+ads.length)%ads.length;
+  $('track').style.transform='translateX(-'+slide*100+'%)';
+  $('dots').innerHTML=ads.map((_,i)=>'<i class="'+(i===slide?'on':'')+'"></i>').join('');
+  rpc('track_customer_home_ad_impression',{p_ad_id:ads[slide].id}).catch(()=>{})
+}
+function startCarousel(){clearInterval(timer);timer=setInterval(()=>showSlide(slide+1),30000)}
+$('carousel').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
+$('carousel').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45){showSlide(slide+(dx<0?1:-1));startCarousel()}},{passive:true});
+
+async function loadHome(){
+  const[a,c,e]=await Promise.all([
+    sb.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30),
+    sb.from('campaigns').select('id,title,status').eq('status','active'),
+    rpc('customer_my_campaign_entries').catch(()=>[])
+  ]);
+  ads=a.data||[];
+  $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+  document.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>{rpc('track_customer_home_ad_click',{p_ad_id:x.closest('[data-ad]').dataset.ad}).catch(()=>{});location.href=x.dataset.url});
+  showSlide(0);startCarousel();
+  const joined=new Set((e||[]).filter(x=>x.eligible!==false).map(x=>x.campaign_id));
+  $('campaigns').innerHTML=(c.data||[]).map(x=>'<div class="card"><div class="row"><div><div class="eyebrow">ACTIVE DRAW</div><b>'+esc(x.title)+'</b></div><span class="badge">WIN</span></div><button class="btn" '+(joined.has(x.id)?'disabled':'')+' onclick="joinWin(\''+x.id+'\')">'+(joined.has(x.id)?'JOINED ✓':'JOIN DRAW')+'</button></div>').join('')||'<div class="card muted">No active campaigns.</div>'
+}
+
+window.joinWin=async id=>{try{await rpc('join_active_campaign',{p_campaign_id:id});loadHome()}catch(e){alert(e.message)}};
+
+window.setIza=async(id,v)=>{await rpc('customer_set_iza_response',{p_iza_campaign_id:id,p_response:v});focusId=id;loadIza()};
+
+async function loadIza(){
+  const[c,m]=await Promise.all([rpc('public_active_iza_campaigns'),rpc('customer_my_iza')]),
+  st=new Map((m||[]).map(x=>[x.iza_campaign_id,x]));
+  $('izaList').innerHTML=(c||[]).map(x=>{
+    const v=st.get(x.iza_campaign_id)?.intent_status;
+    return'<div id="iza-'+x.iza_campaign_id+'" class="card '+(focusId===x.iza_campaign_id?'focus':'')+'"><div class="row"><div class="eyebrow">CONDITIONAL DEMAND</div><span class="badge">IZA</span></div><h3>'+esc(x.title||x.product_name)+'</h3><div class="muted">'+esc(x.condition_text||'')+'</div>'+(x.target_price!=null?'<div class="price">$'+Number(x.target_price).toFixed(2)+'</div>':'')+'<div class="choices"><button class="btn '+(v==='in'?'selected':'')+'" onclick="setIza(\''+x.iza_campaign_id+'\',\'in\')">I\'M IN</button><button class="btn secondary '+(v==='out'?'selected':'')+'" onclick="setIza(\''+x.iza_campaign_id+'\',\'out\')">I\'M OUT</button></div></div>'
+  }).join('')||'<div class="card muted">No active IZA.</div>';
+  if(focusId){tab('iza',$('izaBtn'));setTimeout(()=>$('iza-'+focusId)?.scrollIntoView({behavior:'smooth',block:'center'}),80)}
+}
+
+async function loadQr(){
+  const r=(await rpc('customer_refresh_qr'))?.[0];
+  if(!r)return;
+  $('qrImage').src=await QRCode.toDataURL(String(r.qr_token),{width:360,margin:1});
+  $('qrExpiry').textContent=r.qr_expires_at?'Valid until '+new Date(r.qr_expires_at).toLocaleTimeString():''
+}
+$('refreshQr').onclick=loadQr;
+
+async function loadPartners(){
+  const p=await rpc('public_partner_directory').catch(()=>[]);
+  $('partnerList').innerHTML=(p||[]).map(x=>{
+    const socials=x.social_links||{},ig=safeUrl(socials.instagram),fb=safeUrl(socials.facebook),web=safeUrl(socials.website),menu=safeUrl(x.menu_url),loc=safeUrl(x.location_url);
+    return'<div class="card"><div class="partnerHead">'+(x.logo_url?'<img class="partnerLogo" src="'+esc(x.logo_url)+'">':'<div class="partnerLogo"></div>')+'<div><h3 style="margin:0">'+esc(x.business_name)+'</h3><div class="muted">'+esc(x.category||'')+'</div></div></div><div class="chips">'+(x.address?'<span class="chip">'+esc(x.address)+'</span>':'')+(x.phone?'<a class="chip" href="tel:'+esc(x.phone)+'">CALL</a>':'')+(loc?'<a class="chip" href="'+esc(loc)+'">LOCATION</a>':'')+(menu?'<a class="chip" href="'+esc(menu)+'">MENU</a>':'')+(ig?'<a class="chip" href="'+esc(ig)+'">INSTAGRAM</a>':'')+(fb?'<a class="chip" href="'+esc(fb)+'">FACEBOOK</a>':'')+(web?'<a class="chip" href="'+esc(web)+'">WEBSITE</a>':'')+'</div>'+(x.benefit_title?'<div class="card" style="margin-top:12px"><div class="eyebrow">YOUR BENEFIT</div><b>'+esc(x.benefit_title)+'</b></div>':'')+'<button class="btn secondary" onclick="partnerOffers(\''+x.partner_id+'\',this)">VIEW OFFERS</button><div></div></div>'
+  }).join('')||'<div class="card muted">Partners are coming soon.</div>'
+}
+
+window.partnerOffers=async(id,b)=>{
+  const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]);
+  b.nextElementSibling.innerHTML=(a||[]).map(x=>'<div class="offer"><img src="'+esc(x.image_url)+'"><h3>'+esc(x.title||'')+'</h3><div class="muted">'+esc(x.description||'')+'</div>'+(safeUrl(x.cta_url)?'<button class="btn" data-pad="'+x.id+'" data-purl="'+esc(x.cta_url)+'">'+esc(x.cta_label||'OPEN')+'</button>':'')+'</div>').join('')||'<div class="muted" style="margin-top:10px">No offers.</div>';
+  for(const x of a||[])rpc('track_partner_ad_impression',{p_ad_id:x.id}).catch(()=>{});
+  b.nextElementSibling.querySelectorAll('[data-pad]').forEach(el=>el.onclick=()=>{rpc('track_partner_ad_click',{p_ad_id:el.dataset.pad}).catch(()=>{});location.href=el.dataset.purl})
+};
+
+async function loadWins(){
+  const[w,r]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[])]);
+  $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>'+esc(x.prize_title||x.title||'Prize')+'</h3></div>').join('')||'<div class="card muted">No wins yet.</div>';
+  $('recent').innerHTML=(r||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.public_display_name||'Winner')+'</b><span class="badge">WINNER</span></div></div>').join('')||'<div class="card muted">No announced winners.</div>'
+}
+
+async function refreshUnread(){
+  const u=Number(await rpc('customer_unread_message_count').catch(()=>0));
+  $('unread').textContent=u;$('navUnread').textContent=u;$('navUnread').classList.toggle('hidden',u===0)
+}
+
+async function loadMe(){
+  const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+  $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+  $('inbox').innerHTML=(i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>';
+  document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
+  refreshUnread()
+}
+
+async function openNotification(id){
+  const r=await rpc('customer_open_message',{p_message_id:id}),x=Array.isArray(r)?r[0]:r;
+  await refreshUnread();
+  if(x?.deep_link==='iza'&&x?.iza_campaign_id){focusId=x.iza_campaign_id;history.replaceState({},'',location.pathname+'?iza='+encodeURIComponent(focusId));await loadIza()}
+  else await loadMe()
+}
+
+async function enter(){
+  const d=await rpc('customer_my_profile');
+  if(!d?.length)return;
+  profile=d[0];
+  $('auth').classList.add('hidden');$('shell').classList.remove('hidden');$('nav').classList.remove('hidden');
+  $('meName').textContent=((profile.first_name||'')+' '+(profile.last_name||'')).trim();
+  $('meMobile').textContent=profile.mobile||'';
+  await Promise.all([loadHome(),loadIza(),refreshUnread()])
+}
+
+const{data:{session}}=await sb.auth.getSession();
+if(session)enter();
+</script>
+</body>
+</html>
