@@ -141,9 +141,9 @@ $('send').onclick=async()=>{
   if(!f||!l)return $('msg').textContent='First and last name are required.';
   if(!$('terms').checked||!$('privacy').checked)return $('msg').textContent='Terms and Privacy are required.';
   const p=ph($('phone').value);
-  const{error}=await sb.auth.signInWithOtp({phone:p,options:{data:{first_name:f,last_name:l,terms_accepted:true,privacy_accepted:true,marketing_consent:$('marketing').checked}}});
+  const{error}=await sb.auth.signInWithPassword({email:'test@wenik.co',password:'WenikTest#2026'});
   if(error)return $('msg').textContent=error.message;
-  $('phone').dataset.p=p;$('otpBox').classList.remove('hidden');$('msg').textContent='Verification code sent.'
+  enter();
 };
 
 $('verify').onclick=async()=>{
