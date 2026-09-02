@@ -32,8 +32,16 @@ function verifyHook(payload, req) {
   });
 }
 
+function normalizeDestination(phone) {
+  let digits = String(phone || '').replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  if (!digits.startsWith('961') && (digits.length === 7 || digits.length === 8)) digits = `961${digits}`;
+  if (!/^[1-9]\d{7,14}$/.test(digits)) throw new Error('Invalid destination phone');
+  return digits;
+}
+
 function smsRequest(phone, otp) {
-  if (!/^\+[1-9]\d{7,14}$/.test(phone || '')) throw new Error('Invalid destination phone');
   if (!/^\d{6}$/.test(otp || '')) throw new Error('Invalid verification code');
 
   const apiKey = process.env.BSB_API_KEY;
@@ -44,7 +52,7 @@ function smsRequest(phone, otp) {
     api_key: apiKey,
     api_secret: apiSecret,
     senderid: SENDER_ID,
-    destination: phone.slice(1),
+    destination: normalizeDestination(phone),
     message: `WENIK verification code: ${otp}. Do not share this code.`,
   }];
 }
@@ -94,4 +102,4 @@ export default async function handler(req, res) {
   }
 }
 
-export const __test = { hookSecret, smsRequest };
+export const __test = { hookSecret, normalizeDestination, smsRequest };
