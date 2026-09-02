@@ -1,6 +1,6 @@
 import { Webhook } from 'standardwebhooks';
 
-const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/sendSmsAPIJson.php';
+const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/sendSmsAPI.php';
 const SENDER_ID = 'WENIK';
 
 function getHeader(req, name) {
@@ -58,25 +58,20 @@ function smsRequest(phone, otp) {
 }
 
 async function sendWithBsb(phone, otp) {
+  const [message] = smsRequest(phone, otp);
+  const body = new URLSearchParams(message);
   const response = await fetch(BSB_SEND_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(smsRequest(phone, otp)),
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
     signal: AbortSignal.timeout(12_000),
   });
 
-  const text = await response.text();
-  let result;
-  try {
-    result = JSON.parse(text);
-  } catch {
-    throw new Error(`BSB returned an invalid response (${response.status})`);
+  const result = (await response.text()).trim();
+  if (!response.ok) throw new Error(`BSB request failed (${response.status})`);
+  if (!/^\d+;\d+;\d+(?:\r?\n\d+;\d+;\d+)*$/.test(result)) {
+    throw new Error(`BSB rejected the SMS: ${result.slice(0, 120) || 'empty response'}`);
   }
-
-  if (!response.ok || Number(result?.status) !== 201) {
-    throw new Error(result?.message || `BSB rejected the SMS (${response.status})`);
-  }
-
   return result;
 }
 
