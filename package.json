@@ -1,0 +1,11 @@
+{
+  "name": "wenik-web",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "standardwebhooks": "1.0.0"
+  }
+}
