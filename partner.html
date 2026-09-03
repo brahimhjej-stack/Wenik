@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090d">
+<title>WENIK Partner</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#08080d;color:#fff;font:16px Arial,sans-serif;min-height:100vh}main{max-width:720px;margin:auto;padding:26px 26px 60px}.logo{width:205px;max-width:48vw;display:block;margin-bottom:26px}.hero,.card{border:1px solid #302d39;border-radius:34px;padding:30px;margin:18px 0;background:linear-gradient(135deg,#1e1026,#20120f)}.card{border-radius:28px;background:#111118}.eyebrow{color:#d69aff;letter-spacing:5px;font-size:14px}.muted{color:#a9a5ae;line-height:1.45}h1,h2{margin:12px 0;font-size:clamp(34px,9vw,52px)}.field,.btn{width:100%;border-radius:22px;border:1px solid #373440;background:#0d0d12;color:#fff;padding:18px 22px;font-size:18px;margin-top:14px}.btn{border:0;font-weight:800;background:linear-gradient(90deg,#da78ec,#ff837e,#ffd553);color:#101014}.btn.secondary{background:#24232d;color:#fff;border:1px solid #3b3944}.hidden{display:none!important}video{width:100%;border-radius:22px;background:#000;aspect-ratio:1/1;object-fit:cover}.result{font-size:20px;line-height:1.5}.amount{font-size:28px}.success{color:#68e0ba}.error{color:#ff8a8a}@media(max-width:480px){main{padding:22px 18px}.hero,.card{padding:24px}}
+</style>
+</head>
+<body><main>
+<img class="logo" src="wenik-logo-final.png" alt="WENIK">
+
+<section id="login" class="hero hidden">
+  <div class="eyebrow">WENIK PARTNER</div><h1>Partner Login</h1>
+  <input id="phone" class="field" placeholder="Mobile" inputmode="tel" autocomplete="tel">
+  <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password">
+  <button id="loginBtn" class="btn">LOGIN</button><div id="loginMsg" class="muted"></div>
+</section>
+
+<section id="app" class="hidden">
+  <div class="hero"><div class="eyebrow">PARTNER ACCESS</div><h1 id="business">WENIK Partner</h1><div class="muted">Scan the customer QR to record a visit.</div></div>
+  <div id="scanCard" class="card">
+    <video id="camera" playsinline muted></video>
+    <button id="scanBtn" class="btn">START QR SCAN</button>
+    <div id="scanMsg" class="muted"></div>
+  </div>
+  <div id="customerCard" class="card hidden">
+    <div class="eyebrow">CUSTOMER</div><div id="customer" class="result"></div>
+    <input id="amount" class="field amount" type="number" min="0.01" step="0.01" placeholder="Bill amount">
+    <button id="saveBtn" class="btn">RECORD VISIT</button>
+    <button id="cancelBtn" class="btn secondary">CANCEL</button>
+    <div id="saveMsg" class="muted"></div>
+  </div>
+  <button id="logoutBtn" class="btn secondary">LOG OUT</button>
+</section>
+
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+const U='https://zkrnzwnbdoaqanqzznlw.supabase.co',K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
+const sb=createClient(U,K),$=id=>document.getElementById(id);let stream,token,scanning=false;
+function ph(v){let d=v.replace(/\D/g,'');if(d.startsWith('961'))return'+'+d;if(d.startsWith('0'))d=d.slice(1);return'+961'+d}
+async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+async function start(){
+  const{data:{session}}=await sb.auth.getSession();if(!session)return showLogin();
+  try{const p=await rpc('partner_my_profile');if(!p?.length)throw Error('This account is not a partner.');$('business').textContent=p[0].business_name;$('login').classList.add('hidden');$('app').classList.remove('hidden')}
+  catch(e){await sb.auth.signOut();showLogin(e.message)}
+}
+function showLogin(m=''){$('app').classList.add('hidden');$('login').classList.remove('hidden');$('loginMsg').textContent=m}
+$('loginBtn').onclick=async()=>{try{$('loginMsg').textContent='Signing in…';const{error}=await sb.auth.signInWithPassword({phone:ph($('phone').value),password:$('password').value});if(error)throw error;await start()}catch(e){$('loginMsg').textContent=e.message}};
+function stopCamera(){scanning=false;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('camera').srcObject=null}
+function qrUuid(raw){const s=String(raw||'').trim();const m=s.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);return m?.[0]||''}
+async function found(raw){const q=qrUuid(raw);if(!q)return;$('scanMsg').textContent='Checking QR…';stopCamera();try{const d=await rpc('partner_lookup_customer_by_qr_v3',{p_qr_token:q});if(!d?.length)throw Error('QR expired or invalid. Ask the customer to refresh it.');token=q;const x=d[0];$('customer').innerHTML='<b>'+x.first_name+'</b><br>WENIK ID: '+x.wenik_id+'<br>Benefit: '+(x.benefit_title||'None');$('scanCard').classList.add('hidden');$('customerCard').classList.remove('hidden');$('amount').focus()}catch(e){$('scanMsg').className='error';$('scanMsg').textContent=e.message}}
+$('scanBtn').onclick=async()=>{try{if(!('BarcodeDetector'in window))throw Error('QR camera is not supported by this browser. Open this page in Chrome.');const detector=new BarcodeDetector({formats:['qr_code']});stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});$('camera').srcObject=stream;await $('camera').play();scanning=true;$('scanMsg').className='muted';$('scanMsg').textContent='Point the camera at the customer QR.';const loop=async()=>{if(!scanning)return;try{const codes=await detector.detect($('camera'));if(codes[0])return found(codes[0].rawValue)}catch{}requestAnimationFrame(loop)};loop()}catch(e){stopCamera();$('scanMsg').className='error';$('scanMsg').textContent=e.message}};
+$('saveBtn').onclick=async()=>{const amount=Number($('amount').value);if(!(amount>0))return $('saveMsg').textContent='Enter the bill amount.';try{$('saveBtn').disabled=true;$('saveMsg').className='muted';$('saveMsg').textContent='Recording…';const key=crypto.randomUUID();const d=await rpc('partner_record_transaction_v6',{p_qr_token:token,p_original_amount:amount,p_idempotency_key:key,p_notes:'Partner QR scan'});const x=d?.[0];$('saveMsg').className='success';$('saveMsg').textContent='Visit recorded successfully. Final amount: $'+Number(x?.final_amount||0).toFixed(2);$('amount').disabled=true;$('cancelBtn').textContent='SCAN ANOTHER'}catch(e){$('saveMsg').className='error';$('saveMsg').textContent=e.message}finally{$('saveBtn').disabled=false}};
+$('cancelBtn').onclick=()=>{token='';$('amount').value='';$('amount').disabled=false;$('saveMsg').textContent='';$('customerCard').classList.add('hidden');$('scanCard').classList.remove('hidden');$('cancelBtn').textContent='CANCEL'};
+$('logoutBtn').onclick=async()=>{stopCamera();await sb.auth.signOut();showLogin()};addEventListener('pagehide',stopCamera);start();
+</script></main></body></html>
