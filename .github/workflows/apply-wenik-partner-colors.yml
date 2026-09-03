@@ -1,0 +1,44 @@
+name: Apply WENIK partner colors
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-wenik-partner-colors.yml'
+      - 'scripts/apply_wenik_partner_colors.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-colors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply visual-only partner color refresh
+        run: python3 scripts/apply_wenik_partner_colors.py
+      - name: Verify only partner.html changed
+        run: |
+          CHANGED="$(git status --short)"
+          echo "$CHANGED"
+          if [ -z "$CHANGED" ]; then
+            exit 0
+          fi
+          if [ "$(git status --short | wc -l)" -ne 1 ] || ! git status --short | grep -q 'partner.html'; then
+            echo 'Unexpected files changed; refusing to commit.'
+            exit 1
+          fi
+      - name: Commit visual update
+        run: |
+          if git diff --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add partner.html
+          git commit -m 'Apply approved WENIK partner colors'
+          git push
