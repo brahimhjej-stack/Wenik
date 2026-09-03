@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/upgrade-super-admin-ui.yml'
+# trigger: 2026-09-04
 permissions:
   contents: write
 jobs:
