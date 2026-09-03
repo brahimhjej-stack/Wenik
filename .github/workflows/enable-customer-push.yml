@@ -1,0 +1,21 @@
+name: Enable customer notifications
+on:
+  push:
+    paths:
+      - scripts/enable-customer-push.py
+      - .github/workflows/enable-customer-push.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/enable-customer-push.py
+      - run: git diff --check
+      - run: |
+          git config user.name "WENIK automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Enable customer phone notifications"
+          git push
