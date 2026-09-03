@@ -417,7 +417,7 @@ window.partnerOffers=async(id,b)=>{
 
 async function loadWins(){
   const[w,r]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[])]);
-  $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>'+esc(x.prize_title||x.title||'Prize')+'</h3></div>').join('')||'<div class="card muted">No wins yet.</div>';
+  $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>🎉 '+esc(x.prize_name||'Prize')+'</h3><div class="muted">Congratulations! You won with WENIK.</div></div>').join('')||'<div class="card muted">No wins yet.</div>';
   $('recent').innerHTML=(r||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.public_display_name||'Winner')+'</b><span class="badge">WINNER</span></div></div>').join('')||'<div class="card muted">No announced winners.</div>'
 }
 
