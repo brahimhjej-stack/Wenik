@@ -1,0 +1,21 @@
+name: Rotate WENIK VAPID public key
+on:
+  push:
+    paths:
+      - scripts/rotate-vapid-key.py
+      - .github/workflows/rotate-vapid-key.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python scripts/rotate-vapid-key.py
+      - run: git diff --check
+      - run: |
+          git config user.name "WENIK automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Rotate WENIK VAPID public key"
+          git push
