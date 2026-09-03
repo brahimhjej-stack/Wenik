@@ -1,0 +1,44 @@
+name: Apply WENIK admin colors
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-wenik-admin-colors.yml'
+      - 'scripts/apply_wenik_admin_colors.py'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-colors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply visual-only admin color refresh
+        run: python3 scripts/apply_wenik_admin_colors.py
+      - name: Verify only admin.html changed
+        run: |
+          CHANGED="$(git status --short)"
+          echo "$CHANGED"
+          if [ -z "$CHANGED" ]; then
+            exit 0
+          fi
+          if [ "$(git status --short | wc -l)" -ne 1 ] || ! git status --short | grep -q 'admin.html'; then
+            echo 'Unexpected files changed; refusing to commit.'
+            exit 1
+          fi
+      - name: Commit visual update
+        run: |
+          if git diff --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add admin.html
+          git commit -m 'Apply approved WENIK admin colors'
+          git push
