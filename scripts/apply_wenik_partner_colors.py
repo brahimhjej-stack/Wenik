@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# Trigger-safe visual updater for WENIK Partner.
 path = Path('partner.html')
 html = path.read_text(encoding='utf-8')
 marker = '/* WENIK PARTNER COLOR REFRESH — visual-only */'
