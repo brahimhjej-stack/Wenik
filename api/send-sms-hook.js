@@ -1,6 +1,6 @@
 import { Webhook } from 'standardwebhooks';
 
-const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/sendSmsAPI.php';
+const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/common/sendSmsWpAPITemplate.php';
 const SENDER_ID = 'WENIK';
 
 function getHeader(req, name) {
@@ -53,6 +53,7 @@ function smsRequest(phone, otp) {
     api_secret: apiSecret,
     senderid: SENDER_ID,
     destination: normalizeDestination(phone),
+    route: 'sms',
     message: `Hello WENIK shopper your otp is: ${otp}`,
   }];
 }
