@@ -1,0 +1,29 @@
+name: Fix customer WIN card
+on:
+  push:
+    paths:
+      - scripts/fix-customer-win-card.py
+      - .github/workflows/fix-customer-win-card.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply customer WIN card fix
+        run: python scripts/fix-customer-win-card.py
+      - name: Verify protected files
+        run: |
+          git diff --exit-code -- admin.html partner.html || (echo 'Protected runtime file changed' && exit 1)
+          git diff --check
+          grep -q "x.prize_name" index.html
+          grep -q "Congratulations! You won with WENIK." index.html
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- index.html; then echo 'No customer change needed'; exit 0; fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Show real prize name on customer WIN card'
+          git push
