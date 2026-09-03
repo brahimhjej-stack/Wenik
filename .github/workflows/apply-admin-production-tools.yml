@@ -1,0 +1,36 @@
+name: Apply Admin Production Tools
+
+on:
+  push:
+    paths:
+      - 'scripts/apply-admin-production-tools.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Apply guarded Admin patch
+        run: python scripts/apply-admin-production-tools.py
+      - name: Verify only Admin changed
+        run: |
+          git diff --exit-code -- index.html partner.html sw.js || (echo 'Protected runtime files changed' && exit 1)
+          git diff --check
+      - name: Commit Admin update
+        run: |
+          if git diff --quiet -- admin.html; then
+            echo 'No admin changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          git commit -m 'Add Dashboard and partner subscription controls to Admin'
+          git push
