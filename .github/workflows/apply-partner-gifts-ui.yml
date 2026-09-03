@@ -1,0 +1,41 @@
+name: Apply Partner Gifts UI
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/add-partner-gifts-ui.py'
+      - '.github/workflows/apply-partner-gifts-ui.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record protected file hashes
+        run: |
+          sha256sum index.html sw.js > /tmp/protected.before
+          if [ -f manifest.webmanifest ]; then sha256sum manifest.webmanifest >> /tmp/protected.before; fi
+      - name: Apply guarded UI patch
+        run: python scripts/add-partner-gifts-ui.py
+      - name: Verify protected files unchanged
+        run: |
+          sha256sum index.html sw.js > /tmp/protected.after
+          if [ -f manifest.webmanifest ]; then sha256sum manifest.webmanifest >> /tmp/protected.after; fi
+          diff -u /tmp/protected.before /tmp/protected.after
+      - name: Verify only intended runtime files changed
+        run: |
+          CHANGED="$(git diff --name-only)"
+          echo "$CHANGED"
+          test -n "$CHANGED"
+          BAD="$(echo "$CHANGED" | grep -Ev '^(admin\.html|partner\.html)$' || true)"
+          test -z "$BAD" || { echo "Unexpected changed files:"; echo "$BAD"; exit 1; }
+          grep -q 'WENIK PARTNER GIFTS UI' partner.html
+          grep -q 'WENIK ADMIN GIFTS APPROVAL UI' admin.html
+      - name: Commit runtime UI changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html partner.html
+          git commit -m 'Add Partner Gifts UI and Admin approval flow'
+          git push
