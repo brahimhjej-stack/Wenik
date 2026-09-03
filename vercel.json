@@ -1,20 +1,28 @@
 {
   "version": 2,
-  
   "headers": [
     {
-  "source": "/",
-  "headers": [
-    {
-      "key": "Content-Type",
-      "value": "text/html; charset=UTF-8"
+      "source": "/",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/html; charset=UTF-8"
+        },
+        {
+          "key": "x-vercel-enable-rewrite-caching",
+          "value": "0"
+        }
+      ]
     },
     {
-      "key": "x-vercel-enable-rewrite-caching",
-      "value": "0"
-    }
-  ]
-},
+      "source": "/admin.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
