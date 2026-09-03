@@ -53,7 +53,7 @@ function smsRequest(phone, otp) {
     api_secret: apiSecret,
     senderid: SENDER_ID,
     destination: normalizeDestination(phone),
-    message: `WENIK verification code: ${otp}. Do not share this code.`,
+    message: `Hello WENIK shopper your otp is: ${otp}`,
   }];
 }
 
