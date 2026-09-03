@@ -70,6 +70,16 @@ video{border:2px solid transparent;background:linear-gradient(#000,#000) padding
     <button id="cancelBtn" class="btn secondary">CANCEL</button>
     <div id="saveMsg" class="muted"></div>
   </div>
+  <!-- WENIK PARTNER GIFTS UI -->
+  <div class="card" id="giftsCard">
+    <div class="eyebrow">WENIK GIFTS</div><h2>My Gifts</h2>
+    <div class="muted">Optional. Add as many gifts as you want. Every new or edited gift needs WENIK Admin approval.</div>
+    <input id="giftName" class="field" placeholder="Gift name">
+    <input id="giftDescription" class="field" placeholder="Short description (optional)">
+    <button id="addGiftBtn" class="btn">+ ADD GIFT</button>
+    <div id="giftMsg" class="muted"></div>
+    <div id="giftList"></div>
+  </div>
   <button id="logoutBtn" class="btn secondary">LOG OUT</button>
 </section>
 
@@ -81,7 +91,7 @@ function ph(v){let d=v.replace(/\D/g,'');if(d.startsWith('961'))return'+'+d;if(d
 async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
 async function start(){
   const{data:{session}}=await sb.auth.getSession();if(!session)return showLogin();
-  try{const p=await rpc('partner_my_profile');if(!p?.length)throw Error('This account is not a partner.');$('business').textContent=p[0].business_name;$('login').classList.add('hidden');$('app').classList.remove('hidden')}
+  try{const p=await rpc('partner_my_profile');if(!p?.length)throw Error('This account is not a partner.');$('business').textContent=p[0].business_name;$('login').classList.add('hidden');$('app').classList.remove('hidden');await loadGifts()}
   catch(e){await sb.auth.signOut();showLogin(e.message)}
 }
 function showLogin(m=''){$('app').classList.add('hidden');$('login').classList.remove('hidden');$('loginMsg').textContent=m}
@@ -92,5 +102,10 @@ async function found(raw){const q=qrUuid(raw);if(!q)return;$('scanMsg').textCont
 $('scanBtn').onclick=async()=>{try{if(!('BarcodeDetector'in window))throw Error('QR camera is not supported by this browser. Open this page in Chrome.');const detector=new BarcodeDetector({formats:['qr_code']});stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}}});$('camera').srcObject=stream;await $('camera').play();scanning=true;$('scanMsg').className='muted';$('scanMsg').textContent='Point the camera at the customer QR.';const loop=async()=>{if(!scanning)return;try{const codes=await detector.detect($('camera'));if(codes[0])return found(codes[0].rawValue)}catch{}requestAnimationFrame(loop)};loop()}catch(e){stopCamera();$('scanMsg').className='error';$('scanMsg').textContent=e.message}};
 $('saveBtn').onclick=async()=>{const amount=Number($('amount').value);if(!(amount>0))return $('saveMsg').textContent='Enter the bill amount.';try{$('saveBtn').disabled=true;$('saveMsg').className='muted';$('saveMsg').textContent='Recording…';const key=crypto.randomUUID();const d=await rpc('partner_record_transaction_v6',{p_qr_token:token,p_original_amount:amount,p_idempotency_key:key,p_notes:'Partner QR scan'});const x=d?.[0];$('saveMsg').className='success';$('saveMsg').textContent='Visit recorded successfully. Final amount: $'+Number(x?.final_amount||0).toFixed(2);$('amount').disabled=true;$('cancelBtn').textContent='SCAN ANOTHER'}catch(e){$('saveMsg').className='error';$('saveMsg').textContent=e.message}finally{$('saveBtn').disabled=false}};
 $('cancelBtn').onclick=()=>{token='';$('amount').value='';$('amount').disabled=false;$('saveMsg').textContent='';$('customerCard').classList.add('hidden');$('scanCard').classList.remove('hidden');$('cancelBtn').textContent='CANCEL'};
+
+function giftEsc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+async function loadGifts(){
+  try{const list=await rpc('partner_my_gifts');$('giftList').innerHTML=(list||[]).map(g=>'<div class="card"><div><b>'+giftEsc(g.name)+'</b><div class="muted">'+giftEsc(g.description||'')+'</div><div class="muted">Status: '+giftEsc(String(g.approval_status||'pending').toUpperCase())+'</div></div><div class="actions"><button class="btn secondary" data-edit-gift="'+g.id+'" data-name="'+giftEsc(g.name)+'" data-description="'+giftEsc(g.description||'')+'">EDIT</button>'+(g.approval_status==='approved'?'':'<button class="btn secondary" data-delete-gift="'+g.id+'">DELETE</button>')+'</div></div>').join('')||'<div class="muted" style="margin-top:16px">No gifts added yet.</div>';document.querySelectorAll('[data-delete-gift]').forEach(b=>b.onclick=async()=>{if(!confirm('Delete this gift?'))return;try{await rpc('partner_delete_gift',{p_gift_id:b.dataset.deleteGift});await loadGifts()}catch(e){$('giftMsg').className='error';$('giftMsg').textContent=e.message}});document.querySelectorAll('[data-edit-gift]').forEach(b=>b.onclick=async()=>{const name=prompt('Gift name:',b.dataset.name||'');if(name===null)return;const description=prompt('Short description (optional):',b.dataset.description||'');if(description===null)return;try{await rpc('partner_update_gift',{p_gift_id:b.dataset.editGift,p_name:name.trim(),p_description:description.trim()||null});$('giftMsg').className='success';$('giftMsg').textContent='Gift updated and sent back for Admin approval.';await loadGifts()}catch(e){$('giftMsg').className='error';$('giftMsg').textContent=e.message}})}catch(e){$('giftMsg').className='error';$('giftMsg').textContent=e.message}}
+$('addGiftBtn').onclick=async()=>{try{const name=$('giftName').value.trim(),description=$('giftDescription').value.trim();if(!name)throw Error('Enter the gift name.');$('addGiftBtn').disabled=true;$('giftMsg').className='muted';$('giftMsg').textContent='Submitting for approval…';await rpc('partner_submit_gift',{p_name:name,p_description:description||null});$('giftName').value='';$('giftDescription').value='';$('giftMsg').className='success';$('giftMsg').textContent='Gift submitted. Waiting for Admin approval.';await loadGifts()}catch(e){$('giftMsg').className='error';$('giftMsg').textContent=e.message}finally{$('addGiftBtn').disabled=false}};
 $('logoutBtn').onclick=async()=>{stopCamera();await sb.auth.signOut();showLogin()};addEventListener('pagehide',stopCamera);start();
 </script></main></body></html>
