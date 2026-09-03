@@ -1,6 +1,10 @@
 name: Wire customer message phone push
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/wire-customer-message-push.yml'
 permissions:
   contents: write
 jobs:
