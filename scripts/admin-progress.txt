@@ -1,0 +1,4 @@
+Customer colors: applied safely.
+Partner colors: applied safely.
+Admin colors: updater/workflow prepared.
+Next: verify Admin/Super Admin authorization and functions before feature expansion.
