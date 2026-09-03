@@ -1,18 +1,7 @@
-const CACHE='wenik-shell-v2';
+const CACHE='wenik-shell-v3';
 const SHELL=['/manifest.webmanifest','/icon-192.png','/icon-512.png'];
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET') return;
-  const u=new URL(e.request.url);
-  if(u.origin!==location.origin) return;
-  e.respondWith(fetch(e.request).then(r=>{
-    const copy=r.clone();
-    caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});
-    return r;
-  }).catch(()=>caches.match(e.request)));
-});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin)return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r;}).catch(()=>caches.match(e.request)));});
+self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch{d={body:e.data?e.data.text():''}};const type=d.type||'general';const actions=type==='iza'?[{action:'in',title:"I'M IN"},{action:'out',title:"I'M OUT"}]:[];e.waitUntil(self.registration.showNotification(d.title||'WENIK',{body:d.body||'',icon:'/icon-192.png',badge:'/icon-192.png',tag:d.tag||('wenik-'+type),renotify:true,data:{url:d.url||'/',type,campaign_id:d.campaign_id||null},actions}));});
+self.addEventListener('notificationclick',e=>{e.notification.close();const d=e.notification.data||{};let url=d.url||'/';if(d.type==='iza'&&d.campaign_id){if(e.action==='in')url='/?open=iza&campaign='+encodeURIComponent(d.campaign_id)+'&choice=in';else if(e.action==='out')url='/?open=iza&campaign='+encodeURIComponent(d.campaign_id)+'&choice=out';else url='/?open=iza&campaign='+encodeURIComponent(d.campaign_id);}else if(d.type==='winner')url='/?open=win';e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const c of list){if('focus'in c){c.navigate(url);return c.focus();}}return clients.openWindow(url);}));});
