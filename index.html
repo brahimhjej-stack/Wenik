@@ -71,7 +71,7 @@ label{font-size:13px;color:#d5d5dc}
     <div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>
 
     <div id="joinForm">
-      <p class="muted">Create your WENIK account. SMS verification is required once.</p>
+      <p class="muted">Create your WENIK test account and enter directly.</p>
       <input id="first" class="field" placeholder="First name" autocomplete="given-name">
       <input id="last" class="field" placeholder="Last name" autocomplete="family-name">
       <input id="phone" class="field" placeholder="Mobile" inputmode="tel" autocomplete="tel">
@@ -81,8 +81,7 @@ label{font-size:13px;color:#d5d5dc}
         <label><input id="privacy" type="checkbox"> I accept Privacy</label><br>
         <label><input id="marketing" type="checkbox"> Marketing updates (optional)</label>
       </div>
-      <button id="send" class="btn">SEND CODE</button>
-      <div id="otpBox" class="hidden"><input id="otp" class="field" placeholder="Verification code" inputmode="numeric" autocomplete="one-time-code"><button id="verify" class="btn">VERIFY & ENTER</button></div>
+      <button id="send" class="btn">CREATE ACCOUNT</button>
     </div>
 
     <div id="loginForm" class="hidden">
@@ -165,17 +164,11 @@ $('send').onclick=async()=>{
   const p=ph($('phone').value);
   const pw=$('newPassword').value;
   if(pw.length<6)return $('msg').textContent='Password must be at least 6 characters.';
-  const{error}=await sb.auth.signInWithOtp({phone:p,options:{data:{first_name:f,last_name:l,terms_accepted:true,privacy_accepted:true,marketing_consent:$('marketing').checked}}});
+  $('msg').textContent='Creating account…';
+  const{data,error}=await sb.auth.signUp({phone:p,password:pw,options:{data:{first_name:f,last_name:l,terms_accepted:true,privacy_accepted:true,marketing_consent:$('marketing').checked}}});
   if(error)return $('msg').textContent=error.message;
-  $('phone').dataset.p=p;$('otpBox').classList.remove('hidden');$('msg').textContent='Verification code sent.'
-};
-
-$('verify').onclick=async()=>{
-  const{error}=await sb.auth.verifyOtp({phone:$('phone').dataset.p,token:$('otp').value,type:'sms'});
-  if(error)return $('msg').textContent=error.message;
-  const{error:pwError}=await sb.auth.updateUser({password:$('newPassword').value});
-  if(pwError)return $('msg').textContent=pwError.message;
-  enter()
+  if(!data.session)return $('msg').textContent='Phone confirmation is still enabled in Supabase.';
+  enter();
 };
 
 $('login').onclick=async()=>{
