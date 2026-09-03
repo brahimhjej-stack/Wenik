@@ -1,0 +1,73 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#09090d"><title>WENIK Admin</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#08080d;color:#fff;font:16px Arial,sans-serif;min-height:100vh}main{max-width:900px;margin:auto;padding:26px 22px 70px}.logo{width:190px;max-width:48vw;display:block;margin-bottom:25px}.hero,.card{border:1px solid #302d39;border-radius:32px;padding:28px;margin:18px 0;background:linear-gradient(135deg,#1e1026,#20120f)}.card{border-radius:25px;background:#111118}.eyebrow{color:#d69aff;letter-spacing:5px;font-size:14px}.muted{color:#aaa6b0;line-height:1.45}h1,h2,h3{margin:10px 0}.field,.btn{width:100%;border-radius:20px;border:1px solid #393642;background:#0d0d12;color:#fff;padding:17px 20px;font-size:17px;margin-top:13px}.btn{border:0;font-weight:800;background:linear-gradient(90deg,#da78ec,#ff837e,#ffd553);color:#101014}.btn.secondary{background:#24232d;color:#fff;border:1px solid #3b3944}.hidden{display:none!important}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0}.metric{padding:20px;border:1px solid #302d39;border-radius:22px;background:#111118}.metric b{display:block;font-size:27px;margin-top:8px}.partner{margin:12px 0}.row{display:flex;justify-content:space-between;gap:14px}.error{color:#ff8a8a}@media(min-width:700px){.grid{grid-template-columns:repeat(4,1fr)}}
+
+
+/* WENIK ADMIN COLOR REFRESH — visual-only */
+:root{
+  --purple:#8f24ff;
+  --violet:#5b21d6;
+  --pink:#ef159d;
+  --coral:#ff3f64;
+  --orange:#ff6f21;
+  --amber:#ffae00;
+  --yellow:#ffd21c;
+}
+body{
+  background:
+    radial-gradient(circle at 8% -8%,rgba(143,36,255,.30),transparent 31%),
+    radial-gradient(circle at 94% 4%,rgba(255,111,33,.21),transparent 28%),
+    radial-gradient(circle at 48% 112%,rgba(239,21,157,.13),transparent 32%),
+    linear-gradient(180deg,#070610 0%,#090713 52%,#06050d 100%);
+}
+.logo{filter:drop-shadow(0 0 20px rgba(239,21,157,.20)) drop-shadow(0 0 28px rgba(255,174,0,.08))}
+.hero{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 0 0,rgba(143,36,255,.32),transparent 40%),
+    radial-gradient(circle at 100% 100%,rgba(255,111,33,.21),transparent 42%),
+    linear-gradient(145deg,rgba(31,14,63,.96),rgba(16,11,30,.96) 55%,rgba(34,14,24,.95));
+  border-color:rgba(178,92,255,.30);
+  box-shadow:0 20px 58px rgba(0,0,0,.42),0 0 0 1px rgba(239,21,157,.08),0 0 36px rgba(143,36,255,.10);
+}
+.hero::before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:3px;background:linear-gradient(90deg,var(--purple),var(--pink),var(--orange),var(--yellow))}
+.card,.metric{background:linear-gradient(145deg,rgba(23,17,39,.96),rgba(12,11,23,.96));border-color:rgba(178,92,255,.22);box-shadow:0 14px 38px rgba(0,0,0,.27),inset 0 1px 0 rgba(255,255,255,.025)}
+.metric:nth-child(4n+1){border-color:rgba(143,36,255,.34)}
+.metric:nth-child(4n+2){border-color:rgba(239,21,157,.30)}
+.metric:nth-child(4n+3){border-color:rgba(255,111,33,.30)}
+.metric:nth-child(4n+4){border-color:rgba(255,210,28,.25)}
+.metric b{background:linear-gradient(90deg,#fff,#ffd5ed 58%,#ffe29b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{color:#ff9cdc;text-shadow:0 0 14px rgba(239,21,157,.22)}
+h1,h2,h3{background:linear-gradient(90deg,#fff 0%,#f7eaff 55%,#ffe09d 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.field{border-color:rgba(178,92,255,.25);background:linear-gradient(145deg,rgba(11,9,20,.98),rgba(18,11,26,.97))}
+.field:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px rgba(239,21,157,.12),0 0 22px rgba(143,36,255,.09)}
+.btn{background:linear-gradient(100deg,var(--purple) 0%,var(--pink) 38%,var(--orange) 72%,var(--yellow) 100%);color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.18);box-shadow:0 10px 30px rgba(239,21,157,.19),0 0 0 1px rgba(255,255,255,.08) inset}
+.btn.secondary{background:linear-gradient(145deg,rgba(43,24,68,.95),rgba(22,16,35,.96));color:#fff;border-color:rgba(143,36,255,.38);box-shadow:0 8px 20px rgba(92,33,214,.10)}
+.partner{border-left:3px solid var(--purple)}
+.partner:nth-child(3n+2){border-left-color:var(--pink)}
+.partner:nth-child(3n+3){border-left-color:var(--orange)}
+.row b{color:#fff}
+.error{color:#ff93a8}
+
+</style></head><body><main>
+<img class="logo" src="wenik-logo-final.png" alt="WENIK">
+<section id="login" class="hero"><div class="eyebrow">SECURE ACCESS</div><h1>WENIK Admin</h1><input id="email" class="field" type="email" placeholder="Admin email" autocomplete="username"><input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password"><button id="loginBtn" class="btn">LOGIN</button><div id="loginMsg" class="muted"></div></section>
+<section id="app" class="hidden">
+ <div class="hero"><div class="eyebrow">WENIK ADMIN</div><h1>Reports</h1><div class="muted">Live results across all partners.</div><select id="period" class="field"><option value="today">Today</option><option value="month">This month</option><option value="all">All time</option></select><button id="refreshBtn" class="btn">REFRESH</button></div>
+ <div id="summary" class="grid"></div>
+ <h2>Partner Reports</h2><div id="partners"></div>
+ <h2>Top Customers</h2><div id="customers"></div>
+ <button id="logoutBtn" class="btn secondary">LOG OUT</button>
+</section>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+const sb=createClient('https://zkrnzwnbdoaqanqzznlw.supabase.co','sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k',{auth:{storageKey:'wenik-admin-auth'}}),$=id=>document.getElementById(id);
+async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+function money(v){return'$'+Number(v||0).toFixed(2)}
+function range(){const to=new Date(),from=new Date(0),v=$('period').value;if(v==='today')from.setTime(new Date(to.getFullYear(),to.getMonth(),to.getDate()).getTime());if(v==='month')from.setTime(new Date(to.getFullYear(),to.getMonth(),1).getTime());return{p_from:from.toISOString(),p_to:to.toISOString()}}
+async function start(){const{data:{session}}=await sb.auth.getSession();if(!session)return;try{if(!await rpc('is_wenik_admin'))throw Error('Not authorized');$('login').classList.add('hidden');$('app').classList.remove('hidden');load()}catch(e){await sb.auth.signOut();$('loginMsg').textContent='This account is not authorized as WENIK Admin.'}}
+$('loginBtn').onclick=async()=>{try{$('loginMsg').textContent='Signing in…';const{error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await start()}catch(e){$('loginMsg').textContent=e.message}};
+async function load(){try{$('refreshBtn').disabled=true;$('refreshBtn').textContent='LOADING…';const dates=range(),directory=await rpc('public_partner_directory_v2');const reports=await Promise.all((directory||[]).map(async p=>({p,r:(await rpc('admin_partner_report',{p_partner_id:p.partner_id,...dates}))?.[0]||{}})));const total=reports.reduce((a,x)=>{for(const k of ['total_transactions','unique_customers','original_bill_value','benefits_value','final_sales'])a[k]+=Number(x.r[k]||0);return a},{total_transactions:0,unique_customers:0,original_bill_value:0,benefits_value:0,final_sales:0});$('summary').innerHTML=[['Visits',total.total_transactions],['Customers',total.unique_customers],['Bills',money(total.original_bill_value)],['Discounts',money(total.benefits_value)],['Final sales',money(total.final_sales)]].map(x=>'<div class="metric"><span class="muted">'+x[0]+'</span><b>'+x[1]+'</b></div>').join('');$('partners').innerHTML=reports.map(x=>'<div class="card partner"><h3>'+x.p.business_name+'</h3><div class="row"><span>Visits</span><b>'+Number(x.r.total_transactions||0)+'</b></div><div class="row"><span>Customers</span><b>'+Number(x.r.unique_customers||0)+'</b></div><div class="row"><span>Original bills</span><b>'+money(x.r.original_bill_value)+'</b></div><div class="row"><span>Discounts</span><b>'+money(x.r.benefits_value)+'</b></div><div class="row"><span>Final sales</span><b>'+money(x.r.final_sales)+'</b></div></div>').join('')||'<div class="card muted">No partners.</div>';const top=await rpc('admin_top_customers',{...dates,p_limit:10});$('customers').innerHTML=(top||[]).map((x,i)=>'<div class="card"><div class="row"><b>'+(i+1)+'. '+x.full_name+'</b><b>'+money(x.total_spend)+'</b></div><div class="muted">'+x.wenik_id+' · '+x.total_transactions+' visits · '+x.unique_partners+' partners</div></div>').join('')||'<div class="card muted">No customer activity in this period.</div>'}catch(e){$('partners').innerHTML='<div class="card error">'+e.message+'</div>'}finally{$('refreshBtn').disabled=false;$('refreshBtn').textContent='REFRESH'}}
+$('period').onchange=load;$('refreshBtn').onclick=load;$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};start();
+</script></main></body></html>
