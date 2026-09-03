@@ -1,0 +1,30 @@
+name: Wire admin external push
+on:
+  push:
+    paths:
+      - scripts/wire-admin-external-push.py
+      - .github/workflows/wire-admin-external-push.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Wire IZA and WIN phone push
+        run: python scripts/wire-admin-external-push.py
+      - name: Verify protected files and push wiring
+        run: |
+          git diff --exit-code -- index.html partner.html || (echo 'Protected runtime file changed' && exit 1)
+          git diff --check
+          grep -q "send-push-message" admin.html
+          grep -q "admin_push_message_for_iza" admin.html
+          grep -q "admin_push_message_for_winner" admin.html
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- admin.html; then echo 'No admin change needed'; exit 0; fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add admin.html
+          git commit -m 'Wire IZA and WIN external phone push'
+          git push
