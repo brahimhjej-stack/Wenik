@@ -1,0 +1,29 @@
+name: Apply WIN winner publish UI
+on:
+  push:
+    paths:
+      - scripts/apply-win-winner-publish-ui.py
+      - .github/workflows/apply-win-winner-publish-ui.yml
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply winner publish UI
+        run: python scripts/apply-win-winner-publish-ui.py
+      - name: Verify only admin.html changed
+        run: |
+          git diff --exit-code -- index.html partner.html || (echo 'Protected runtime file changed' && exit 1)
+          git diff --check
+          grep -q "PUBLISH WINNER" admin.html
+          grep -q "admin_winner_list" admin.html
+      - name: Commit and push
+        run: |
+          if git diff --quiet -- admin.html; then echo 'No admin change needed'; exit 0; fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add admin.html
+          git commit -m 'Add winner review and publish controls to WIN'
+          git push
