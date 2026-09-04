@@ -661,9 +661,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('wenikPartnerMod
 })();
 </script>
 
-
+<script>
 // WENIK MINI DASH: compact, fast and swipe-friendly.
 (()=>{const root=document.querySelector('.wenikMiniDash');if(!root)return;const slides=[...root.querySelectorAll('.wenikMiniSlide')],dots=[...root.querySelectorAll('.wenikMiniDots i')];let n=0,touchX=null;const show=i=>{n=(i+slides.length)%slides.length;slides.forEach((x,k)=>x.classList.toggle('isActive',k===n));dots.forEach((x,k)=>x.classList.toggle('on',k===n))};setInterval(()=>show(n+1),3000);root.addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});root.addEventListener('touchend',e=>{if(touchX==null)return;const d=e.changedTouches[0].clientX-touchX;if(Math.abs(d)>28)show(n+(d<0?1:-1));touchX=null},{passive:true})})();
+</script>
 
 </body>
 </html>
