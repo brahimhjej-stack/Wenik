@@ -486,8 +486,9 @@ async function loadWins(){
   if($('winGiftFeed')){
     if(g===null)$('winGiftFeed').innerHTML='<div class="card muted">New WENIK gifts are being prepared.</div>';
     else $('winGiftFeed').innerHTML=(g||[]).filter(x=>Number(x.remaining_quantity||0)>0).map(x=>{
-      const logo=x.partner_logo_url?'<img class="wenikWinGiftLogo" src="'+esc(x.partner_logo_url)+'" alt="'+esc(x.partner_name||'WENIK Partner')+'" loading="lazy">':'<div class="wenikWinGiftLogoFallback">W</div>';
-      const value=x.stated_value!=null&&Number(x.stated_value)>0?'$'+Number(x.stated_value).toLocaleString():'';
+      const logoUrl=safeUrl(x.partner_logo_url);
+      const logo=logoUrl?'<img class="wenikWinGiftLogo" src="'+esc(logoUrl)+'" alt="'+esc(x.partner_name||'WENIK Partner')+'" loading="lazy">':'<div class="wenikWinGiftLogoFallback">W</div>';
+      const value=''; // Gift title/description/conditions carry the exact benefit until typed gift values exist. Never infer USD or %.
       return '<article class="card wenikWinGift"><div class="wenikWinGiftTop">'+logo+'<div><div class="wenikWinPartner">'+esc(x.partner_name||'WENIK Partner')+'</div><div class="muted">WIN-WIN</div></div></div><div class="wenikWinGiftBody"><div class="wenikWinCampaign">'+esc(x.campaign_title||'WENIK WIN')+'</div><h3>'+esc(x.gift_title||'WENIK Gift')+'</h3>'+(value?'<div class="wenikWinValue">'+esc(value)+'</div>':'')+(x.gift_description?'<div class="muted">'+esc(x.gift_description)+'</div>':'')+'<div style="margin-top:11px"><span class="wenikWinRemaining">🎁 '+Number(x.remaining_quantity||0)+' LEFT</span></div>'+(x.conditions?'<div class="wenikWinTerms">'+esc(x.conditions)+'</div>':'')+'</div></article>'
     }).join('')||'<div class="card muted">More gifts are coming soon.</div>';
   }
