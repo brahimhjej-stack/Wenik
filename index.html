@@ -243,6 +243,11 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 
 
 </style>
+
+<style>
+/* WENIK WIN GIFTS UI V1 */
+.wenikWinGiftGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:20px}.wenikWinGift{position:relative;overflow:hidden;padding:0;border:1px solid rgba(255,255,255,.11);background:linear-gradient(145deg,rgba(124,58,237,.20),rgba(236,72,153,.13) 46%,rgba(249,115,22,.13));min-height:210px}.wenikWinGift:before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-45px;top:-50px;background:rgba(250,204,21,.18);filter:blur(2px)}.wenikWinGiftTop{display:flex;align-items:center;gap:10px;padding:14px 14px 8px;position:relative}.wenikWinGiftLogo{width:42px;height:42px;border-radius:13px;object-fit:cover;background:#fff}.wenikWinGiftLogoFallback{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#7c3aed,#ec4899,#f97316);font-weight:900;color:#fff}.wenikWinPartner{font-size:12px;font-weight:900;letter-spacing:.04em}.wenikWinGiftBody{padding:8px 14px 15px;position:relative}.wenikWinGiftBody h3{margin:3px 0 7px;font-size:18px}.wenikWinValue{font-size:22px;font-weight:950;margin:8px 0}.wenikWinRemaining{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 9px;background:rgba(250,204,21,.16);font-size:11px;font-weight:900}.wenikWinTerms{font-size:11px;opacity:.68;margin-top:9px}.wenikWinCampaign{font-size:10px;font-weight:900;letter-spacing:.08em;color:#fbbf24;margin-top:8px}@media(max-width:560px){.wenikWinGiftGrid{grid-template-columns:1fr}.wenikWinGift{min-height:0}}
+</style>
 </head>
 <body>
 <main class="app">
@@ -292,7 +297,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
     </section>
 
-    <section id="win" class="hidden"><div class="hero"><div class="eyebrow">WENIK WIN</div><h2>Your chances. Your wins.</h2></div><div id="wins"></div><div class="sectionTitle"><h3>Recent Winners</h3></div><div id="recent"></div></section>
+    <section id="win" class="hidden"><div class="hero"><div class="eyebrow">WENIK WIN</div><h2>More chances. More wins.</h2><div class="muted">Real gifts from WENIK Partners. See what is available now.</div></div><div class="sectionTitle"><h3>GIFTS TO WIN</h3><span class="muted">Live inventory</span></div><div id="winGiftFeed" class="wenikWinGiftGrid"><div class="card muted">Loading gifts…</div></div><div class="sectionTitle"><h3>MY WINS</h3></div><div id="wins"></div><div class="sectionTitle"><h3>RECENT WINNERS</h3></div><div id="recent"></div></section>
 
     <section id="iza" class="hidden"><div class="hero"><div class="eyebrow">IZA | إذا</div><h2>If the deal works… decide.</h2><div class="muted">Choose I’M IN or I’M OUT. You can change your mind.</div></div><div id="izaList"></div></section>
 
@@ -477,7 +482,15 @@ window.partnerOffers=async(id,b)=>{
 };
 
 async function loadWins(){
-  const[w,r]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[])]);
+  const[w,r,g]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[]),rpc('public_active_win_gifts',{p_limit:100}).catch(()=>null)]);
+  if($('winGiftFeed')){
+    if(g===null)$('winGiftFeed').innerHTML='<div class="card muted">New WENIK gifts are being prepared.</div>';
+    else $('winGiftFeed').innerHTML=(g||[]).filter(x=>Number(x.remaining_quantity||0)>0).map(x=>{
+      const logo=x.partner_logo_url?'<img class="wenikWinGiftLogo" src="'+esc(x.partner_logo_url)+'" alt="'+esc(x.partner_name||'WENIK Partner')+'" loading="lazy">':'<div class="wenikWinGiftLogoFallback">W</div>';
+      const value=x.stated_value!=null&&Number(x.stated_value)>0?'$'+Number(x.stated_value).toLocaleString():'';
+      return '<article class="card wenikWinGift"><div class="wenikWinGiftTop">'+logo+'<div><div class="wenikWinPartner">'+esc(x.partner_name||'WENIK Partner')+'</div><div class="muted">WIN-WIN</div></div></div><div class="wenikWinGiftBody"><div class="wenikWinCampaign">'+esc(x.campaign_title||'WENIK WIN')+'</div><h3>'+esc(x.gift_title||'WENIK Gift')+'</h3>'+(value?'<div class="wenikWinValue">'+esc(value)+'</div>':'')+(x.gift_description?'<div class="muted">'+esc(x.gift_description)+'</div>':'')+'<div style="margin-top:11px"><span class="wenikWinRemaining">🎁 '+Number(x.remaining_quantity||0)+' LEFT</span></div>'+(x.conditions?'<div class="wenikWinTerms">'+esc(x.conditions)+'</div>':'')+'</div></article>'
+    }).join('')||'<div class="card muted">More gifts are coming soon.</div>';
+  }
   $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>🎉 '+esc(x.prize_name||'Prize')+'</h3><div class="muted">Congratulations! You won with WENIK.</div></div>').join('')||'<div class="card muted">No wins yet.</div>';
   $('recent').innerHTML=(r||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.public_display_name||'Winner')+'</b><span class="badge">WINNER</span></div></div>').join('')||'<div class="card muted">No announced winners.</div>'
 }
