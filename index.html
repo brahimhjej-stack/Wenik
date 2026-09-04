@@ -238,6 +238,8 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 .wenikEmpty{color:var(--lm)!important;border-color:#e4d9eb!important;background:#fff!important}.wenikPartnerModal{background:rgba(35,22,44,.42)!important}.wenikPartnerSheet{background:#fff!important;color:var(--li)!important;border-color:#e6ddeb!important}.wenikModalClose{background:#fff!important;color:var(--li)!important;border-color:#e3dbe8!important}.wenikDetailHero{background:linear-gradient(135deg,#f5edff,#fff3ea,#fff9dc)!important}.wenikDetailPromo{background:linear-gradient(120deg,rgba(123,44,255,.07),rgba(255,111,33,.07),rgba(255,210,28,.10))!important;border-color:#eadff0!important}.wenikDetailPromo strong{color:#d85b16!important}.wenikDetailActions a{background:#faf7fc!important;border-color:#e3d7eb!important;color:#6f25d9!important}
 .nav{background:rgba(255,255,255,.97)!important;border-color:#e8e0ed!important;box-shadow:0 -8px 25px rgba(52,27,70,.08)!important}.nav button{color:#756b7d!important}.nav button.active{color:var(--lp)!important}
 
+
+/* WENIK HOME CATEGORIES FIRST V1 */
 </style>
 </head>
 <body>
@@ -281,8 +283,8 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
       <div class="card wenikDiscovery" id="homePartnerDiscovery">
         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+        <div id="homePartnerCategories" class="wenikCategories"></div>
         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
-        <div id="homePartnerCategories" class="wenikCategories" style="margin-top:14px"></div>
         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
       </div>
       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
