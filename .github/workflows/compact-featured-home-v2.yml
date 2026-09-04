@@ -1,0 +1,30 @@
+name: Compact WENIK featured home v2
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+      - name: Protect non-customer runtime files
+        run: |
+          sha256sum admin.html partner.html sw.js > /tmp/protected.sha
+      - name: Compact featured
+        run: python scripts/compact_featured_home_v2.py
+      - name: Verify
+        run: |
+          sha256sum -c /tmp/protected.sha
+          grep -q 'WENIK FEATURED COMPACT V2' index.html
+          git diff --name-only | grep -qx 'index.html'
+      - name: Commit staging runtime
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Compact WENIK featured images on staging'
+          git push origin staging
