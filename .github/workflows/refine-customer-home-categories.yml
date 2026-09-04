@@ -1,0 +1,39 @@
+name: Refine WENIK customer Home categories
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refine-customer-home-categories.yml'
+      - 'scripts/refine-customer-home-categories.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Protect non-customer apps
+        run: sha256sum admin.html partner.html sw.js > /tmp/protected.sha256
+      - name: Refine Home categories
+        run: python3 scripts/refine-customer-home-categories.py
+      - name: Verify protected files
+        run: sha256sum -c /tmp/protected.sha256
+      - name: Verify only index changed
+        run: |
+          CHANGED="$(git status --short)"
+          echo "$CHANGED"
+          if [ -z "$CHANGED" ]; then exit 0; fi
+          if [ "$(git status --short | wc -l)" -ne 1 ] || ! git status --short | grep -q 'index.html'; then exit 1; fi
+      - name: Commit
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Refine WENIK Customer Home categories'
+          git push
