@@ -1,0 +1,37 @@
+name: Apply WIN Approved Gift Selector
+on:
+  push:
+    paths:
+      - 'scripts/add-win-approved-gift-selector.py'
+      - '.github/workflows/apply-win-approved-gift-selector.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record protected hashes
+        run: |
+          sha256sum index.html partner.html sw.js > /tmp/protected.before
+      - name: Apply guarded patch
+        run: python3 scripts/add-win-approved-gift-selector.py
+      - name: Verify protected files unchanged
+        run: |
+          sha256sum index.html partner.html sw.js > /tmp/protected.after
+          diff -u /tmp/protected.before /tmp/protected.after
+      - name: Verify only Admin runtime changed
+        run: |
+          test "$(git diff --name-only)" = "admin.html"
+          grep -q 'WENIK WIN APPROVED GIFT SELECTOR' admin.html
+          grep -q 'admin_available_partner_gifts' admin.html
+          grep -q 'admin_assign_partner_gift_to_campaign' admin.html
+      - name: Commit runtime UI
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          git commit -m 'Connect approved Partner gifts to WIN'
+          git push
