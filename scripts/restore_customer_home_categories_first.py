@@ -4,7 +4,7 @@ path = Path('index.html')
 html = path.read_text(encoding='utf-8')
 marker = '/* WENIK HOME CATEGORIES FIRST V1 */'
 
-old = '''        <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>\n        <div id="homePartnerCategories" class="wenikCategories"></div>'''
+old = '''        <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>\n        <div id="homePartnerCategories" class="wenikCategories" style="margin-top:14px"></div>'''
 new = '''        <div id="homePartnerCategories" class="wenikCategories"></div>\n        <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>'''
 
 if marker in html:
@@ -12,7 +12,6 @@ if marker in html:
     raise SystemExit(0)
 
 if old not in html:
-    # Accept the already-correct state, but do not modify anything else.
     if new in html:
         print('Home is already categories-first; no change needed.')
         raise SystemExit(0)
