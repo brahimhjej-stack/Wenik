@@ -8,7 +8,17 @@
 body{background:radial-gradient(circle at 0 0,rgba(143,36,255,.09),transparent 27%),radial-gradient(circle at 100% 0,rgba(255,111,33,.09),transparent 25%),#fbf9fc;color:var(--w-ink)}
 .wrap{max-width:1120px}.brand{font-size:29px;background:linear-gradient(100deg,var(--w-purple),var(--w-pink) 42%,var(--w-orange) 75%,var(--w-yellow));-webkit-background-clip:text;background-clip:text;color:transparent}.sub{color:#a329b8}.hero,.card{background:rgba(255,255,255,.94);border:1px solid var(--w-line);box-shadow:0 14px 38px rgba(58,25,75,.08)}.hero:before{background:linear-gradient(90deg,var(--w-purple),var(--w-pink),var(--w-orange),var(--w-yellow))}.muted{color:var(--w-muted)}.field,select,textarea{background:#fff;color:var(--w-ink);border:1px solid var(--w-line);box-shadow:0 5px 16px rgba(58,25,75,.035)}.field::placeholder,textarea::placeholder{color:#9d95a3}.btn{color:#fff;background:linear-gradient(100deg,var(--w-purple),var(--w-pink) 42%,var(--w-orange) 76%,var(--w-yellow));box-shadow:0 9px 22px rgba(239,21,157,.13)}.btn.secondary{background:#fff;color:#6f278f;border:1px solid rgba(143,36,255,.23)}.btn.ok{background:linear-gradient(90deg,#6f35d9,var(--w-purple),var(--w-pink))}.tab{background:#fff;color:#776d7f;border:1px solid var(--w-line);box-shadow:0 4px 13px rgba(58,25,75,.035)}.tab.active{color:#fff;background:linear-gradient(100deg,var(--w-purple),var(--w-pink),var(--w-orange))}.metric{background:#fff;border:1px solid var(--w-line);box-shadow:0 7px 20px rgba(58,25,75,.05)}.pill{background:linear-gradient(100deg,rgba(143,36,255,.10),rgba(239,21,157,.10),rgba(255,111,33,.10));color:#7c268f;border:1px solid rgba(143,36,255,.13)}.status{color:#a52b75}.good{color:#14865d}.error{color:#c53858}.itemImg{border-color:var(--w-line)}
 
-</style></head><body><div class="wrap">
+</style>
+<style>
+/* WENIK ADMIN SPIRIT V2 */
+body:before{content:"";position:fixed;z-index:-1;inset:0 0 auto 0;height:150px;background:linear-gradient(115deg,rgba(143,36,255,.11),rgba(239,21,157,.09),rgba(255,111,33,.09),rgba(255,210,28,.08));pointer-events:none}
+.wrap:before{content:"WENIK.CO  ·  WIN - WIN";display:block;text-align:center;font-size:11px;font-weight:1000;letter-spacing:2.2px;color:#8f24ff;padding:4px 0 7px}
+#app>.hero{background:linear-gradient(115deg,#fff 0%,#fbf3ff 45%,#fff6ef 78%,#fffbea 100%)}
+#app>.hero:after{content:"MORE TO DISCOVER";display:block;margin-top:8px;font-size:10px;font-weight:1000;letter-spacing:1.6px;color:#a329b8}
+.card{border-radius:20px}.metric{border-top:3px solid transparent;border-image:linear-gradient(90deg,#8f24ff,#ef159d,#ff6f21,#ffd21c) 1}.tabs{scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+@media(max-width:520px){.brand{text-align:center;font-size:27px}.sub{text-align:center}.hero,.card{padding:15px;border-radius:18px}.metric{padding:12px}.metric b{font-size:21px}.tab{padding:9px 11px;font-size:12px}}
+</style>
+</head><body><div class="wrap">
 <div class="brand">WENIK</div><div class="sub">SECURE MANAGEMENT</div>
 <section id="login" class="hero"><h1>Admin Login</h1><input id="email" class="field" type="email" placeholder="Admin email" autocomplete="username"><input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password"><button id="loginBtn" class="btn">LOGIN</button><div id="loginMsg" class="status"></div></section>
 <section id="app" class="hidden">
