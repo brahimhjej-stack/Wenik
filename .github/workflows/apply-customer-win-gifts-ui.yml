@@ -1,6 +1,11 @@
 name: Apply customer WIN gifts UI
 on:
   workflow_dispatch:
+  push:
+    branches: [staging]
+    paths:
+      - 'scripts/apply_customer_win_gifts_ui.py'
+      - '.github/workflows/apply-customer-win-gifts-ui.yml'
 permissions:
   contents: write
 jobs:
