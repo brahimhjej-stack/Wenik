@@ -1,0 +1,40 @@
+name: Apply Admin Finance Ledger UI
+
+on:
+  push:
+    branches: [staging]
+    paths:
+      - 'scripts/apply_admin_finance_ledger_ui.py'
+      - '.github/workflows/apply-admin-finance-ledger-ui.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+      - name: Protect non-target runtime files
+        run: |
+          sha256sum index.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply Finance Ledger UI
+        run: python scripts/apply_admin_finance_ledger_ui.py
+      - name: Verify protected files unchanged
+        run: sha256sum -c /tmp/protected.sha
+      - name: Verify only admin runtime changed
+        run: |
+          changed="$(git diff --name-only)"
+          echo "$changed"
+          bad="$(echo "$changed" | grep -Ev '^admin\.html$' || true)"
+          test -z "$bad"
+      - name: Commit admin preview
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          git diff --cached --quiet || git commit -m 'Apply Finance ledger audit UI to staging admin'
+          git push origin staging
