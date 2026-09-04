@@ -12,7 +12,6 @@ async function readPayload(req) {
   if (typeof req.body === 'string') return req.body;
   if (Buffer.isBuffer(req.body)) return req.body.toString('utf8');
   if (req.body && typeof req.body === 'object') return JSON.stringify(req.body);
-
   const chunks = [];
   for await (const chunk of req) chunks.push(Buffer.from(chunk));
   return Buffer.concat(chunks).toString('utf8');
@@ -44,22 +43,24 @@ function normalizeDestination(phone) {
 function smsRequest(phone, otp) {
   if (!/^\d{6}$/.test(otp || '')) throw new Error('Invalid verification code');
 
-  const apiKey = process.env.BSB_API_KEY;
-  const apiSecret = process.env.BSB_API_SECRET;
-  if (!apiKey || !apiSecret) throw new Error('BSB credentials are not configured');
+  // BSB HTTPS API v2.1, Section 4 uses username/password (not api_key/api_secret).
+  // Keep existing Vercel secret names so no credential values are exposed or re-entered.
+  const username = process.env.BSB_API_KEY;
+  const password = process.env.BSB_API_SECRET;
+  if (!username || !password) throw new Error('BSB credentials are not configured');
 
-  return [{
-    api_key: apiKey,
-    api_secret: apiSecret,
+  return {
+    username,
+    password,
     senderid: SENDER_ID,
     destination: normalizeDestination(phone),
     route: 'sms',
     message: `Hello WENIK shopper your otp is: ${otp}`,
-  }];
+  };
 }
 
 async function sendWithBsb(phone, otp) {
-  const [message] = smsRequest(phone, otp);
+  const message = smsRequest(phone, otp);
   const body = new URLSearchParams(message);
   const response = await fetch(BSB_SEND_URL, {
     method: 'POST',
@@ -70,7 +71,9 @@ async function sendWithBsb(phone, otp) {
 
   const result = (await response.text()).trim();
   if (!response.ok) throw new Error(`BSB request failed (${response.status})`);
-  if (!/^\d+;\d+;\d+(?:\r?\n\d+;\d+;\d+)*$/.test(result)) {
+
+  // Section 4 may return provider text; never log credentials or OTP payload.
+  if (!result || /wrong username\/password|field is empty|not valid|not authorized|error/i.test(result)) {
     throw new Error(`BSB rejected the SMS: ${result.slice(0, 120) || 'empty response'}`);
   }
   return result;
@@ -89,12 +92,7 @@ export default async function handler(req, res) {
     return res.status(200).json({});
   } catch (error) {
     console.error('WENIK SMS hook failed:', error instanceof Error ? error.message : error);
-    return res.status(500).json({
-      error: {
-        http_code: 500,
-        message: 'Unable to send verification code',
-      },
-    });
+    return res.status(500).json({ error: { http_code: 500, message: 'Unable to send verification code' } });
   }
 }
 
