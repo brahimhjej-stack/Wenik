@@ -1,0 +1,43 @@
+name: Remove Partner gift management
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging]
+    paths:
+      - 'scripts/remove_partner_gift_management.py'
+      - '.github/workflows/remove-partner-gift-management.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+      - name: Protect non-partner runtime files
+        run: sha256sum index.html admin.html sw.js > /tmp/protected.sha
+      - name: Simplify Partner
+        run: python scripts/remove_partner_gift_management.py
+      - name: Verify safety
+        run: |
+          sha256sum -c /tmp/protected.sha
+          git diff --exit-code -- index.html admin.html sw.js
+          test "$(git diff --name-only | sort)" = "partner.html"
+          ! grep -q 'partner_submit_gift' partner.html
+          ! grep -q 'partner_update_gift' partner.html
+          ! grep -q 'partner_delete_gift' partner.html
+          ! grep -q 'partner_my_gifts' partner.html
+          ! grep -q 'giftsCard' partner.html
+          grep -q 'partner_my_ads' partner.html
+          grep -q 'partner_record_transaction_v6' partner.html
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add partner.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Remove gift management from Partner portal'
+          git push origin staging
