@@ -1,0 +1,32 @@
+name: Brand WENIK Join Login v4
+on:
+  push:
+    branches: [staging]
+    paths: ['.github/workflows/brand-join-login-v4.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: staging}
+      - name: Protect other runtime files
+        run: sha256sum admin.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply Join Login identity
+        run: python scripts/brand_join_login_v4.py
+      - name: Verify safe scope
+        run: |
+          sha256sum -c /tmp/protected.sha
+          grep -q 'WENIK JOIN LOGIN BRAND V4' index.html
+          grep -q 'authBrandV4' index.html
+          test "$(git diff --name-only)" = "index.html"
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Brand WENIK Join Login on staging'
+          git push origin staging
