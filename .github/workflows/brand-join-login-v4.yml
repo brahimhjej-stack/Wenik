@@ -30,3 +30,4 @@ jobs:
           git add index.html
           git commit -m 'Brand WENIK Join Login on staging'
           git push origin staging
+# rerun fixed target 2026-09-04
