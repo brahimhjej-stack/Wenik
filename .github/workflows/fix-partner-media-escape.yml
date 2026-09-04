@@ -1,0 +1,41 @@
+name: Fix Partner media escape
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging]
+    paths:
+      - 'scripts/fix_partner_media_escape.py'
+      - '.github/workflows/fix-partner-media-escape.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+      - name: Protect non-partner runtime files
+        run: sha256sum index.html admin.html sw.js > /tmp/protected.sha
+      - name: Apply fix
+        run: python scripts/fix_partner_media_escape.py
+      - name: Verify safety
+        run: |
+          sha256sum -c /tmp/protected.sha
+          git diff --exit-code -- index.html admin.html sw.js
+          test "$(git diff --name-only | sort)" = "partner.html"
+          ! grep -q 'giftEsc(' partner.html
+          grep -q 'function escHtml(v)' partner.html
+          grep -q 'partner_my_ads' partner.html
+          grep -q 'partner_record_transaction_v6' partner.html
+          ! grep -q 'partner_submit_gift' partner.html
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add partner.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix Partner media escaping after gift removal'
+          git push origin staging
