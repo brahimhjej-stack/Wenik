@@ -1,0 +1,33 @@
+name: Replace customer top with WENIK white brand v3
+on:
+  push:
+    branches: [staging]
+    paths: ['.github/workflows/replace-customer-top-brand-v3.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: staging}
+      - name: Protect non-customer runtime
+        run: sha256sum admin.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply white WENIK header
+        run: python scripts/replace_customer_top_brand_v3.py
+      - name: Verify
+        run: |
+          sha256sum -c /tmp/protected.sha
+          grep -q 'WENIK WHITE BRAND HEADER V3' index.html
+          grep -q 'WWW.WENIK.CO' index.html
+          grep -q 'REWARDS' index.html
+          test "$(git diff --name-only)" = "index.html"
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Replace customer top with white WENIK brand on staging'
+          git push origin staging
