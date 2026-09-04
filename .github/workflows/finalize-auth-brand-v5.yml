@@ -1,0 +1,33 @@
+name: Finalize WENIK auth brand v5
+on:
+  push:
+    branches: [staging]
+    paths: ['.github/workflows/finalize-auth-brand-v5.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: staging}
+      - name: Protect other runtime files
+        run: sha256sum admin.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply final auth identity
+        run: python scripts/finalize_auth_brand_v5.py
+      - name: Verify
+        run: |
+          sha256sum -c /tmp/protected.sha
+          grep -q 'WENIK AUTH FINAL V5' index.html
+          grep -q 'authBrandFinal' index.html
+          grep -q 'WWW.WENIK.CO' index.html
+          test "$(git diff --name-only)" = "index.html"
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Finalize WENIK auth identity and remove black logo on staging'
+          git push origin staging
