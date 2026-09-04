@@ -1,0 +1,32 @@
+name: Apply unified WENIK customer admin visual v2
+on:
+  push:
+    branches: [staging]
+    paths: ['.github/workflows/apply-customer-admin-visual-v2.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: staging}
+      - name: Protect Partner and service worker
+        run: sha256sum partner.html sw.js > /tmp/protected.sha
+      - name: Apply visual-only patch
+        run: python scripts/apply_customer_admin_visual_v2.py
+      - name: Verify scope and markers
+        run: |
+          sha256sum -c /tmp/protected.sha
+          grep -q 'WENIK FEATURED COMPACT V2' index.html
+          grep -q 'WENIK ADMIN SPIRIT V2' admin.html
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "admin.html index.html "
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html admin.html
+          git commit -m 'Unify WENIK customer and admin visual spirit on staging'
+          git push origin staging
