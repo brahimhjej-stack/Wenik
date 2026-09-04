@@ -1,0 +1,51 @@
+name: Fix mini dashboard script tag
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging]
+    paths:
+      - 'scripts/fix_mini_dash_script_tag.py'
+      - '.github/workflows/fix-mini-dash-script-tag.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+      - name: Protect non-customer runtime files
+        run: sha256sum admin.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply minimal fix
+        run: python scripts/fix_mini_dash_script_tag.py
+      - name: Verify safety and required behavior
+        run: |
+          sha256sum -c /tmp/protected.sha
+          git diff --exit-code -- admin.html partner.html sw.js
+          test "$(git diff --name-only | sort)" = "index.html"
+          grep -q '<script>' index.html
+          grep -q 'WENIK MINI DASH: compact, fast and swipe-friendly.' index.html
+          grep -q 'setInterval(()=>show(n+1),3000)' index.html
+          grep -q '76 468 506' index.html
+          grep -q '<h3>CATEGORIES</h3>' index.html
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text(encoding='utf-8')
+          marker='// WENIK MINI DASH: compact, fast and swipe-friendly.'
+          i=s.index(marker)
+          assert s.rfind('<script>',0,i) > s.rfind('</script>',0,i), 'mini dash JS is not inside a script tag'
+          assert s.find('</script>',i) != -1
+          assert s.index('<h3>CATEGORIES</h3>') < s.index('id="homePartnerGrid"')
+          print('HTML/JS safety checks passed')
+          PY
+      - name: Commit staging fix
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Fix mini dashboard script execution on staging'
+          git push origin staging
