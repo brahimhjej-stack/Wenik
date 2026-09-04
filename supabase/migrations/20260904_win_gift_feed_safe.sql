@@ -1,6 +1,9 @@
 -- WENIK WIN gift feed (STAGING PREPARATION ONLY)
--- Read-only customer/public feed. Never deletes or mutates gift/winner history.
+-- Contract-audited read-only customer/public feed.
+-- Never deletes or mutates gift/winner history.
 -- Remaining inventory is derived from prize quantity minus non-cancelled winners.
+-- Verified campaign_status values: draft, active, closed, drawn, archived.
+-- Verified winner_status includes cancelled.
 -- Do not apply to production until reviewed/tested in a Supabase development environment.
 
 begin;
@@ -44,18 +47,18 @@ as $$
     p.conditions,
     p.expires_at,
     p.quantity,
-    count(w.id) filter (where coalesce(w.status::text,'') <> 'cancelled') as won_quantity,
-    greatest(p.quantity::bigint - count(w.id) filter (where coalesce(w.status::text,'') <> 'cancelled'), 0) as remaining_quantity
+    count(w.id) filter (where w.status::text <> 'cancelled') as won_quantity,
+    greatest(p.quantity::bigint - count(w.id) filter (where w.status::text <> 'cancelled'), 0) as remaining_quantity
   from public.prizes p
   join public.campaigns c on c.id = p.campaign_id
   left join public.partners pt on pt.id = p.partner_id
   left join public.winners w on w.prize_id = p.id
-  where c.status::text in ('active','open')
+  where c.status::text = 'active'
     and (c.starts_at is null or c.starts_at <= now())
     and (c.ends_at is null or c.ends_at >= now())
     and (p.expires_at is null or p.expires_at >= now())
-  group by p.id,p.campaign_id,c.title,c.status,p.partner_id,pt.business_name,pt.logo_url,p.partner_gift_id,p.title,p.description,p.stated_value,p.conditions,p.expires_at,p.quantity
-  having greatest(p.quantity::bigint - count(w.id) filter (where coalesce(w.status::text,'') <> 'cancelled'), 0) > 0
+  group by p.id,p.campaign_id,c.title,c.status,p.partner_id,pt.business_name,pt.logo_url,p.partner_gift_id,p.title,p.description,p.stated_value,p.conditions,p.expires_at,p.quantity,p.created_at,c.starts_at
+  having greatest(p.quantity::bigint - count(w.id) filter (where w.status::text <> 'cancelled'), 0) > 0
   order by c.starts_at nulls first, p.created_at, p.id
   limit greatest(1, least(coalesce(p_limit,100),200));
 $$;
