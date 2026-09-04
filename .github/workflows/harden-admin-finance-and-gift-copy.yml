@@ -1,0 +1,41 @@
+name: Harden admin finance and gift copy
+on:
+  workflow_dispatch:
+  push:
+    branches: [staging]
+    paths:
+      - 'scripts/harden_admin_finance_and_gift_copy.py'
+      - '.github/workflows/harden-admin-finance-and-gift-copy.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: staging
+          fetch-depth: 0
+      - name: Protect non-admin runtime files
+        run: sha256sum index.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply admin hardening
+        run: python scripts/harden_admin_finance_and_gift_copy.py
+      - name: Verify safety
+        run: |
+          sha256sum -c /tmp/protected.sha
+          git diff --exit-code -- index.html partner.html sw.js
+          test "$(git diff --name-only | sort)" = "admin.html"
+          ! grep -q 'admin_finance_ledger' admin.html
+          grep -q "admin_finance_entries" admin.html
+          ! grep -q 'gifts submitted by partners' admin.html
+          ! grep -q 'completes business details, images and gifts' admin.html
+          grep -q 'WENIK Admin manages contracted Partner gifts' admin.html
+      - name: Commit staging preview
+        run: |
+          git config user.name 'wenik-staging-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add admin.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Align Admin finance ledger and gift ownership'
+          git push origin staging
