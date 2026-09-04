@@ -1,0 +1,38 @@
+name: Apply Partner Profile Completion
+on:
+  push:
+    paths:
+      - 'scripts/complete-partner-profile-login-and-gifts.py'
+      - '.github/workflows/apply-partner-profile-completion.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record protected hashes
+        run: |
+          sha256sum index.html admin.html sw.js > /tmp/protected.before
+      - name: Apply guarded patch
+        run: python3 scripts/complete-partner-profile-login-and-gifts.py
+      - name: Verify protected files unchanged
+        run: |
+          sha256sum index.html admin.html sw.js > /tmp/protected.after
+          diff -u /tmp/protected.before /tmp/protected.after
+      - name: Verify only partner runtime changed
+        run: |
+          test "$(git diff --name-only)" = "partner.html"
+          grep -q 'WENIK PARTNER PROFILE COMPLETION V2' partner.html
+          grep -q "partner-login" partner.html
+          grep -q "partner_update_my_profile_v2" partner.html
+          grep -q "p_quantity:quantity" partner.html
+      - name: Commit runtime UI
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add partner.html
+          git commit -m 'Complete Partner onboarding profile and secure login'
+          git push
