@@ -63,6 +63,22 @@ video{border:2px solid transparent;background:linear-gradient(#000,#000) padding
     <button id="scanBtn" class="btn">START QR SCAN</button>
     <div id="scanMsg" class="muted"></div>
   </div>
+  <!-- WENIK PARTNER DELIVERY PHONE V1 -->
+  <div id="deliveryPhoneCard" class="card">
+    <div class="eyebrow">DELIVERY ORDER</div>
+    <h2>Enter Customer Phone</h2>
+    <div class="muted">For delivery orders, enter the customer phone number instead of scanning the QR.</div>
+    <input id="deliveryPhone" class="field" inputmode="tel" autocomplete="tel" placeholder="Customer phone number">
+    <button id="deliveryFindBtn" class="btn secondary">FIND CUSTOMER</button>
+    <div id="deliveryLookupMsg" class="muted"></div>
+    <div id="deliveryResult" class="hidden" style="margin-top:18px">
+      <div id="deliveryCustomer" class="result"></div>
+      <input id="deliveryAmount" class="field amount" type="number" min="0.01" step="0.01" placeholder="Bill amount">
+      <button id="deliveryRecordBtn" class="btn">RECORD DELIVERY VISIT</button>
+      <button id="deliveryResetBtn" class="btn secondary">CANCEL</button>
+      <div id="deliverySaveMsg" class="muted"></div>
+    </div>
+  </div>
   <div id="customerCard" class="card hidden">
     <div class="eyebrow">CUSTOMER</div><div id="customer" class="result"></div>
     <input id="amount" class="field amount" type="number" min="0.01" step="0.01" placeholder="Bill amount">
@@ -128,4 +144,17 @@ async function loadMedia(){try{const list=await rpc('partner_my_ads');const by=n
 async function uploadMedia(slot){try{if(!partnerProfile?.partner_id)throw Error('Partner profile not loaded.');const f=$('mediaFile-'+slot).files?.[0];if(!f)throw Error('Choose an image first.');if(f.size>8*1024*1024)throw Error('Image is too large. Maximum 8 MB.');$('mediaMsg').className='muted';$('mediaMsg').textContent='Uploading image '+slot+'…';const ext=(f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg',path=partnerProfile.partner_id+'/slot-'+slot+'-'+Date.now()+'.'+ext;const up=await sb.storage.from('partner-media').upload(path,f,{upsert:false,contentType:f.type||undefined});if(up.error)throw up.error;const pub=sb.storage.from('partner-media').getPublicUrl(path).data.publicUrl;await rpc('partner_submit_ad',{p_slot_no:slot,p_image_url:pub,p_title:partnerProfile.business_name,p_description:null,p_cta_label:null,p_cta_url:null});$('mediaMsg').className='success';$('mediaMsg').textContent='Image submitted. Waiting for Admin approval.';await loadMedia()}catch(e){$('mediaMsg').className='error';$('mediaMsg').textContent=e.message}}
 
 $('logoutBtn').onclick=async()=>{stopCamera();await sb.auth.signOut();showLogin()};addEventListener('pagehide',stopCamera);start();
-</script></main></body></html>
+</script></main>
+<script type="module">
+import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+const U='https://zkrnzwnbdoaqanqzznlw.supabase.co',K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
+const sbDelivery=createClient(U,K),D=id=>document.getElementById(id);
+let deliveryPhoneValue='';
+async function deliveryRpc(name,args={}){const{data,error}=await sbDelivery.rpc(name,args);if(error)throw error;return data}
+function resetDelivery(){deliveryPhoneValue='';D('deliveryPhone').value='';D('deliveryLookupMsg').textContent='';D('deliverySaveMsg').textContent='';D('deliveryAmount').value='';D('deliveryAmount').disabled=false;D('deliveryResult').classList.add('hidden');D('deliveryRecordBtn').disabled=false}
+D('deliveryFindBtn').onclick=async()=>{try{const phone=D('deliveryPhone').value.trim();if(!phone)throw Error('Enter customer phone number.');D('deliveryFindBtn').disabled=true;D('deliveryLookupMsg').className='muted';D('deliveryLookupMsg').textContent='Checking customer…';const rows=await deliveryRpc('partner_lookup_customer_by_phone_v1',{p_phone:phone});if(!rows?.length)throw Error('Customer not found on WENIK.');const x=rows[0];deliveryPhoneValue=phone;D('deliveryCustomer').innerHTML='<b>'+String(x.first_name||'Customer')+'</b><br>WENIK ID: '+String(x.wenik_id||'')+'<br>Benefit: '+String(x.benefit_title||'None');D('deliveryLookupMsg').textContent='';D('deliveryResult').classList.remove('hidden');D('deliveryAmount').focus()}catch(e){D('deliveryLookupMsg').className='error';D('deliveryLookupMsg').textContent=e.message||'Unable to find customer.'}finally{D('deliveryFindBtn').disabled=false}};
+D('deliveryRecordBtn').onclick=async()=>{const amount=Number(D('deliveryAmount').value);if(!(amount>0))return D('deliverySaveMsg').textContent='Enter the bill amount.';try{D('deliveryRecordBtn').disabled=true;D('deliverySaveMsg').className='muted';D('deliverySaveMsg').textContent='Recording…';const rows=await deliveryRpc('partner_record_transaction_by_phone_v1',{p_phone:deliveryPhoneValue,p_original_amount:amount,p_idempotency_key:crypto.randomUUID(),p_notes:'Partner delivery by phone'});const x=rows?.[0];D('deliverySaveMsg').className='success';D('deliverySaveMsg').textContent='Delivery visit recorded successfully. Final amount: $'+Number(x?.final_amount||0).toFixed(2);D('deliveryAmount').disabled=true;D('deliveryRecordBtn').disabled=true}catch(e){D('deliverySaveMsg').className='error';D('deliverySaveMsg').textContent=e.message||'Unable to record visit.';D('deliveryRecordBtn').disabled=false}};
+D('deliveryResetBtn').onclick=resetDelivery;
+</script>
+
+</body></html>
