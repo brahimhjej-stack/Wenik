@@ -1,0 +1,30 @@
+name: Apply WIN Premium V2 Preview
+on:
+  push:
+    branches: [win-premium-preview-20260905]
+    paths: ['scripts/upgrade_win_premium_v2.py']
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: win-premium-preview-20260905}
+      - name: Apply WIN premium UI only
+        run: |
+          cp admin.html /tmp/admin.before
+          cp partner.html /tmp/partner.before
+          cp sw.js /tmp/sw.before
+          python scripts/upgrade_win_premium_v2.py
+          grep -q 'WENIK WIN PREMIUM V2' index.html
+          cmp admin.html /tmp/admin.before
+          cmp partner.html /tmp/partner.before
+          cmp sw.js /tmp/sw.before
+      - name: Commit preview runtime
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Apply premium WIN UI preview' || exit 0
+          git push origin win-premium-preview-20260905
