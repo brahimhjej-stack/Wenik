@@ -76,11 +76,13 @@ function assertAccepted(resultText) {
 }
 
 async function sendWithBsb(phone, otp) {
-  const body = new URLSearchParams(smsRequest(phone, otp));
   const response = await fetch(BSB_SEND_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(smsRequest(phone, otp)),
     signal: AbortSignal.timeout(12_000),
   });
 
