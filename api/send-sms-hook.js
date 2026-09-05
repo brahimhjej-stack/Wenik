@@ -42,13 +42,9 @@ function normalizeDestination(phone) {
 
 function smsRequest(phone, otp) {
   if (!/^\d{6}$/.test(otp || '')) throw new Error('Invalid verification code');
-
-  // BSB HTTPS API v2.1, Section 4 uses username/password (not api_key/api_secret).
-  // Keep existing Vercel secret names so no credential values are exposed or re-entered.
   const username = process.env.BSB_API_KEY;
   const password = process.env.BSB_API_SECRET;
   if (!username || !password) throw new Error('BSB credentials are not configured');
-
   return {
     username,
     password,
@@ -57,6 +53,13 @@ function smsRequest(phone, otp) {
     route: 'sms',
     message: `Hello WENIK shopper your otp is: ${otp}`,
   };
+}
+
+function safeProviderText(text) {
+  return String(text || '')
+    .replace(/\b\d{6}\b/g, '[OTP]')
+    .replace(/(password|username|api[_ -]?key|api[_ -]?secret)\s*[:=]\s*[^\s&;]+/gi, '$1=[REDACTED]')
+    .slice(0, 300);
 }
 
 async function sendWithBsb(phone, otp) {
@@ -70,12 +73,15 @@ async function sendWithBsb(phone, otp) {
   });
 
   const result = (await response.text()).trim();
-  if (!response.ok) throw new Error(`BSB request failed (${response.status})`);
-
-  // Section 4 may return provider text; never log credentials or OTP payload.
-  if (!result || /wrong username\/password|field is empty|not valid|not authorized|error/i.test(result)) {
-    throw new Error(`BSB rejected the SMS: ${result.slice(0, 120) || 'empty response'}`);
+  if (!response.ok) {
+    console.error('BSB HTTP error:', response.status, safeProviderText(result) || '[empty response]');
+    throw new Error(`BSB request failed (${response.status})`);
   }
+  if (!result || /wrong username\/password|field is empty|not valid|not authorized|error/i.test(result)) {
+    console.error('BSB rejected SMS:', safeProviderText(result) || '[empty response]');
+    throw new Error('BSB rejected the SMS');
+  }
+  console.info('BSB accepted SMS request');
   return result;
 }
 
@@ -96,4 +102,4 @@ export default async function handler(req, res) {
   }
 }
 
-export const __test = { hookSecret, normalizeDestination, smsRequest };
+export const __test = { hookSecret, normalizeDestination, smsRequest, safeProviderText };
