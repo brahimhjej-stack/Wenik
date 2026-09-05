@@ -42,12 +42,12 @@ function normalizeDestination(phone) {
 
 function smsRequest(phone, otp) {
   if (!/^\d{6}$/.test(otp || '')) throw new Error('Invalid verification code');
-  const username = process.env.BSB_API_KEY;
-  const password = process.env.BSB_API_SECRET;
-  if (!username || !password) throw new Error('BSB credentials are not configured');
+  const apiKey = process.env.BSB_API_KEY;
+  const apiSecret = process.env.BSB_API_SECRET;
+  if (!apiKey || !apiSecret) throw new Error('BSB credentials are not configured');
   return {
-    username,
-    password,
+    api_key: apiKey,
+    api_secret: apiSecret,
     senderid: SENDER_ID,
     destination: normalizeDestination(phone),
     message: `Hello WENIK shopper your otp is: ${otp}`,
@@ -70,7 +70,7 @@ function assertAccepted(resultText) {
   const data = parseBsbJson(resultText);
   if (!data) throw new Error(`Unexpected BSB response: ${safeProviderText(resultText)}`);
   const status = Number(data.status ?? data.Status ?? 0);
-  if (status === 201) return data;
+  if (status === 201 || data.success === true) return data;
   const reason = data.message ?? data.error ?? data.description ?? resultText;
   throw new Error(`BSB rejected SMS status ${status || 'unknown'}: ${safeProviderText(reason)}`);
 }
