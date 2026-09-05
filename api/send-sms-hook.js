@@ -1,6 +1,6 @@
 import { Webhook } from 'standardwebhooks';
 
-const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/sendSmsAPI.php';
+const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/sendSmsAPIJson.php';
 const SENDER_ID = 'WENIK';
 
 function getHeader(req, name) {
@@ -58,18 +58,21 @@ function safeProviderText(text) {
   return String(text || '')
     .replace(/\b\d{6}\b/g, '[OTP]')
     .replace(/(password|username|api[_ -]?key|api[_ -]?secret)\s*[:=]\s*[^\s&;]+/gi, '$1=[REDACTED]')
-    .slice(0, 300);
+    .slice(0, 500);
 }
 
-function assertAccepted(result) {
-  if (!result) throw new Error('BSB empty response');
-  if (/wrong username\/password|field is empty|not valid|not authorized|error|no credits/i.test(result)) {
-    throw new Error(`BSB rejected SMS: ${safeProviderText(result)}`);
-  }
-  const first = result.split(';')[0]?.trim();
-  if (!/^\d+$/.test(first) || Number(first) <= 0) {
-    throw new Error(`Unexpected BSB response: ${safeProviderText(result)}`);
-  }
+function parseBsbJson(text) {
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+function assertAccepted(resultText) {
+  if (!resultText) throw new Error('BSB empty response');
+  const data = parseBsbJson(resultText);
+  if (!data) throw new Error(`Unexpected BSB response: ${safeProviderText(resultText)}`);
+  const status = Number(data.status ?? data.Status ?? 0);
+  if (status === 201) return data;
+  const reason = data.message ?? data.error ?? data.description ?? resultText;
+  throw new Error(`BSB rejected SMS status ${status || 'unknown'}: ${safeProviderText(reason)}`);
 }
 
 async function sendWithBsb(phone, otp) {
@@ -83,17 +86,12 @@ async function sendWithBsb(phone, otp) {
 
   const result = (await response.text()).trim();
   if (!response.ok) {
-    console.error('BSB HTTP error:', response.status, safeProviderText(result) || '[empty response]');
+    console.error('BSB JSON HTTP error:', response.status, safeProviderText(result) || '[empty response]');
     throw new Error(`BSB request failed (${response.status})`);
   }
-  try {
-    assertAccepted(result);
-  } catch (e) {
-    console.error('BSB rejected SMS:', e instanceof Error ? e.message : e);
-    throw e;
-  }
-  console.info('BSB accepted SMS request');
-  return result;
+  const accepted = assertAccepted(result);
+  console.info('BSB accepted SMS request', accepted?.confirmationid ? 'with confirmation id' : '');
+  return accepted;
 }
 
 export default async function handler(req, res) {
@@ -113,4 +111,4 @@ export default async function handler(req, res) {
   }
 }
 
-export const __test = { hookSecret, normalizeDestination, smsRequest, safeProviderText, assertAccepted };
+export const __test = { hookSecret, normalizeDestination, smsRequest, safeProviderText, parseBsbJson, assertAccepted };
