@@ -1,0 +1,37 @@
+name: Apply Admin Finance Production
+on:
+  push:
+    branches: [prod-finance-ui-20260905-v2]
+    paths:
+      - 'scripts/apply_admin_finance_production.py'
+      - '.github/workflows/apply-admin-finance-production.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: prod-finance-ui-20260905-v2
+          fetch-depth: 0
+      - name: Protect non-target runtime files
+        run: sha256sum index.html partner.html sw.js > /tmp/protected.sha
+      - name: Apply Finance P&L production patch
+        run: python scripts/apply_admin_finance_production.py
+      - name: Verify protected files unchanged
+        run: sha256sum -c /tmp/protected.sha
+      - name: Verify only admin runtime changed
+        run: |
+          CHANGED="$(git diff --name-only)"
+          echo "$CHANGED"
+          BAD="$(echo "$CHANGED" | grep -vE '^admin\.html$' || true)"
+          test -z "$BAD"
+      - name: Commit Finance P&L admin runtime
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Deploy Finance P&L to production admin'
+          git push origin prod-finance-ui-20260905-v2
