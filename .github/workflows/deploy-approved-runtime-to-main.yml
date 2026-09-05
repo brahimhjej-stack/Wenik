@@ -1,0 +1,36 @@
+name: Deploy approved WENIK runtime to Production
+on:
+  push:
+    branches: [prod-approved-deploy-workflow-20260905]
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Get approved patch scripts from staging
+        run: |
+          git fetch origin staging main
+          git show origin/staging:scripts/add_win_gift_gallery.py > /tmp/add_win_gift_gallery.py
+          git show origin/staging:scripts/add_partner_delivery_phone.py > /tmp/add_partner_delivery_phone.py
+      - name: Apply only approved runtime changes to current main
+        run: |
+          git checkout main
+          git pull --ff-only origin main
+          cp index.html /tmp/index.before
+          cp partner.html /tmp/partner.before
+          python /tmp/add_win_gift_gallery.py
+          python /tmp/add_partner_delivery_phone.py
+          grep -q 'WENIK WIN GIFT GALLERY V1' index.html
+          grep -q 'WENIK PARTNER DELIVERY PHONE V1' partner.html
+          test "$(git diff --name-only | sort | tr '\n' ' ')" = "index.html partner.html "
+      - name: Commit Production runtime
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html partner.html
+          git commit -m 'Deploy approved WIN gifts and delivery phone UI'
+          git push origin main
