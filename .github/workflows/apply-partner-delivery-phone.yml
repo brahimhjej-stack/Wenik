@@ -1,0 +1,39 @@
+name: Apply WENIK partner delivery phone flow
+
+on:
+  push:
+    branches: [staging]
+    paths:
+      - '.github/workflows/apply-partner-delivery-phone.yml'
+      - 'scripts/add_partner_delivery_phone.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Protect customer and admin apps
+        run: sha256sum index.html admin.html sw.js > /tmp/protected.sha256
+      - name: Apply partner delivery phone flow
+        run: python3 scripts/add_partner_delivery_phone.py
+      - name: Verify protected files
+        run: sha256sum -c /tmp/protected.sha256
+      - name: Verify only partner changed
+        run: |
+          CHANGED="$(git status --short)"
+          echo "$CHANGED"
+          if [ -z "$CHANGED" ]; then exit 0; fi
+          if [ "$(git status --short | wc -l)" -ne 1 ] || ! git status --short | grep -q 'partner.html'; then exit 1; fi
+      - name: Commit
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add partner.html
+          git commit -m 'Add delivery phone entry to WENIK Partner'
+          git push
