@@ -1,0 +1,43 @@
+name: Restore and Fix WIN Production
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/emergency-restore-win-production.yml']
+permissions:
+  contents: write
+jobs:
+  restore-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 20
+      - name: Restore last good production index
+        run: git checkout f64a740f6a474258ab5d44a67f3010717db67652^ -- index.html
+      - name: Fetch verified staging fix scripts
+        run: |
+          git fetch origin staging
+          git show origin/staging:scripts/add_win_gift_gallery.py > /tmp/add_win_gift_gallery.py
+          git show origin/staging:scripts/upgrade_win_premium_v2.py > /tmp/upgrade_win_premium_v2.py
+      - name: Apply fixed WIN gallery and premium UI
+        run: |
+          cp admin.html /tmp/admin.before
+          cp partner.html /tmp/partner.before
+          cp sw.js /tmp/sw.before
+          python /tmp/add_win_gift_gallery.py
+          python /tmp/upgrade_win_premium_v2.py
+          grep -q 'WENIK WIN GIFT GALLERY V1' index.html
+          grep -q 'WENIK WIN PREMIUM V2' index.html
+          grep -q "public_active_win_gifts',{p_limit:500}" index.html
+          if grep -q '\\n// WENIK WIN GIFT GALLERY V1\\n' index.html; then echo 'broken literal newline block found'; exit 1; fi
+          cmp admin.html /tmp/admin.before
+          cmp partner.html /tmp/partner.before
+          cmp sw.js /tmp/sw.before
+      - name: Commit production fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix WIN gift gallery production runtime'
+          git push origin main
