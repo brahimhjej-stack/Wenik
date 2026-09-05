@@ -1,0 +1,14 @@
+from pathlib import Path
+p=Path('index.html'); s=p.read_text(encoding='utf-8')
+marker='<!-- WENIK WIN PREMIUM V2 -->'
+if marker in s: raise SystemExit('already applied')
+css='''
+/* WENIK WIN PREMIUM V2 */
+.winGiftGalleryBlock{margin:22px 0 12px!important}.winGiftGalleryHead{align-items:flex-end!important;margin-bottom:14px!important}.winGiftGalleryHead h2{font-size:28px!important;line-height:1.05!important;letter-spacing:-.8px!important}.winGiftEyebrow{font-size:12px!important;letter-spacing:2.4px!important;color:#ff9ed4!important}.winGiftCount{background:transparent!important;color:inherit!important;font-size:20px!important;padding:0!important;min-width:auto!important}.winGiftSearch{background:#fff!important;color:#201a2b!important;border:1px solid #ded9e4!important;border-radius:20px!important;padding:17px 18px!important;font-size:16px!important;box-shadow:0 8px 24px rgba(37,21,57,.06)!important}.winGiftGallery{gap:12px!important}.winGiftCard{background:#fff!important;color:#21192b!important;border:1px solid rgba(42,25,59,.08)!important;border-radius:22px!important;box-shadow:0 10px 26px rgba(38,22,56,.08)!important}.winGiftImgWrap{aspect-ratio:1.35/1!important;background:linear-gradient(135deg,#f1e7ff,#fff0f6)!important}.winGiftRemain{top:auto!important;bottom:10px!important;right:10px!important;background:linear-gradient(100deg,#ead1ff,#ffc5df)!important;color:#6d20c9!important;padding:6px 10px!important}.winGiftBody{padding:11px 12px 14px!important}.winGiftTitle{font-size:16px!important;color:#20182a!important}.winGiftPartner{font-size:13px!important;color:#716a79!important}.winGiftImgFallback{background:linear-gradient(135deg,#f0d7ff,#ffe1ed)!important}.winGiftMore{box-shadow:0 8px 24px rgba(169,35,220,.2)!important}.winPremiumIntro{display:flex;align-items:center;gap:14px;margin:16px 0 20px;padding:17px 18px;border-radius:22px;background:#fff;color:#21192b;border:1px solid rgba(42,25,59,.08);box-shadow:0 10px 28px rgba(38,22,56,.08)}.winPremiumIcon{width:46px;height:46px;border-radius:15px;display:grid;place-items:center;font-size:25px;background:linear-gradient(135deg,#ecd1ff,#ffd4e8)}.winPremiumIntro b{display:block;font-size:18px}.winPremiumIntro span{display:block;margin-top:3px;color:#7c7484;font-size:13px}@media(max-width:380px){.winGiftGallery{grid-template-columns:repeat(2,minmax(0,1fr))!important}.winGiftGalleryHead h2{font-size:25px!important}}
+'''
+s=s.replace('</style>',css+'</style>',1)
+needle='<div class="winGiftGalleryBlock">'
+intro='''<!-- WENIK WIN PREMIUM V2 -->\n<div class="winPremiumIntro"><div class="winPremiumIcon">🎁</div><div><b>Play. Scan. Win.</b><span>Amazing gifts from our partners.</span></div></div>\n'''
+if needle not in s: raise SystemExit('gallery not found')
+s=s.replace(needle,intro+needle,1)
+p.write_text(s,encoding='utf-8'); print('WIN premium V2 applied')
