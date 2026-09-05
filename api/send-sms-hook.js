@@ -1,6 +1,6 @@
 import { Webhook } from 'standardwebhooks';
 
-const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/common/sendSmsWpAPITemplate.php';
+const BSB_SEND_URL = 'https://www.bestsmsbulk.com/bestsmsbulkapi/sendSmsAPI.php';
 const SENDER_ID = 'WENIK';
 
 function getHeader(req, name) {
@@ -50,7 +50,6 @@ function smsRequest(phone, otp) {
     password,
     senderid: SENDER_ID,
     destination: normalizeDestination(phone),
-    route: 'sms',
     message: `Hello WENIK shopper your otp is: ${otp}`,
   };
 }
@@ -62,9 +61,19 @@ function safeProviderText(text) {
     .slice(0, 300);
 }
 
+function assertAccepted(result) {
+  if (!result) throw new Error('BSB empty response');
+  if (/wrong username\/password|field is empty|not valid|not authorized|error|no credits/i.test(result)) {
+    throw new Error(`BSB rejected SMS: ${safeProviderText(result)}`);
+  }
+  const first = result.split(';')[0]?.trim();
+  if (!/^\d+$/.test(first) || Number(first) <= 0) {
+    throw new Error(`Unexpected BSB response: ${safeProviderText(result)}`);
+  }
+}
+
 async function sendWithBsb(phone, otp) {
-  const message = smsRequest(phone, otp);
-  const body = new URLSearchParams(message);
+  const body = new URLSearchParams(smsRequest(phone, otp));
   const response = await fetch(BSB_SEND_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -77,9 +86,11 @@ async function sendWithBsb(phone, otp) {
     console.error('BSB HTTP error:', response.status, safeProviderText(result) || '[empty response]');
     throw new Error(`BSB request failed (${response.status})`);
   }
-  if (!result || /wrong username\/password|field is empty|not valid|not authorized|error/i.test(result)) {
-    console.error('BSB rejected SMS:', safeProviderText(result) || '[empty response]');
-    throw new Error('BSB rejected the SMS');
+  try {
+    assertAccepted(result);
+  } catch (e) {
+    console.error('BSB rejected SMS:', e instanceof Error ? e.message : e);
+    throw e;
   }
   console.info('BSB accepted SMS request');
   return result;
@@ -102,4 +113,4 @@ export default async function handler(req, res) {
   }
 }
 
-export const __test = { hookSecret, normalizeDestination, smsRequest, safeProviderText };
+export const __test = { hookSecret, normalizeDestination, smsRequest, safeProviderText, assertAccepted };
