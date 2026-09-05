@@ -69,9 +69,14 @@ function assertAccepted(resultText) {
   if (!resultText) throw new Error('BSB empty response');
   const data = parseBsbJson(resultText);
   if (!data) throw new Error(`Unexpected BSB response: ${safeProviderText(resultText)}`);
-  const status = Number(data.status ?? data.Status ?? 0);
-  if (status === 201 || data.success === true) return data;
-  const reason = data.message ?? data.error ?? data.description ?? resultText;
+  const items = Array.isArray(data) ? data : [data];
+  const rejected = items.find((item) => {
+    const status = Number(item?.status ?? item?.Status ?? 0);
+    return !(status === 201 || item?.success === true);
+  });
+  if (!rejected) return data;
+  const status = Number(rejected?.status ?? rejected?.Status ?? 0);
+  const reason = rejected?.message ?? rejected?.error ?? rejected?.description ?? resultText;
   throw new Error(`BSB rejected SMS status ${status || 'unknown'}: ${safeProviderText(reason)}`);
 }
 
@@ -82,7 +87,7 @@ async function sendWithBsb(phone, otp) {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     },
-    body: JSON.stringify(smsRequest(phone, otp)),
+    body: JSON.stringify([smsRequest(phone, otp)]),
     signal: AbortSignal.timeout(12_000),
   });
 
@@ -92,7 +97,7 @@ async function sendWithBsb(phone, otp) {
     throw new Error(`BSB request failed (${response.status})`);
   }
   const accepted = assertAccepted(result);
-  console.info('BSB accepted SMS request', accepted?.confirmationid ? 'with confirmation id' : '');
+  console.info('BSB accepted SMS request');
   return accepted;
 }
 
