@@ -1,0 +1,35 @@
+name: Apply partner upload picker preview
+
+on:
+  push:
+    branches:
+      - partner-upload-picker-preview-20260906
+    paths:
+      - scripts/add_partner_upload_picker_preview.py
+      - .github/workflows/apply-partner-upload-picker-preview.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: partner-upload-picker-preview-20260906
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/add_partner_upload_picker_preview.py
+      - name: Commit patched preview
+        run: |
+          if git diff --quiet -- partner.html; then
+            echo "No partner.html changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add partner.html
+          git commit -m "Make partner upload button open mobile image picker"
+          git push origin HEAD:partner-upload-picker-preview-20260906
