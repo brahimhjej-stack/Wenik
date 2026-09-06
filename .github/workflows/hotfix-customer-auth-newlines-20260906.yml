@@ -1,0 +1,49 @@
+name: Hotfix customer auth script newlines
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/hotfix-customer-auth-newlines-20260906.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Fix literal escaped newlines in customer auth block
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          start=s.index("$('loginPassword').addEventListener")
+          end=s.index("$('logout').onclick", start)
+          block=s[start:end]
+          if '\\n' not in block:
+              print('No literal escaped newlines found')
+          else:
+              block=block.replace('\\n','\n')
+              s=s[:start]+block+s[end:]
+              p.write_text(s)
+              print('Fixed customer auth block')
+          PY
+      - name: Commit hotfix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix customer login and forgot password buttons"
+          git push origin HEAD:main
