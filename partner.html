@@ -150,8 +150,80 @@ $('cancelBtn').onclick=()=>{token='';$('amount').value='';$('amount').disabled=f
 function fillProfile(x){const map={profileArea:'area',profileAddress:'address',profilePhone:'phone',profileMenu:'menu_url',profileLocation:'location_url',profileInstagram:'instagram_url',profileFacebook:'facebook_url',profileTiktok:'tiktok_url',profileWebsite:'website_url'};for(const [id,k] of Object.entries(map))$(id).value=x?.[k]||''}
 $('saveProfileBtn').onclick=async()=>{try{$('saveProfileBtn').disabled=true;$('profileMsg').className='muted';$('profileMsg').textContent='Saving…';await rpc('partner_update_my_profile_v2',{p_area:$('profileArea').value.trim()||null,p_address:$('profileAddress').value.trim()||null,p_phone:$('profilePhone').value.trim()||null,p_menu_url:$('profileMenu').value.trim()||null,p_social_url:null,p_location_url:$('profileLocation').value.trim()||null,p_instagram_url:$('profileInstagram').value.trim()||null,p_facebook_url:$('profileFacebook').value.trim()||null,p_tiktok_url:$('profileTiktok').value.trim()||null,p_website_url:$('profileWebsite').value.trim()||null});$('profileMsg').className='success';$('profileMsg').textContent='Profile saved successfully.'}catch(e){$('profileMsg').className='error';$('profileMsg').textContent=e.message}finally{$('saveProfileBtn').disabled=false}};
 $('changePasswordBtn').onclick=async()=>{try{const pw=$('newPassword').value;if(pw.length<8)throw Error('Password must be at least 8 characters.');$('changePasswordBtn').disabled=true;$('passwordMsg').textContent='Updating…';const{error}=await sb.auth.updateUser({password:pw});if(error)throw error;await rpc('partner_mark_password_changed');$('newPassword').value='';$('passwordMsg').className='success';$('passwordMsg').textContent='Password changed successfully.';setTimeout(()=>$('passwordCard').classList.add('hidden'),700)}catch(e){$('passwordMsg').className='error';$('passwordMsg').textContent=e.message}finally{$('changePasswordBtn').disabled=false}};
-async function loadMedia(){try{const list=await rpc('partner_my_ads');const by=new Map((list||[]).map(x=>[Number(x.slot_no),x]));$('mediaSlots').innerHTML=[1,2,3,4,5].map(i=>{const a=by.get(i);return '<div class="card"><div class="eyebrow">IMAGE '+i+'</div>'+(a?.image_url?'<img src="'+giftEsc(a.image_url)+'" style="width:100%;max-height:220px;object-fit:cover;border-radius:18px;margin-top:12px">':'<div class="muted" style="margin-top:12px">No image yet.</div>')+'<div class="muted">'+(a?'Status: '+giftEsc(String(a.approval_status||'pending').toUpperCase()):'')+'</div><input id="mediaFile-'+i+'" class="field" type="file" accept="image/*"><button class="btn secondary" data-upload-slot="'+i+'">UPLOAD / REPLACE IMAGE '+i+'</button></div>'}).join('');document.querySelectorAll('[data-upload-slot]').forEach(b=>b.onclick=()=>uploadMedia(Number(b.dataset.uploadSlot)))}catch(e){$('mediaMsg').className='error';$('mediaMsg').textContent=e.message}}
-async function uploadMedia(slot){try{if(!partnerProfile?.partner_id)throw Error('Partner profile not loaded.');const f=$('mediaFile-'+slot).files?.[0];if(!f)throw Error('Choose an image first.');if(f.size>8*1024*1024)throw Error('Image is too large. Maximum 8 MB.');$('mediaMsg').className='muted';$('mediaMsg').textContent='Uploading image '+slot+'…';const ext=(f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg',path=partnerProfile.partner_id+'/slot-'+slot+'-'+Date.now()+'.'+ext;const up=await sb.storage.from('partner-media').upload(path,f,{upsert:false,contentType:f.type||undefined});if(up.error)throw up.error;const pub=sb.storage.from('partner-media').getPublicUrl(path).data.publicUrl;await rpc('partner_submit_ad',{p_slot_no:slot,p_image_url:pub,p_title:partnerProfile.business_name,p_description:null,p_cta_label:null,p_cta_url:null});$('mediaMsg').className='success';$('mediaMsg').textContent='Image submitted. Waiting for Admin approval.';await loadMedia()}catch(e){$('mediaMsg').className='error';$('mediaMsg').textContent=e.message}}
+async function loadMedia(){
+  try{
+    const list=await rpc('partner_my_ads');
+    const by=new Map((list||[]).map(x=>[Number(x.slot_no),x]));
+    $('mediaSlots').innerHTML=[1,2,3,4,5].map(i=>{
+      const a=by.get(i),img=a?.image_url;
+      return '<div class="card"><div class="eyebrow">IMAGE '+i+'</div>'+
+        (img?'<img src="'+giftEsc(img)+'" loading="lazy" decoding="async" alt="Business image '+i+'" style="width:100%;max-height:220px;object-fit:cover;border-radius:18px;margin-top:12px">':'<div class="muted" style="margin-top:12px">No image yet.</div>')+
+        '<div class="muted">'+(a?'Status: '+giftEsc(String(a.approval_status||'pending').toUpperCase()):'')+'</div>'+
+        '<input id="mediaFile-'+i+'" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">'+
+        '<button class="btn secondary" data-upload-slot="'+i+'">CHOOSE & UPLOAD IMAGE '+i+'</button>'+
+        '<div id="mediaSlotMsg-'+i+'" class="muted" style="margin-top:8px"></div></div>'
+    }).join('');
+    document.querySelectorAll('[data-upload-slot]').forEach(b=>{
+      const slot=Number(b.dataset.uploadSlot),input=$('mediaFile-'+slot);
+      b.onclick=()=>input.click();
+      input.onchange=()=>{if(input.files?.[0])uploadMedia(slot,input.files[0],b,by.get(slot))};
+    });
+  }catch(e){$('mediaMsg').className='error';$('mediaMsg').textContent=e.message}
+}
+
+async function optimizePartnerImage(file){
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type||''))throw Error('Please choose a JPG, PNG, or WebP image.');
+  const maxSide=1600,quality=.82;
+  let bitmap;
+  try{bitmap=await createImageBitmap(file)}catch{return {blob:file,ext:(file.type.split('/')[1]||'jpg').replace('jpeg','jpg')}}
+  const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+  const w=Math.max(1,Math.round(bitmap.width*scale)),h=Math.max(1,Math.round(bitmap.height*scale));
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{alpha:true});ctx.drawImage(bitmap,0,0,w,h);bitmap.close?.();
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',quality));
+  if(!blob)return {blob:file,ext:(file.type.split('/')[1]||'jpg').replace('jpeg','jpg')};
+  return {blob,ext:'webp'};
+}
+
+function mediaPathFromPublicUrl(url){
+  const marker='/storage/v1/object/public/partner-media/';
+  const s=String(url||''),i=s.indexOf(marker);
+  return i<0?'':decodeURIComponent(s.slice(i+marker.length).split('?')[0]);
+}
+
+const mediaUploads=new Set();
+async function uploadMedia(slot,file,button,existing){
+  const slotMsg=$('mediaSlotMsg-'+slot);
+  let uploadedPath='';
+  try{
+    if(mediaUploads.has(slot))return;
+    if(!partnerProfile?.partner_id)throw Error('Partner profile not loaded.');
+    if(!file)throw Error('Choose an image first.');
+    if(file.size>12*1024*1024)throw Error('Image is too large. Maximum 12 MB before optimization.');
+    mediaUploads.add(slot);button.disabled=true;
+    slotMsg.className='muted';slotMsg.textContent='Optimizing image…';
+    const optimized=await optimizePartnerImage(file);
+    slotMsg.textContent='Uploading…';
+    const path=partnerProfile.partner_id+'/slot-'+slot+'-'+Date.now()+'-'+crypto.randomUUID()+'.'+optimized.ext;
+    uploadedPath=path;
+    const up=await sb.storage.from('partner-media').upload(path,optimized.blob,{upsert:false,contentType:optimized.blob.type||file.type||undefined,cacheControl:'31536000'});
+    if(up.error)throw up.error;
+    const pub=sb.storage.from('partner-media').getPublicUrl(path).data.publicUrl;
+    await rpc('partner_submit_ad',{p_slot_no:slot,p_image_url:pub,p_title:partnerProfile.business_name,p_description:null,p_cta_label:null,p_cta_url:null});
+    const oldPath=mediaPathFromPublicUrl(existing?.image_url);
+    if(oldPath&&oldPath!==path&&oldPath.startsWith(partnerProfile.partner_id+'/')){
+      sb.storage.from('partner-media').remove([oldPath]).catch(()=>{});
+    }
+    $('mediaMsg').className='success';$('mediaMsg').textContent='Image uploaded successfully. Waiting for Admin approval.';
+    await loadMedia();
+  }catch(e){
+    if(uploadedPath)sb.storage.from('partner-media').remove([uploadedPath]).catch(()=>{});
+    slotMsg.className='error';slotMsg.textContent=e?.message||'Upload failed. Please try again.';
+    $('mediaMsg').className='error';$('mediaMsg').textContent=e?.message||'Upload failed.';
+  }finally{
+    mediaUploads.delete(slot);if(button)button.disabled=false;
+  }
+}
 
 function giftEsc(v){return String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 async function loadGifts(){
