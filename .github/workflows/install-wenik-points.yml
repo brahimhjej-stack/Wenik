@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'wenik-points.js'
+      - 'wenik-gift-points-admin.js'
       - '.github/workflows/install-wenik-points.yml'
 permissions:
   contents: write
@@ -12,19 +13,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Inject points module without changing existing UI
+      - name: Inject points modules without changing existing UI
         run: |
           python - <<'PY'
           from pathlib import Path
-          tag='<script type="module" src="/wenik-points.js"></script>'
+          base='<script type="module" src="/wenik-points.js"></script>'
+          admin='<script type="module" src="/wenik-gift-points-admin.js"></script>'
           for name in ['index.html','partner.html','admin.html']:
               p=Path(name)
               s=p.read_text(encoding='utf-8')
-              if tag not in s:
+              if base not in s:
                   if '</body>' not in s:
                       raise SystemExit(f'No closing body in {name}')
-                  s=s.replace('</body>', tag+'\n</body>', 1)
-                  p.write_text(s,encoding='utf-8')
+                  s=s.replace('</body>', base+'\n</body>', 1)
+              if name=='admin.html' and admin not in s:
+                  if '</body>' not in s:
+                      raise SystemExit('No closing body in admin.html')
+                  s=s.replace('</body>', admin+'\n</body>', 1)
+              p.write_text(s,encoding='utf-8')
           PY
       - name: Commit integration
         run: |
