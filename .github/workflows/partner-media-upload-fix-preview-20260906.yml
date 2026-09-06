@@ -1,0 +1,115 @@
+name: Partner media upload fix preview
+
+on:
+  push:
+    branches:
+      - partner-media-upload-fix-preview-20260906
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: partner-media-upload-fix-preview-20260906
+          fetch-depth: 0
+      - name: Fix and optimize partner image uploads
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('partner.html')
+          text = path.read_text(encoding='utf-8')
+          start = text.index('async function loadMedia()')
+          end = text.index('\nfunction giftEsc', start)
+          new = r'''async function loadMedia(){
+  try{
+    const list=await rpc('partner_my_ads');
+    const by=new Map((list||[]).map(x=>[Number(x.slot_no),x]));
+    $('mediaSlots').innerHTML=[1,2,3,4,5].map(i=>{
+      const a=by.get(i),img=a?.image_url;
+      return '<div class="card"><div class="eyebrow">IMAGE '+i+'</div>'+
+        (img?'<img src="'+giftEsc(img)+'" loading="lazy" decoding="async" alt="Business image '+i+'" style="width:100%;max-height:220px;object-fit:cover;border-radius:18px;margin-top:12px">':'<div class="muted" style="margin-top:12px">No image yet.</div>')+
+        '<div class="muted">'+(a?'Status: '+giftEsc(String(a.approval_status||'pending').toUpperCase()):'')+'</div>'+
+        '<input id="mediaFile-'+i+'" type="file" accept="image/jpeg,image/png,image/webp" style="display:none">'+
+        '<button class="btn secondary" data-upload-slot="'+i+'">CHOOSE & UPLOAD IMAGE '+i+'</button>'+
+        '<div id="mediaSlotMsg-'+i+'" class="muted" style="margin-top:8px"></div></div>'
+    }).join('');
+    document.querySelectorAll('[data-upload-slot]').forEach(b=>{
+      const slot=Number(b.dataset.uploadSlot),input=$('mediaFile-'+slot);
+      b.onclick=()=>input.click();
+      input.onchange=()=>{if(input.files?.[0])uploadMedia(slot,input.files[0],b,by.get(slot))};
+    });
+  }catch(e){$('mediaMsg').className='error';$('mediaMsg').textContent=e.message}
+}
+
+async function optimizePartnerImage(file){
+  if(!/^image\/(jpeg|png|webp)$/i.test(file.type||''))throw Error('Please choose a JPG, PNG, or WebP image.');
+  const maxSide=1600,quality=.82;
+  let bitmap;
+  try{bitmap=await createImageBitmap(file)}catch{return {blob:file,ext:(file.type.split('/')[1]||'jpg').replace('jpeg','jpg')}}
+  const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+  const w=Math.max(1,Math.round(bitmap.width*scale)),h=Math.max(1,Math.round(bitmap.height*scale));
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{alpha:true});ctx.drawImage(bitmap,0,0,w,h);bitmap.close?.();
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',quality));
+  if(!blob)return {blob:file,ext:(file.type.split('/')[1]||'jpg').replace('jpeg','jpg')};
+  return {blob,ext:'webp'};
+}
+
+function mediaPathFromPublicUrl(url){
+  const marker='/storage/v1/object/public/partner-media/';
+  const s=String(url||''),i=s.indexOf(marker);
+  return i<0?'':decodeURIComponent(s.slice(i+marker.length).split('?')[0]);
+}
+
+const mediaUploads=new Set();
+async function uploadMedia(slot,file,button,existing){
+  const slotMsg=$('mediaSlotMsg-'+slot);
+  let uploadedPath='';
+  try{
+    if(mediaUploads.has(slot))return;
+    if(!partnerProfile?.partner_id)throw Error('Partner profile not loaded.');
+    if(!file)throw Error('Choose an image first.');
+    if(file.size>12*1024*1024)throw Error('Image is too large. Maximum 12 MB before optimization.');
+    mediaUploads.add(slot);button.disabled=true;
+    slotMsg.className='muted';slotMsg.textContent='Optimizing image…';
+    const optimized=await optimizePartnerImage(file);
+    slotMsg.textContent='Uploading…';
+    const path=partnerProfile.partner_id+'/slot-'+slot+'-'+Date.now()+'-'+crypto.randomUUID()+'.'+optimized.ext;
+    uploadedPath=path;
+    const up=await sb.storage.from('partner-media').upload(path,optimized.blob,{upsert:false,contentType:optimized.blob.type||file.type||undefined,cacheControl:'31536000'});
+    if(up.error)throw up.error;
+    const pub=sb.storage.from('partner-media').getPublicUrl(path).data.publicUrl;
+    await rpc('partner_submit_ad',{p_slot_no:slot,p_image_url:pub,p_title:partnerProfile.business_name,p_description:null,p_cta_label:null,p_cta_url:null});
+    const oldPath=mediaPathFromPublicUrl(existing?.image_url);
+    if(oldPath&&oldPath!==path&&oldPath.startsWith(partnerProfile.partner_id+'/')){
+      sb.storage.from('partner-media').remove([oldPath]).catch(()=>{});
+    }
+    $('mediaMsg').className='success';$('mediaMsg').textContent='Image uploaded successfully. Waiting for Admin approval.';
+    await loadMedia();
+  }catch(e){
+    if(uploadedPath)sb.storage.from('partner-media').remove([uploadedPath]).catch(()=>{});
+    slotMsg.className='error';slotMsg.textContent=e?.message||'Upload failed. Please try again.';
+    $('mediaMsg').className='error';$('mediaMsg').textContent=e?.message||'Upload failed.';
+  }finally{
+    mediaUploads.delete(slot);if(button)button.disabled=false;
+  }
+}
+'''
+          text = text[:start] + new + text[end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit preview patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add partner.html
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Fix and optimize partner media uploads"
+          git push origin HEAD:partner-media-upload-fix-preview-20260906
