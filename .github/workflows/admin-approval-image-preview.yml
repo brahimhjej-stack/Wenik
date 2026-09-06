@@ -1,68 +1,24 @@
 name: Admin approval image preview
-
 on:
   push:
-    branches:
-      - admin-approval-image-preview-20260906
-
+    branches: [admin-approval-image-preview-20260906]
 permissions:
   contents: write
-
 jobs:
   patch:
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: admin-approval-image-preview-20260906
-
       - name: Patch admin approvals
-        shell: bash
         run: |
-          python3 <<'PY'
-          from pathlib import Path
-          p = Path('admin.html')
-          s = p.read_text()
-
-          css = '''
-.approvalImg{width:100%;max-height:280px;object-fit:contain;border-radius:16px;margin-top:12px;border:1px solid rgba(178,92,255,.22);background:#070610;cursor:zoom-in}
-.approvalHint{font-size:12px;color:#b9b4c8;margin-top:7px;text-align:center}
-.imageViewer{position:fixed;inset:0;background:rgba(2,1,8,.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
-.imageViewer.hidden{display:none!important}.imageViewerBox{width:min(980px,100%);max-height:94vh;overflow:auto;background:#0d0b16;border:1px solid rgba(178,92,255,.4);border-radius:24px;padding:14px;box-shadow:0 24px 80px #000}.imageViewerTop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.imageViewerClose{width:auto;margin:0;padding:10px 14px}.imageViewer img{display:block;width:100%;max-height:74vh;object-fit:contain;background:#05040a;border-radius:18px}.imageViewerActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-'''
-          if '.approvalImg{' not in s:
-              s = s.replace('</style></head>', css + '</style></head>')
-
-          modal = '''<div id="approvalImageViewer" class="imageViewer hidden" role="dialog" aria-modal="true" aria-label="Partner image preview"><div class="imageViewerBox"><div class="imageViewerTop"><div><b id="approvalViewerPartner">Partner image</b><div id="approvalViewerSlot" class="muted"></div></div><button id="approvalViewerClose" class="btn secondary imageViewerClose" type="button">CLOSE ✕</button></div><img id="approvalViewerImg" alt="Partner image preview"><div class="imageViewerActions"><button id="approvalViewerApprove" class="btn ok" type="button">APPROVE</button><button id="approvalViewerReject" class="btn danger" type="button">REJECT</button></div></div></div>'''
-          if 'id="approvalImageViewer"' not in s:
-              s = s.replace('<section id="approvals" class="panel">', modal + '\n<section id="approvals" class="panel">')
-
-          start = s.find('async function loadApprovals(){')
-          end = s.find("$('refreshApprovals').onclick=loadApprovals;", start)
-          if start < 0 or end < 0:
-              raise SystemExit('approval block not found')
-
-          replacement = r'''let approvalViewerAd=null;
-function closeApprovalViewer(){$('approvalImageViewer').classList.add('hidden');$('approvalViewerImg').removeAttribute('src');approvalViewerAd=null}
-window.openApprovalImage=(id,url,business,slot)=>{approvalViewerAd={id};$('approvalViewerPartner').textContent=business||'Partner image';$('approvalViewerSlot').textContent='Slot '+slot+' · PENDING';$('approvalViewerImg').src=url;$('approvalImageViewer').classList.remove('hidden')};
-$('approvalViewerClose').onclick=closeApprovalViewer;
-$('approvalImageViewer').onclick=e=>{if(e.target===$('approvalImageViewer'))closeApprovalViewer()};
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeApprovalViewer()});
-$('approvalViewerApprove').onclick=async()=>{if(!approvalViewerAd)return;const id=approvalViewerAd.id;closeApprovalViewer();await review('ad',id,'approved')};
-$('approvalViewerReject').onclick=async()=>{if(!approvalViewerAd)return;const id=approvalViewerAd.id;closeApprovalViewer();await review('ad',id,'rejected')};
-async function loadApprovals(){try{const[rawAds,items]=await Promise.all([rpc('admin_pending_ads'),rpc('admin_pending_items')]);const ads=(rawAds||[]).filter(a=>String(a.image_url||'').trim());$('pendingAds').innerHTML=ads.map(a=>'<div class="card"><div class="row"><b>'+esc(a.business_name)+'</b><span class="pill">Slot '+a.slot_no+'</span></div><h3>'+esc(a.title||'Partner ad')+'</h3><img class="approvalImg" loading="lazy" decoding="async" src="'+esc(a.image_url)+'" alt="Partner image" data-ad-id="'+esc(a.id)+'" data-business="'+esc(a.business_name||'')+'" data-slot="'+esc(a.slot_no)+'"><div class="approvalHint">Tap image to view full size before approval</div><div class="actions"><button class="btn ok" onclick="review(\'ad\',\''+a.id+'\',\'approved\')">APPROVE</button><button class="btn danger" onclick="review(\'ad\',\''+a.id+'\',\'rejected\')">REJECT</button></div></div>').join('')||'<div class="card muted">No pending uploaded images.</div>';document.querySelectorAll('#pendingAds .approvalImg').forEach(img=>img.onclick=()=>openApprovalImage(img.dataset.adId,img.src,img.dataset.business,img.dataset.slot));$('pendingItems').innerHTML=(items||[]).map(i=>'<div class="card"><b>'+esc(i.business_name)+'</b><h3>'+esc(i.name)+'</h3><div class="muted">'+esc(i.category||'')+' · '+money(i.regular_price)+' → '+money(i.wenik_price)+'</div>'+(i.image_url?'<img class="itemImg" src="'+esc(i.image_url)+'" alt="">':'')+'<div class="actions"><button class="btn ok" onclick="review(\'item\',\''+i.id+'\',\'approved\')">APPROVE</button><button class="btn danger" onclick="review(\'item\',\''+i.id+'\',\'rejected\')">REJECT</button></div></div>').join('')||'<div class="card muted">No pending items.</div>'}catch(e){$('pendingAds').innerHTML='<div class="card error">'+esc(e.message)+'</div>'}}
-'''
-          s = s[:start] + replacement + s[end:]
-          p.write_text(s)
-          PY
-
-      - name: Commit patched admin
-        shell: bash
+          echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCnA9UGF0aCgnYWRtaW4uaHRtbCcpCnM9cC5yZWFkX3RleHQoKQoKY3NzPSIiIgouYXBwcm92YWxJbWd7d2lkdGg6MTAwJTttYXgtaGVpZ2h0OjI4MHB4O29iamVjdC1maXQ6Y29udGFpbjtib3JkZXItcmFkaXVzOjE2cHg7bWFyZ2luLXRvcDoxMnB4O2JvcmRlcjoxcHggc29saWQgcmdiYSgxNzgsOTIsMjU1LC4yMik7YmFja2dyb3VuZDojMDcwNjEwO2N1cnNvcjp6b29tLWlufQouYXBwcm92YWxIaW50e2ZvbnQtc2l6ZToxMnB4O2NvbG9yOiNiOWI0Yzg7bWFyZ2luLXRvcDo3cHg7dGV4dC1hbGlnbjpjZW50ZXJ9Ci5pbWFnZVZpZXdlcntwb3NpdGlvbjpmaXhlZDtpbnNldDowO2JhY2tncm91bmQ6cmdiYSgyLDEsOCwuOTIpO3otaW5kZXg6OTk5OTk7ZGlzcGxheTpmbGV4O2FsaWduLWl0ZW1zOmNlbnRlcjtqdXN0aWZ5LWNvbnRlbnQ6Y2VudGVyO3BhZGRpbmc6MTZweH0KLmltYWdlVmlld2VyLmhpZGRlbntkaXNwbGF5Om5vbmUhaW1wb3J0YW50fS5pbWFnZVZpZXdlckJveHt3aWR0aDptaW4oOTgwcHgsMTAwJSk7bWF4LWhlaWdodDo5NHZoO292ZXJmbG93OmF1dG87YmFja2dyb3VuZDojMGQwYjE2O2JvcmRlcjoxcHggc29saWQgcmdiYSgxNzgsOTIsMjU1LC40KTtib3JkZXItcmFkaXVzOjI0cHg7cGFkZGluZzoxNHB4O2JveC1zaGFkb3c6MCAyNHB4IDgwcHggIzAwMH0uaW1hZ2VWaWV3ZXJUb3B7ZGlzcGxheTpmbGV4O2p1c3RpZnktY29udGVudDpzcGFjZS1iZXR3ZWVuO2FsaWduLWl0ZW1zOmNlbnRlcjtnYXA6MTJweDttYXJnaW4tYm90dG9tOjEwcHh9LmltYWdlVmlld2VyQ2xvc2V7d2lkdGg6YXV0bzttYXJnaW46MDtwYWRkaW5nOjEwcHggMTRweH0uaW1hZ2VWaWV3ZXIgaW1ne2Rpc3BsYXk6YmxvY2s7d2lkdGg6MTAwJTttYXgtaGVpZ2h0Ojc0dmg7b2JqZWN0LWZpdDpjb250YWluO2JhY2tncm91bmQ6IzA1MDQwYTtib3JkZXItcmFkaXVzOjE4cHh9LmltYWdlVmlld2VyQWN0aW9uc3tkaXNwbGF5OmdyaWQ7Z3JpZC10ZW1wbGF0ZS1jb2x1bW5zOjFmciAxZnI7Z2FwOjEwcHg7bWFyZ2luLXRvcDoxMnB4fQoiIiIKaWYgJy5hcHByb3ZhbEltZ3snIG5vdCBpbiBzOgogICAgcz1zLnJlcGxhY2UoJzwvc3R5bGU+PC9oZWFkPicsY3NzKyc8L3N0eWxlPjwvaGVhZD4nKQoKbW9kYWw9JzxkaXYgaWQ9ImFwcHJvdmFsSW1hZ2VWaWV3ZXIiIGNsYXNzPSJpbWFnZVZpZXdlciBoaWRkZW4iIHJvbGU9ImRpYWxvZyIgYXJpYS1tb2RhbD0idHJ1ZSIgYXJpYS1sYWJlbD0iUGFydG5lciBpbWFnZSBwcmV2aWV3Ij48ZGl2IGNsYXNzPSJpbWFnZVZpZXdlckJveCI+PGRpdiBjbGFzcz0iaW1hZ2VWaWV3ZXJUb3AiPjxkaXY+PGIgaWQ9ImFwcHJvdmFsVmlld2VyUGFydG5lciI+UGFydG5lciBpbWFnZTwvYj48ZGl2IGlkPSJhcHByb3ZhbFZpZXdlclNsb3QiIGNsYXNzPSJtdXRlZCI+PC9kaXY+PC9kaXY+PGJ1dHRvbiBpZD0iYXBwcm92YWxWaWV3ZXJDbG9zZSIgY2xhc3M9ImJ0biBzZWNvbmRhcnkgaW1hZ2VWaWV3ZXJDbG9zZSIgdHlwZT0iYnV0dG9uIj5DTE9TRSDinJU8L2J1dHRvbj48L2Rpdj48aW1nIGlkPSJhcHByb3ZhbFZpZXdlckltZyIgYWx0PSJQYXJ0bmVyIGltYWdlIHByZXZpZXciPjxkaXYgY2xhc3M9ImltYWdlVmlld2VyQWN0aW9ucyI+PGJ1dHRvbiBpZD0iYXBwcm92YWxWaWV3ZXJBcHByb3ZlIiBjbGFzcz0iYnRuIG9rIiB0eXBlPSJidXR0b24iPkFQUFJPVkU8L2J1dHRvbj48YnV0dG9uIGlkPSJhcHByb3ZhbFZpZXdlclJlamVjdCIgY2xhc3M9ImJ0biBkYW5nZXIiIHR5cGU9ImJ1dHRvbiI+UkVKRUNUPC9idXR0b24+PC9kaXY+PC9kaXY+PC9kaXY+JwppZiAnaWQ9ImFwcHJvdmFsSW1hZ2VWaWV3ZXIiJyBub3QgaW4gczoKICAgIHM9cy5yZXBsYWNlKCc8c2VjdGlvbiBpZD0iYXBwcm92YWxzIiBjbGFzcz0icGFuZWwiPicsbW9kYWwrJ1xuPHNlY3Rpb24gaWQ9ImFwcHJvdmFscyIgY2xhc3M9InBhbmVsIj4nKQoKc3RhcnQ9cy5maW5kKCdhc3luYyBmdW5jdGlvbiBsb2FkQXBwcm92YWxzKCl7JykKZW5kPXMuZmluZCgiJCgncmVmcmVzaEFwcHJvdmFscycpLm9uY2xpY2s9bG9hZEFwcHJvdmFsczsiLHN0YXJ0KQppZiBzdGFydDwwIG9yIGVuZDwwOgogICAgcmFpc2UgU3lzdGVtRXhpdCgnYXBwcm92YWwgYmxvY2sgbm90IGZvdW5kJykKCnJlcGxhY2VtZW50PSIiImxldCBhcHByb3ZhbFZpZXdlckFkPW51bGw7CmZ1bmN0aW9uIGNsb3NlQXBwcm92YWxWaWV3ZXIoKXskKCdhcHByb3ZhbEltYWdlVmlld2VyJykuY2xhc3NMaXN0LmFkZCgnaGlkZGVuJyk7JCgnYXBwcm92YWxWaWV3ZXJJbWcnKS5yZW1vdmVBdHRyaWJ1dGUoJ3NyYycpO2FwcHJvdmFsVmlld2VyQWQ9bnVsbH0Kd2luZG93Lm9wZW5BcHByb3ZhbEltYWdlPShpZCx1cmwsYnVzaW5lc3Msc2xvdCk9PnthcHByb3ZhbFZpZXdlckFkPXtpZH07JCgnYXBwcm92YWxWaWV3ZXJQYXJ0bmVyJykudGV4dENvbnRlbnQ9YnVzaW5lc3N8fCdQYXJ0bmVyIGltYWdlJzskKCdhcHByb3ZhbFZpZXdlclNsb3QnKS50ZXh0Q29udGVudD0nU2xvdCAnK3Nsb3QrJyDCtyBQRU5ESU5HJzskKCdhcHByb3ZhbFZpZXdlckltZycpLnNyYz11cmw7JCgnYXBwcm92YWxJbWFnZVZpZXdlcicpLmNsYXNzTGlzdC5yZW1vdmUoJ2hpZGRlbicpfTsKJCgnYXBwcm92YWxWaWV3ZXJDbG9zZScpLm9uY2xpY2s9Y2xvc2VBcHByb3ZhbFZpZXdlcjsKJCgnYXBwcm92YWxJbWFnZVZpZXdlcicpLm9uY2xpY2s9ZT0+e2lmKGUudGFyZ2V0PT09JCgnYXBwcm92YWxJbWFnZVZpZXdlcicpKWNsb3NlQXBwcm92YWxWaWV3ZXIoKX07CmRvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ2tleWRvd24nLGU9PntpZihlLmtleT09PSdFc2NhcGUnKWNsb3NlQXBwcm92YWxWaWV3ZXIoKX0pOwokKCdhcHByb3ZhbFZpZXdlckFwcHJvdmUnKS5vbmNsaWNrPWFzeW5jKCk9PntpZighYXBwcm92YWxWaWV3ZXJBZClyZXR1cm47Y29uc3QgaWQ9YXBwcm92YWxWaWV3ZXJBZC5pZDtjbG9zZUFwcHJvdmFsVmlld2VyKCk7YXdhaXQgcmV2aWV3KCdhZCcsaWQsJ2FwcHJvdmVkJyl9OwokKCdhcHByb3ZhbFZpZXdlclJlamVjdCcpLm9uY2xpY2s9YXN5bmMoKT0+e2lmKCFhcHByb3ZhbFZpZXdlckFkKXJldHVybjtjb25zdCBpZD1hcHByb3ZhbFZpZXdlckFkLmlkO2Nsb3NlQXBwcm92YWxWaWV3ZXIoKTthd2FpdCByZXZpZXcoJ2FkJyxpZCwncmVqZWN0ZWQnKX07CmFzeW5jIGZ1bmN0aW9uIGxvYWRBcHByb3ZhbHMoKXt0cnl7Y29uc3RbcmF3QWRzLGl0ZW1zXT1hd2FpdCBQcm9taXNlLmFsbChbcnBjKCdhZG1pbl9wZW5kaW5nX2FkcycpLHJwYygnYWRtaW5fcGVuZGluZ19pdGVtcycpXSk7Y29uc3QgYWRzPShyYXdBZHN8fFtdKS5maWx0ZXIoYT0+U3RyaW5nKGEuaW1hZ2VfdXJsfHwnJykudHJpbSgpKTskKCdwZW5kaW5nQWRzJykuaW5uZXJIVE1MPWFkcy5tYXAoYT0+JzxkaXYgY2xhc3M9ImNhcmQiPjxkaXYgY2xhc3M9InJvdyI+PGI+Jytlc2MoYS5idXNpbmVzc19uYW1lKSsnPC9iPjxzcGFuIGNsYXNzPSJwaWxsIj5TbG90ICcrYS5zbG90X25vKyc8L3NwYW4+PC9kaXY+PGgzPicrZXNjKGEudGl0bGV8fCdQYXJ0bmVyIGFkJykrJzwvaDM+PGltZyBjbGFzcz0iYXBwcm92YWxJbWciIGxvYWRpbmc9ImxhenkiIGRlY29kaW5nPSJhc3luYyIgc3JjPSInK2VzYyhhLmltYWdlX3VybCkrJyIgYWx0PSJQYXJ0bmVyIGltYWdlIiBkYXRhLWFkLWlkPSInK2VzYyhhLmlkKSsnIiBkYXRhLWJ1c2luZXNzPSInK2VzYyhhLmJ1c2luZXNzX25hbWV8fCcnKSsnIiBkYXRhLXNsb3Q9IicrZXNjKGEuc2xvdF9ubykrJyI+PGRpdiBjbGFzcz0iYXBwcm92YWxIaW50Ij5UYXAgaW1hZ2UgdG8gdmlldyBmdWxsIHNpemUgYmVmb3JlIGFwcHJvdmFsPC9kaXY+PGRpdiBjbGFzcz0iYWN0aW9ucyI+PGJ1dHRvbiBjbGFzcz0iYnRuIG9rIiBvbmNsaWNrPSJyZXZpZXcoXFwnYWRcXCcsXFwnJythLmlkKydcXCcsXFwnYXBwcm92ZWRcXCcpIj5BUFBST1ZFPC9idXR0b24+PGJ1dHRvbiBjbGFzcz0iYnRuIGRhbmdlciIgb25jbGljaz0icmV2aWV3KFxcJ2FkXFwnLFxcJycrYS5pZCsnXFwnLFxcJ3JlamVjdGVkXFwnKSI+UkVKRUNUPC9idXR0b24+PC9kaXY+PC9kaXY+Jykuam9pbignJyl8fCc8ZGl2IGNsYXNzPSJjYXJkIG11dGVkIj5ObyBwZW5kaW5nIHVwbG9hZGVkIGltYWdlcy48L2Rpdj4nO2RvY3VtZW50LnF1ZXJ5U2VsZWN0b3JBbGwoJyNwZW5kaW5nQWRzIC5hcHByb3ZhbEltZycpLmZvckVhY2goaW1nPT5pbWcub25jbGljaz0oKT0+b3BlbkFwcHJvdmFsSW1hZ2UoaW1nLmRhdGFzZXQuYWRJZCxpbWcuc3JjLGltZy5kYXRhc2V0LmJ1c2luZXNzLGltZy5kYXRhc2V0LnNsb3QpKTskKCdwZW5kaW5nSXRlbXMnKS5pbm5lckhUTUw9KGl0ZW1zfHxbXSkubWFwKGk9Pic8ZGl2IGNsYXNzPSJjYXJkIj48Yj4nK2VzYyhpLmJ1c2luZXNzX25hbWUpKyc8L2I+PGgzPicrZXNjKGkubmFtZSkrJzwvaDM+PGRpdiBjbGFzcz0ibXV0ZWQiPicrZXNjKGkuY2F0ZWdvcnl8fCcnKSsnIMK3ICcrbW9uZXkoaS5yZWd1bGFyX3ByaWNlKSsnIOKGkiAnK21vbmV5KGkud2VuaWtfcHJpY2UpKyc8L2Rpdj4nKyhpLmltYWdlX3VybD8nPGltZyBjbGFzcz0iaXRlbUltZyIgc3JjPSInK2VzYyhpLmltYWdlX3VybCkrJyIgYWx0PSIiPic6JycpKyc8ZGl2IGNsYXNzPSJhY3Rpb25zIj48YnV0dG9uIGNsYXNzPSJidG4gb2siIG9uY2xpY2s9InJldmlldyhcXCdpdGVtXFwnLFxcJycraS5pZCsnXFwnLFxcJ2FwcHJvdmVkXFwnKSI+QVBQUk9WRTwvYnV0dG9uPjxidXR0b24gY2xhc3M9ImJ0biBkYW5nZXIiIG9uY2xpY2s9InJldmlldyhcXCdpdGVtXFwnLFxcJycraS5pZCsnXFwnLFxcJ3JlamVjdGVkXFwnKSI+UkVKRUNUPC9idXR0b24+PC9kaXY+PC9kaXY+Jykuam9pbignJyl8fCc8ZGl2IGNsYXNzPSJjYXJkIG11dGVkIj5ObyBwZW5kaW5nIGl0ZW1zLjwvZGl2Pid9Y2F0Y2goZSl7JCgncGVuZGluZ0FkcycpLmlubmVySFRNTD0nPGRpdiBjbGFzcz0iY2FyZCBlcnJvciI+Jytlc2MoZS5tZXNzYWdlKSsnPC9kaXY+J319CiIiIgpzPXNbOnN0YXJ0XStyZXBsYWNlbWVudCtzW2VuZDpdCnAud3JpdGVfdGV4dChzKQo=' | base64 -d > /tmp/admin_patch.py
+          python /tmp/admin_patch.py
+      - name: Commit patch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add admin.html
-          if ! git diff --cached --quiet; then
-            git commit -m "Fix admin image approvals and full-size preview [skip ci]"
-            git push
-          fi
+          git diff --cached --quiet || (git commit -m "Fix admin image approvals and full-size preview" && git push)
