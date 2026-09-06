@@ -1,0 +1,40 @@
+name: Inspect customer UI preview
+
+on:
+  push:
+    branches:
+      - customer-ui-refresh-preview-20260906
+    paths:
+      - .github/workflows/inspect-customer-ui-preview.yml
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print customer UI structure
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text(encoding='utf-8')
+          pats=['loginPassword','Join','JOIN','Welcome','WELCOME','dashboard','Dashboard','HOME','home','logo','brand','nav','screen','panel']
+          lines=s.splitlines()
+          seen=set()
+          for pat in pats:
+              for i,line in enumerate(lines):
+                  if pat.lower() in line.lower():
+                      a=max(0,i-5); b=min(len(lines),i+8)
+                      key=(a,b)
+                      if key in seen: continue
+                      seen.add(key)
+                      print(f'\n--- {pat} lines {a+1}-{b} ---')
+                      for j in range(a,b):
+                          clean=lines[j]
+                          if 'base64,' in clean:
+                              clean=clean.split('base64,',1)[0]+'base64,[omitted]'
+                          print(f'{j+1}: {clean[:500]}')
+          print('\n--- IDs ---')
+          ids=re.findall(r'id=["\']([^"\']+)',s)
+          print(', '.join(ids[:300]))
+          PY
