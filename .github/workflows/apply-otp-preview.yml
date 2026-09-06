@@ -1,0 +1,35 @@
+name: Apply OTP verification preview
+
+on:
+  push:
+    branches:
+      - otp-verify-preview-20260906
+    paths:
+      - scripts/add_otp_verify_preview.py
+      - .github/workflows/apply-otp-preview.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: otp-verify-preview-20260906
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/add_otp_verify_preview.py
+      - name: Commit patched preview
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No index.html changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add phone OTP verification preview"
+          git push origin HEAD:otp-verify-preview-20260906

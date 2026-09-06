@@ -367,6 +367,43 @@ function authMode(mode){
 $('joinTab').onclick=()=>authMode('join');
 $('loginTab').onclick=()=>authMode('login');
 
+let otpPhone='';
+function showOtp(phone){
+  otpPhone=phone;
+  $('joinForm').classList.add('hidden');
+  $('loginForm').classList.add('hidden');
+  $('joinTab').classList.add('active');
+  $('loginTab').classList.remove('active');
+  $('authTitle').textContent='VERIFY PHONE';
+  let box=$('otpVerifyBox');
+  if(!box){
+    box=document.createElement('div');
+    box.id='otpVerifyBox';
+    box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="otpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="otpBackBtn" class="btn secondary" type="button">BACK</button><div id="otpMsg" class="muted" style="margin-top:10px"></div>';
+    $('joinForm').parentElement.appendChild(box);
+    $('verifyOtpBtn').onclick=verifyOtpCode;
+    $('otpBackBtn').onclick=()=>{box.classList.add('hidden');authMode('join')};
+    $('otpCode').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+    $('otpCode').addEventListener('keydown',e=>{if(e.key==='Enter')verifyOtpCode()});
+  }
+  box.classList.remove('hidden');
+  $('msg').textContent='';
+  $('otpMsg').textContent='Code sent. Enter it below.';
+  setTimeout(()=>$('otpCode')?.focus(),50);
+}
+async function verifyOtpCode(){
+  const token=$('otpCode').value.replace(/\D/g,'');
+  if(token.length!==6)return $('otpMsg').textContent='Enter the 6-digit code.';
+  $('otpMsg').textContent='Verifying…';
+  $('verifyOtpBtn').disabled=true;
+  const{data,error}=await sb.auth.verifyOtp({phone:otpPhone,token,type:'sms'});
+  $('verifyOtpBtn').disabled=false;
+  if(error)return $('otpMsg').textContent=error.message;
+  if(!data?.session)return $('otpMsg').textContent='Verification succeeded but no session was created. Please try Login.';
+  $('otpMsg').textContent='Verified ✓';
+  enter();
+}
+
 $('send').onclick=async()=>{
   const f=$('first').value.trim(),l=$('last').value.trim();
   if(!f||!l)return $('msg').textContent='First and last name are required.';
@@ -377,7 +414,7 @@ $('send').onclick=async()=>{
   $('msg').textContent='Creating account…';
   const{data,error}=await sb.auth.signUp({phone:p,password:pw,options:{data:{first_name:f,last_name:l,terms_accepted:true,privacy_accepted:true,marketing_consent:$('marketing').checked}}});
   if(error)return $('msg').textContent=error.message;
-  if(!data.session)return $('msg').textContent='Phone confirmation is still enabled in Supabase.';
+  if(!data.session)return showOtp(p);
   enter();
 };
 
