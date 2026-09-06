@@ -62,6 +62,13 @@
     <div class="two"><input id="newPartnerUsername" class="field" placeholder="Login username"><input id="newPartnerPassword" class="field" type="password" minlength="8" placeholder="Temporary password · minimum 8 characters"></div>
     <button id="createPartnerBtn" class="btn">ADD PARTNER</button><div id="createPartnerStatus" class="status"></div>
   </div>
+  <!-- WENIK ADMIN PARTNER PASSWORD RESET PREVIEW -->
+  <div class="card"><h2>Partner Access</h2><div class="muted">Reset a Partner password and clear any login lock. The Partner must change the temporary password after login.</div>
+    <input id="resetPartnerUsername" class="field" placeholder="Partner username" autocomplete="off">
+    <input id="resetPartnerPassword" class="field" type="password" minlength="10" placeholder="New temporary password · 10+ characters">
+    <button id="resetPartnerPasswordBtn" class="btn">RESET PASSWORD</button>
+    <div id="resetPartnerPasswordStatus" class="status"></div>
+  </div>
   <div class="card"><div class="row"><div><h2>Partner Subscriptions</h2><div class="muted">3 months FREE, then Manual or Whish payment.</div></div><button id="refreshSubscriptions" class="btn secondary" style="width:auto">REFRESH</button></div></div>
   <div id="subscriptionAlerts"></div>
   <!-- WENIK SUBSCRIPTION DUE ALERTS -->
@@ -160,6 +167,21 @@ async function loadSubscriptions(){try{const[list,alerts]=await Promise.all([rpc
 window.confirmPartnerPayment=async(id,name)=>{const amount=Number($('payAmount-'+id).value||0),months=Number($('payMonths-'+id).value||0),method=$('payMethod-'+id).value,ref=$('payRef-'+id).value.trim();if(!(amount>0)){alert('Enter payment amount.');return}if(!Number.isInteger(months)||months<1||months>36){alert('Enter valid subscription months.');return}if(!confirm('Confirm '+method.toUpperCase()+' payment for '+name+'?'))return;try{await rpc('admin_confirm_partner_payment',{p_partner_id:id,p_amount:amount,p_payment_method:method,p_period_months:months,p_provider_reference:ref||null,p_note:null});alert('Payment confirmed and subscription extended.');await loadSubscriptions()}catch(e){alert(e.message)}};
 window.setPartnerSuspended=async(id,suspended,name)=>{const action=suspended?'SUSPEND':'REACTIVATE';if(!confirm(action+' '+name+'?'))return;try{await rpc('admin_set_partner_subscription_suspended',{p_partner_id:id,p_suspended:suspended,p_note:suspended?'Subscription payment overdue':null});alert(suspended?'Partner account suspended.':'Partner account reactivated.');await loadSubscriptions()}catch(e){alert(e.message)}};
 $('refreshSubscriptions').onclick=loadSubscriptions;
+$('resetPartnerPasswordBtn').onclick=async()=>{
+  const username=$('resetPartnerUsername').value.trim().toLowerCase(),password=$('resetPartnerPassword').value;
+  if(!username)return setStatus('resetPartnerPasswordStatus','Enter Partner username.');
+  if(password.length<10||!/[A-Z]/.test(password)||!/[a-z]/.test(password)||!/[0-9]/.test(password))return setStatus('resetPartnerPasswordStatus','Password needs 10+ characters with uppercase, lowercase and a number.');
+  if(!confirm('Reset password for '+username+'?'))return;
+  $('resetPartnerPasswordBtn').disabled=true;setStatus('resetPartnerPasswordStatus','Resetting password...',true);
+  try{
+    const{data,error}=await sb.functions.invoke('admin-reset-partner-password',{body:{username,password}});
+    if(error)throw error;if(data?.error)throw Error(data.error);
+    $('resetPartnerPassword').value='';
+    setStatus('resetPartnerPasswordStatus','Password reset successfully. Login lock cleared.',true);
+  }catch(e){setStatus('resetPartnerPasswordStatus',e.message||'Could not reset password.')}
+  finally{$('resetPartnerPasswordBtn').disabled=false}
+};
+
 
 $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs();start();
 </script></body></html>

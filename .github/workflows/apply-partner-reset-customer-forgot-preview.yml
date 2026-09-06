@@ -1,0 +1,35 @@
+name: Apply partner reset and customer forgot preview
+
+on:
+  push:
+    branches:
+      - partner-password-reset-preview-20260906
+    paths:
+      - scripts/add_partner_reset_and_customer_forgot_preview.py
+      - .github/workflows/apply-partner-reset-customer-forgot-preview.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: partner-password-reset-preview-20260906
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python scripts/add_partner_reset_and_customer_forgot_preview.py
+      - name: Commit patched preview
+        run: |
+          if git diff --quiet -- admin.html index.html; then
+            echo "No frontend changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin.html index.html
+          git commit -m "Add partner reset and customer forgot password preview"
+          git push origin HEAD:partner-password-reset-preview-20260906
