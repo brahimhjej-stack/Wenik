@@ -7,12 +7,15 @@ on:
     paths:
       - .github/workflows/inspect-customer-ui-preview.yml
 
+permissions:
+  contents: write
+
 jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Print customer UI structure
+      - name: Capture customer UI structure
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -20,6 +23,7 @@ jobs:
           s=Path('index.html').read_text(encoding='utf-8')
           pats=['loginPassword','Join','JOIN','Welcome','WELCOME','dashboard','Dashboard','HOME','home','logo','brand','nav','screen','panel']
           lines=s.splitlines()
+          out=[]
           seen=set()
           for pat in pats:
               for i,line in enumerate(lines):
@@ -28,13 +32,21 @@ jobs:
                       key=(a,b)
                       if key in seen: continue
                       seen.add(key)
-                      print(f'\n--- {pat} lines {a+1}-{b} ---')
+                      out.append(f'\n--- {pat} lines {a+1}-{b} ---')
                       for j in range(a,b):
                           clean=lines[j]
                           if 'base64,' in clean:
                               clean=clean.split('base64,',1)[0]+'base64,[omitted]'
-                          print(f'{j+1}: {clean[:500]}')
-          print('\n--- IDs ---')
+                          out.append(f'{j+1}: {clean[:700]}')
+          out.append('\n--- IDs ---')
           ids=re.findall(r'id=["\']([^"\']+)',s)
-          print(', '.join(ids[:300]))
+          out.append(', '.join(ids[:400]))
+          Path('customer-ui-structure.txt').write_text('\n'.join(out),encoding='utf-8')
           PY
+      - name: Commit inspection snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add customer-ui-structure.txt
+          git commit -m "Capture customer UI structure" || exit 0
+          git push
