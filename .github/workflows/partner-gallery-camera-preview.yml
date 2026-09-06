@@ -12,27 +12,37 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: partner-media-upload-clean-preview-20260906
-      - name: Add gallery and camera controls
+      - name: Replace media block with gallery and camera choices
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path('partner.html')
           s=p.read_text()
-          old="""'<input id=\"mediaFile-'+i+'\" type=\"file\" accept=\"image/jpeg,image/png,image/webp\" style=\"display:none\"><button class=\"btn secondary\" data-media-slot=\"'+i+'\">CHOOSE & UPLOAD IMAGE '+i+'</button><div id=\"mediaSlotMsg-'+i+'\" class=\"muted\"></div></div>'"""
-          new="""'<input id=\"mediaGallery-'+i+'\" type=\"file\" accept=\"image/*\" style=\"display:none\"><input id=\"mediaCamera-'+i+'\" type=\"file\" accept=\"image/*\" capture=\"environment\" style=\"display:none\"><button class=\"btn secondary\" data-gallery-slot=\"'+i+'\">🖼️ CHOOSE FROM GALLERY</button><button class=\"btn secondary\" data-camera-slot=\"'+i+'\">📷 TAKE PHOTO</button><div id=\"mediaSlotMsg-'+i+'\" class=\"muted\"></div></div>'"""
-          if old not in s:
-              raise SystemExit('media control marker not found')
-          s=s.replace(old,new,1)
-          old2="""document.querySelectorAll('[data-media-slot]').forEach(btn=>{const slot=Number(btn.dataset.mediaSlot),input=$('mediaFile-'+slot);btn.onclick=()=>input.click();input.onchange=()=>input.files?.[0]&&uploadMedia(slot,input.files[0],btn)});"""
-          new2="""document.querySelectorAll('[data-gallery-slot]').forEach(btn=>{const slot=Number(btn.dataset.gallerySlot),input=$('mediaGallery-'+slot);btn.onclick=()=>input.click();input.onchange=()=>input.files?.[0]&&uploadMedia(slot,input.files[0],btn)});document.querySelectorAll('[data-camera-slot]').forEach(btn=>{const slot=Number(btn.dataset.cameraSlot),input=$('mediaCamera-'+slot);btn.onclick=()=>input.click();input.onchange=()=>input.files?.[0]&&uploadMedia(slot,input.files[0],btn)});"""
-          if old2 not in s:
-              raise SystemExit('media handler marker not found')
-          s=s.replace(old2,new2,1)
-          p.write_text(s)
+          a=s.index('async function loadMedia()')
+          b=s.index('\nfunction giftEsc',a)
+          n=r'''async function loadMedia(){
+  try{
+    const list=await rpc('partner_my_ads');const by=new Map((list||[]).map(x=>[Number(x.slot_no),x]));
+    $('mediaSlots').innerHTML=[1,2,3,4,5].map(i=>{const x=by.get(i),img=x?.image_url;return '<div class="card"><div class="eyebrow">IMAGE '+i+'</div>'+(img?'<img src="'+giftEsc(img)+'" loading="lazy" decoding="async" style="width:100%;max-height:220px;object-fit:cover;border-radius:18px;margin-top:12px">':'<div class="muted" style="margin-top:12px">No image yet.</div>')+'<div class="muted">'+(x?'Status: '+giftEsc(String(x.approval_status||'pending').toUpperCase()):'')+'</div><input id="mediaGallery-'+i+'" type="file" accept="image/*" style="display:none"><input id="mediaCamera-'+i+'" type="file" accept="image/*" capture="environment" style="display:none"><button class="btn secondary" data-gallery-slot="'+i+'">🖼️ CHOOSE FROM GALLERY</button><button class="btn secondary" data-camera-slot="'+i+'">📷 TAKE PHOTO</button><div id="mediaSlotMsg-'+i+'" class="muted" style="margin-top:8px"></div></div>'}).join('');
+    document.querySelectorAll('[data-gallery-slot]').forEach(btn=>{const slot=Number(btn.dataset.gallerySlot),input=$('mediaGallery-'+slot);btn.onclick=()=>input.click();input.onchange=()=>input.files?.[0]&&uploadMedia(slot,input.files[0],btn)});
+    document.querySelectorAll('[data-camera-slot]').forEach(btn=>{const slot=Number(btn.dataset.cameraSlot),input=$('mediaCamera-'+slot);btn.onclick=()=>input.click();input.onchange=()=>input.files?.[0]&&uploadMedia(slot,input.files[0],btn)});
+  }catch(e){$('mediaMsg').className='error';$('mediaMsg').textContent=e.message}
+}
+async function optimizeMedia(file){
+  if(!/^image\//i.test(file.type||''))throw Error('Please choose an image.');
+  if(file.size>12*1024*1024)throw Error('Image is too large. Maximum 12 MB.');
+  let bm;try{bm=await createImageBitmap(file)}catch{return {blob:file,ext:(file.type.split('/')[1]||'jpg').replace('jpeg','jpg')}}
+  const k=Math.min(1,1600/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(bm.width*k));c.height=Math.max(1,Math.round(bm.height*k));c.getContext('2d').drawImage(bm,0,0,c.width,c.height);bm.close?.();
+  const blob=await new Promise(r=>c.toBlob(r,'image/webp',.82));return blob?{blob,ext:'webp'}:{blob:file,ext:(file.type.split('/')[1]||'jpg').replace('jpeg','jpg')}
+}
+const mediaUploading=new Set();
+async function uploadMedia(slot,file,btn){let path='';const msg=$('mediaSlotMsg-'+slot);try{if(mediaUploading.has(slot))return;if(!partnerProfile?.partner_id)throw Error('Partner profile not loaded.');mediaUploading.add(slot);btn.disabled=true;msg.className='muted';msg.textContent='Optimizing image…';const o=await optimizeMedia(file);msg.textContent='Uploading…';path=partnerProfile.partner_id+'/slot-'+slot+'-'+Date.now()+'-'+crypto.randomUUID()+'.'+o.ext;const {error}=await sb.storage.from('partner-media').upload(path,o.blob,{upsert:false,contentType:o.blob.type||file.type,cacheControl:'31536000'});if(error)throw error;const url=sb.storage.from('partner-media').getPublicUrl(path).data.publicUrl;await rpc('partner_submit_ad',{p_slot_no:slot,p_image_url:url,p_title:partnerProfile.business_name,p_description:null,p_cta_label:null,p_cta_url:null});$('mediaMsg').className='success';$('mediaMsg').textContent='Image uploaded successfully. Waiting for Admin approval.';await loadMedia()}catch(e){if(path)sb.storage.from('partner-media').remove([path]).catch(()=>{});msg.className='error';msg.textContent=e?.message||'Upload failed.';$('mediaMsg').className='error';$('mediaMsg').textContent=e?.message||'Upload failed.'}finally{mediaUploading.delete(slot);if(btn)btn.disabled=false}}
+'''
+          p.write_text(s[:a]+n+s[b:])
           PY
       - name: Commit patch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add partner.html
-          git diff --cached --quiet || (git commit -m "Add gallery and camera image upload choices" && git push)
+          git diff --cached --quiet || (git commit -m "Finalize gallery and camera partner uploads" && git push)
