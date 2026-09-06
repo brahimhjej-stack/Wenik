@@ -1,0 +1,1383 @@
+
+--- loginPassword lines 272-284 ---
+272:     </div>
+273: 
+274:     <div id="loginForm" class="hidden">
+275:       <p class="muted">Already a member? Enter with your mobile number and password.</p>
+276:       <input id="loginPhone" class="field" placeholder="Mobile" inputmode="tel" autocomplete="tel">
+277:       <input id="loginPassword" class="field" type="password" placeholder="Password" autocomplete="current-password">
+278:       <button id="login" class="btn">LOGIN</button>
+279:       <!-- WENIK CUSTOMER FORGOT PASSWORD PREVIEW -->
+280:       <button id="forgotPassword" class="btn secondary" type="button">FORGOT PASSWORD?</button>
+281:     </div>
+282:     <div id="msg" class="muted" style="margin-top:10px"></div>
+283:   </section>
+284: 
+
+--- loginPassword lines 419-431 ---
+419:   if(!data.session)return showOtp(p);
+420:   enter();
+421: };
+422: 
+423: $('login').onclick=async()=>{
+424:   const p=ph($('loginPhone').value),password=$('loginPassword').value;
+425:   if(!$('loginPhone').value.trim()||!password)return $('msg').textContent='Mobile and password are required.';
+426:   $('msg').textContent='Signing in…';
+427:   const{error}=await sb.auth.signInWithPassword({phone:p,password});
+428:   if(error)return $('msg').textContent=error.message;
+429:   enter()
+430: };
+431: $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
+
+--- loginPassword lines 426-438 ---
+426:   $('msg').textContent='Signing in…';
+427:   const{error}=await sb.auth.signInWithPassword({phone:p,password});
+428:   if(error)return $('msg').textContent=error.message;
+429:   enter()
+430: };
+431: $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
+432: 
+433: let resetPhone='';
+434: function showResetOtp(phone){
+435:   resetPhone=phone;
+436:   $('joinForm').classList.add('hidden');$('loginForm').classList.add('hidden');
+437:   $('authTitle').textContent='RESET PASSWORD';
+438:   let box=$('resetPasswordBox');
+
+--- Join lines 252-264 ---
+252: <body>
+253: <main class="app">
+254:   <div class="top"><img class="brandLogo" src="data:image/png;base64,[omitted]
+255: 
+256:   <section id="auth" class="hero">
+257:     <div class="eyebrow">WELCOME TO WENIK</div><h2 id="authTitle">JOIN US</h2>
+258:     <div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>
+259: 
+260:     <div id="joinForm">
+261:       <p class="muted">Create your WENIK test account and enter directly.</p>
+262:       <input id="first" class="field" placeholder="First name" autocomplete="given-name">
+263:       <input id="last" class="field" placeholder="Last name" autocomplete="family-name">
+264:       <input id="phone" class="field" placeholder="Mobile" inputmode="tel" autocomplete="tel">
+
+--- Join lines 253-265 ---
+253: <main class="app">
+254:   <div class="top"><img class="brandLogo" src="data:image/png;base64,[omitted]
+255: 
+256:   <section id="auth" class="hero">
+257:     <div class="eyebrow">WELCOME TO WENIK</div><h2 id="authTitle">JOIN US</h2>
+258:     <div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>
+259: 
+260:     <div id="joinForm">
+261:       <p class="muted">Create your WENIK test account and enter directly.</p>
+262:       <input id="first" class="field" placeholder="First name" autocomplete="given-name">
+263:       <input id="last" class="field" placeholder="Last name" autocomplete="family-name">
+264:       <input id="phone" class="field" placeholder="Mobile" inputmode="tel" autocomplete="tel">
+265:       <input id="newPassword" class="field" type="password" placeholder="Create password" autocomplete="new-password">
+
+--- Join lines 255-267 ---
+255: 
+256:   <section id="auth" class="hero">
+257:     <div class="eyebrow">WELCOME TO WENIK</div><h2 id="authTitle">JOIN US</h2>
+258:     <div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>
+259: 
+260:     <div id="joinForm">
+261:       <p class="muted">Create your WENIK test account and enter directly.</p>
+262:       <input id="first" class="field" placeholder="First name" autocomplete="given-name">
+263:       <input id="last" class="field" placeholder="Last name" autocomplete="family-name">
+264:       <input id="phone" class="field" placeholder="Mobile" inputmode="tel" autocomplete="tel">
+265:       <input id="newPassword" class="field" type="password" placeholder="Create password" autocomplete="new-password">
+266:       <div class="card" style="padding:12px;margin-top:10px">
+267:         <label><input id="terms" type="checkbox"> I accept Terms</label><br>
+
+--- Join lines 359-371 ---
+359: };
+360: 
+361: function ph(v){let d=v.replace(/\D/g,'');if(d.startsWith('961'))return'+'+d;if(d.startsWith('0'))d=d.slice(1);return'+961'+d}
+362: 
+363: function authMode(mode){
+364:   const join=mode==='join';
+365:   $('joinForm').classList.toggle('hidden',!join);$('loginForm').classList.toggle('hidden',join);
+366:   $('joinTab').classList.toggle('active',join);$('loginTab').classList.toggle('active',!join);
+367:   $('authTitle').textContent=join?'JOIN US':'LOGIN';$('msg').textContent='';
+368: }
+369: $('joinTab').onclick=()=>authMode('join');
+370: $('loginTab').onclick=()=>authMode('login');
+371: 
+
+--- Join lines 360-372 ---
+360: 
+361: function ph(v){let d=v.replace(/\D/g,'');if(d.startsWith('961'))return'+'+d;if(d.startsWith('0'))d=d.slice(1);return'+961'+d}
+362: 
+363: function authMode(mode){
+364:   const join=mode==='join';
+365:   $('joinForm').classList.toggle('hidden',!join);$('loginForm').classList.toggle('hidden',join);
+366:   $('joinTab').classList.toggle('active',join);$('loginTab').classList.toggle('active',!join);
+367:   $('authTitle').textContent=join?'JOIN US':'LOGIN';$('msg').textContent='';
+368: }
+369: $('joinTab').onclick=()=>authMode('join');
+370: $('loginTab').onclick=()=>authMode('login');
+371: 
+372: let otpPhone='';
+
+--- Join lines 361-373 ---
+361: function ph(v){let d=v.replace(/\D/g,'');if(d.startsWith('961'))return'+'+d;if(d.startsWith('0'))d=d.slice(1);return'+961'+d}
+362: 
+363: function authMode(mode){
+364:   const join=mode==='join';
+365:   $('joinForm').classList.toggle('hidden',!join);$('loginForm').classList.toggle('hidden',join);
+366:   $('joinTab').classList.toggle('active',join);$('loginTab').classList.toggle('active',!join);
+367:   $('authTitle').textContent=join?'JOIN US':'LOGIN';$('msg').textContent='';
+368: }
+369: $('joinTab').onclick=()=>authMode('join');
+370: $('loginTab').onclick=()=>authMode('login');
+371: 
+372: let otpPhone='';
+373: function showOtp(phone){
+
+--- Join lines 362-374 ---
+362: 
+363: function authMode(mode){
+364:   const join=mode==='join';
+365:   $('joinForm').classList.toggle('hidden',!join);$('loginForm').classList.toggle('hidden',join);
+366:   $('joinTab').classList.toggle('active',join);$('loginTab').classList.toggle('active',!join);
+367:   $('authTitle').textContent=join?'JOIN US':'LOGIN';$('msg').textContent='';
+368: }
+369: $('joinTab').onclick=()=>authMode('join');
+370: $('loginTab').onclick=()=>authMode('login');
+371: 
+372: let otpPhone='';
+373: function showOtp(phone){
+374:   otpPhone=phone;
+
+--- Join lines 364-376 ---
+364:   const join=mode==='join';
+365:   $('joinForm').classList.toggle('hidden',!join);$('loginForm').classList.toggle('hidden',join);
+366:   $('joinTab').classList.toggle('active',join);$('loginTab').classList.toggle('active',!join);
+367:   $('authTitle').textContent=join?'JOIN US':'LOGIN';$('msg').textContent='';
+368: }
+369: $('joinTab').onclick=()=>authMode('join');
+370: $('loginTab').onclick=()=>authMode('login');
+371: 
+372: let otpPhone='';
+373: function showOtp(phone){
+374:   otpPhone=phone;
+375:   $('joinForm').classList.add('hidden');
+376:   $('loginForm').classList.add('hidden');
+
+--- Join lines 370-382 ---
+370: $('loginTab').onclick=()=>authMode('login');
+371: 
+372: let otpPhone='';
+373: function showOtp(phone){
+374:   otpPhone=phone;
+375:   $('joinForm').classList.add('hidden');
+376:   $('loginForm').classList.add('hidden');
+377:   $('joinTab').classList.add('active');
+378:   $('loginTab').classList.remove('active');
+379:   $('authTitle').textContent='VERIFY PHONE';
+380:   let box=$('otpVerifyBox');
+381:   if(!box){
+382:     box=document.createElement('div');
+
+--- Join lines 372-384 ---
+372: let otpPhone='';
+373: function showOtp(phone){
+374:   otpPhone=phone;
+375:   $('joinForm').classList.add('hidden');
+376:   $('loginForm').classList.add('hidden');
+377:   $('joinTab').classList.add('active');
+378:   $('loginTab').classList.remove('active');
+379:   $('authTitle').textContent='VERIFY PHONE';
+380:   let box=$('otpVerifyBox');
+381:   if(!box){
+382:     box=document.createElement('div');
+383:     box.id='otpVerifyBox';
+384:     box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="otpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="otpBackBtn" class="btn secondary" type="button">BACK</button><div id="otpMsg" class="muted" style="margin-top:10px"></div>';
+
+--- Join lines 380-392 ---
+380:   let box=$('otpVerifyBox');
+381:   if(!box){
+382:     box=document.createElement('div');
+383:     box.id='otpVerifyBox';
+384:     box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="otpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="otpBackBtn" class="btn secondary" type="button">BACK</button><div id="otpMsg" class="muted" style="margin-top:10px"></div>';
+385:     $('joinForm').parentElement.appendChild(box);
+386:     $('verifyOtpBtn').onclick=verifyOtpCode;
+387:     $('otpBackBtn').onclick=()=>{box.classList.add('hidden');authMode('join')};
+388:     $('otpCode').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+389:     $('otpCode').addEventListener('keydown',e=>{if(e.key==='Enter')verifyOtpCode()});
+390:   }
+391:   box.classList.remove('hidden');
+392:   $('msg').textContent='';
+
+--- Join lines 382-394 ---
+382:     box=document.createElement('div');
+383:     box.id='otpVerifyBox';
+384:     box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="otpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="otpBackBtn" class="btn secondary" type="button">BACK</button><div id="otpMsg" class="muted" style="margin-top:10px"></div>';
+385:     $('joinForm').parentElement.appendChild(box);
+386:     $('verifyOtpBtn').onclick=verifyOtpCode;
+387:     $('otpBackBtn').onclick=()=>{box.classList.add('hidden');authMode('join')};
+388:     $('otpCode').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+389:     $('otpCode').addEventListener('keydown',e=>{if(e.key==='Enter')verifyOtpCode()});
+390:   }
+391:   box.classList.remove('hidden');
+392:   $('msg').textContent='';
+393:   $('otpMsg').textContent='Code sent. Enter it below.';
+394:   setTimeout(()=>$('otpCode')?.focus(),50);
+
+--- Join lines 431-443 ---
+431: $('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
+432: 
+433: let resetPhone='';
+434: function showResetOtp(phone){
+435:   resetPhone=phone;
+436:   $('joinForm').classList.add('hidden');$('loginForm').classList.add('hidden');
+437:   $('authTitle').textContent='RESET PASSWORD';
+438:   let box=$('resetPasswordBox');
+439:   if(!box){
+440:     box=document.createElement('div');box.id='resetPasswordBox';
+441:     box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="resetOtpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyResetOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="resetBackBtn" class="btn secondary" type="button">BACK TO LOGIN</button><div id="resetMsg" class="muted" style="margin-top:10px"></div>';
+442:     $('loginForm').parentElement.appendChild(box);
+443:     $('resetOtpCode').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+
+--- Join lines 481-493 ---
+481: 
+482: function showSlide(n){
+483:   if(!ads.length)return;
+484:   slide=(n+ads.length)%ads.length;
+485:   $('track').style.transform='translateX(-'+slide*100+'%)';
+486:   $('dots').innerHTML=ads.map((_,i)=>'<i class="'+(i===slide?'on':'')+'"></i>').join('');
+487:   rpc('track_customer_home_ad_impression',{p_ad_id:ads[slide].id}).catch(()=>{})
+488: }
+489: function startCarousel(){clearInterval(timer);timer=setInterval(()=>showSlide(slide+1),30000)}
+490: $('carousel').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
+491: $('carousel').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45){showSlide(slide+(dx<0?1:-1));startCarousel()}},{passive:true});
+492: 
+493: async function loadHome(){
+
+--- Join lines 495-507 ---
+495:     sb.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30),
+496:     sb.from('campaigns').select('id,title,status').eq('status','active'),
+497:     rpc('customer_my_campaign_entries').catch(()=>[])
+498:   ]);
+499:   ads=a.data||[];
+500:   $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+501:   document.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>{rpc('track_customer_home_ad_click',{p_ad_id:x.closest('[data-ad]').dataset.ad}).catch(()=>{});location.href=x.dataset.url});
+502:   showSlide(0);startCarousel();
+503:   const joined=new Set((e||[]).filter(x=>x.eligible!==false).map(x=>x.campaign_id));
+504:   $('campaigns').innerHTML=(c.data||[]).map(x=>'<div class="card"><div class="row"><div><div class="eyebrow">ACTIVE DRAW</div><b>'+esc(x.title)+'</b></div><span class="badge">WIN</span></div><button class="btn" '+(joined.has(x.id)?'disabled':'')+' onclick="joinWin(\''+x.id+'\')">'+(joined.has(x.id)?'JOINED ✓':'JOIN DRAW')+'</button></div>').join('')||'<div class="card muted">No active campaigns.</div>'
+505: }
+506: 
+507: window.joinWin=async id=>{try{await rpc('join_active_campaign',{p_campaign_id:id});loadHome()}catch(e){alert(e.message)}};
+
+--- Join lines 498-510 ---
+498:   ]);
+499:   ads=a.data||[];
+500:   $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+501:   document.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>{rpc('track_customer_home_ad_click',{p_ad_id:x.closest('[data-ad]').dataset.ad}).catch(()=>{});location.href=x.dataset.url});
+502:   showSlide(0);startCarousel();
+503:   const joined=new Set((e||[]).filter(x=>x.eligible!==false).map(x=>x.campaign_id));
+504:   $('campaigns').innerHTML=(c.data||[]).map(x=>'<div class="card"><div class="row"><div><div class="eyebrow">ACTIVE DRAW</div><b>'+esc(x.title)+'</b></div><span class="badge">WIN</span></div><button class="btn" '+(joined.has(x.id)?'disabled':'')+' onclick="joinWin(\''+x.id+'\')">'+(joined.has(x.id)?'JOINED ✓':'JOIN DRAW')+'</button></div>').join('')||'<div class="card muted">No active campaigns.</div>'
+505: }
+506: 
+507: window.joinWin=async id=>{try{await rpc('join_active_campaign',{p_campaign_id:id});loadHome()}catch(e){alert(e.message)}};
+508: 
+509: window.setIza=async(id,v)=>{await rpc('customer_set_iza_response',{p_iza_campaign_id:id,p_response:v});focusId=id;loadIza()};
+510: 
+
+--- Join lines 499-511 ---
+499:   ads=a.data||[];
+500:   $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+501:   document.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>{rpc('track_customer_home_ad_click',{p_ad_id:x.closest('[data-ad]').dataset.ad}).catch(()=>{});location.href=x.dataset.url});
+502:   showSlide(0);startCarousel();
+503:   const joined=new Set((e||[]).filter(x=>x.eligible!==false).map(x=>x.campaign_id));
+504:   $('campaigns').innerHTML=(c.data||[]).map(x=>'<div class="card"><div class="row"><div><div class="eyebrow">ACTIVE DRAW</div><b>'+esc(x.title)+'</b></div><span class="badge">WIN</span></div><button class="btn" '+(joined.has(x.id)?'disabled':'')+' onclick="joinWin(\''+x.id+'\')">'+(joined.has(x.id)?'JOINED ✓':'JOIN DRAW')+'</button></div>').join('')||'<div class="card muted">No active campaigns.</div>'
+505: }
+506: 
+507: window.joinWin=async id=>{try{await rpc('join_active_campaign',{p_campaign_id:id});loadHome()}catch(e){alert(e.message)}};
+508: 
+509: window.setIza=async(id,v)=>{await rpc('customer_set_iza_response',{p_iza_campaign_id:id,p_response:v});focusId=id;loadIza()};
+510: 
+511: async function loadIza(){
+
+--- Join lines 502-514 ---
+502:   showSlide(0);startCarousel();
+503:   const joined=new Set((e||[]).filter(x=>x.eligible!==false).map(x=>x.campaign_id));
+504:   $('campaigns').innerHTML=(c.data||[]).map(x=>'<div class="card"><div class="row"><div><div class="eyebrow">ACTIVE DRAW</div><b>'+esc(x.title)+'</b></div><span class="badge">WIN</span></div><button class="btn" '+(joined.has(x.id)?'disabled':'')+' onclick="joinWin(\''+x.id+'\')">'+(joined.has(x.id)?'JOINED ✓':'JOIN DRAW')+'</button></div>').join('')||'<div class="card muted">No active campaigns.</div>'
+505: }
+506: 
+507: window.joinWin=async id=>{try{await rpc('join_active_campaign',{p_campaign_id:id});loadHome()}catch(e){alert(e.message)}};
+508: 
+509: window.setIza=async(id,v)=>{await rpc('customer_set_iza_response',{p_iza_campaign_id:id,p_response:v});focusId=id;loadIza()};
+510: 
+511: async function loadIza(){
+512:   const[c,m]=await Promise.all([rpc('public_active_iza_campaigns'),rpc('customer_my_iza')]),
+513:   st=new Map((m||[]).map(x=>[x.iza_campaign_id,x]));
+514:   $('izaList').innerHTML=(c||[]).map(x=>{
+
+--- Join lines 512-524 ---
+512:   const[c,m]=await Promise.all([rpc('public_active_iza_campaigns'),rpc('customer_my_iza')]),
+513:   st=new Map((m||[]).map(x=>[x.iza_campaign_id,x]));
+514:   $('izaList').innerHTML=(c||[]).map(x=>{
+515:     const v=st.get(x.iza_campaign_id)?.intent_status;
+516:     return'<div id="iza-'+x.iza_campaign_id+'" class="card '+(focusId===x.iza_campaign_id?'focus':'')+'"><div class="row"><div class="eyebrow">CONDITIONAL DEMAND</div><span class="badge">IZA</span></div><h3>'+esc(x.title||x.product_name)+'</h3><div class="muted">'+esc(x.condition_text||'')+'</div>'+(x.target_price!=null?'<div class="price">$'+Number(x.target_price).toFixed(2)+'</div>':'')+'<div class="choices"><button class="btn '+(v==='in'?'selected':'')+'" onclick="setIza(\''+x.iza_campaign_id+'\',\'in\')">I\'M IN</button><button class="btn secondary '+(v==='out'?'selected':'')+'" onclick="setIza(\''+x.iza_campaign_id+'\',\'out\')">I\'M OUT</button></div></div>'
+517:   }).join('')||'<div class="card muted">No active IZA.</div>';
+518:   if(focusId){tab('iza',$('izaBtn'));setTimeout(()=>$('iza-'+focusId)?.scrollIntoView({behavior:'smooth',block:'center'}),80)}
+519: }
+520: 
+521: async function loadQr(){
+522:   const r=(await rpc('customer_refresh_qr'))?.[0];
+523:   if(!r)return;
+524:   $('qrImage').src=await QRCode.toDataURL(String(r.qr_token),{width:360,margin:1});
+
+--- Join lines 530-542 ---
+530: /* WENIK PARTNER DISCOVERY V1 — QR/WIN/IZA behavior unchanged */
+531: let homePartnerCategory='',homePartnerAreaSaved=localStorage.getItem('wenik_partner_area')||'';
+532: const normPartner=v=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\u0600-\u06ff]+/g,' ');
+533: function partnerIcon(v=''){const c=normPartner(v);if(/restaurant|food|مطعم|اكل|أكل/.test(c))return'🍽️';if(/cafe|coffee|قهو|كاف/.test(c))return'☕';if(/sweet|dessert|حلويات/.test(c))return'🍰';if(/shoe|bag|احذية|أحذية|شنط|حقائب/.test(c))return'👟';if(/fashion|cloth|wear|ملابس|البسة|ألبسة/.test(c))return'👕';if(/beauty|تجميل/.test(c))return'💄';if(/hair|salon|barber|صالون|حلاق/.test(c))return'✂️';if(/jewel|ذهب|مجوهر/.test(c))return'💎';if(/elect|phone|tech|كهرب|هاتف/.test(c))return'📱';if(/furniture|اثاث|أثاث/.test(c))return'🛋️';if(/fitness|gym|رياض/.test(c))return'🏋️';if(/hotel|resort|فندق|منتجع/.test(c))return'🏨';if(/pool|swim|مسبح|مسابح/.test(c))return'🏊';if(/entertain|kids|play|اطفال|أطفال|ترفيه/
+534: function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t))return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}return x.benefit_title?'WENIK OFFER':''}
+535: function wenikPartnerCard(x){const d=partnerDiscount(x),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([x.category,x.area].filter(Boolean).join(' • '))+'</d
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+
+--- Join lines 531-543 ---
+531: let homePartnerCategory='',homePartnerAreaSaved=localStorage.getItem('wenik_partner_area')||'';
+532: const normPartner=v=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\u0600-\u06ff]+/g,' ');
+533: function partnerIcon(v=''){const c=normPartner(v);if(/restaurant|food|مطعم|اكل|أكل/.test(c))return'🍽️';if(/cafe|coffee|قهو|كاف/.test(c))return'☕';if(/sweet|dessert|حلويات/.test(c))return'🍰';if(/shoe|bag|احذية|أحذية|شنط|حقائب/.test(c))return'👟';if(/fashion|cloth|wear|ملابس|البسة|ألبسة/.test(c))return'👕';if(/beauty|تجميل/.test(c))return'💄';if(/hair|salon|barber|صالون|حلاق/.test(c))return'✂️';if(/jewel|ذهب|مجوهر/.test(c))return'💎';if(/elect|phone|tech|كهرب|هاتف/.test(c))return'📱';if(/furniture|اثاث|أثاث/.test(c))return'🛋️';if(/fitness|gym|رياض/.test(c))return'🏋️';if(/hotel|resort|فندق|منتجع/.test(c))return'🏨';if(/pool|swim|مسبح|مسابح/.test(c))return'🏊';if(/entertain|kids|play|اطفال|أطفال|ترفيه/
+534: function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t))return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}return x.benefit_title?'WENIK OFFER':''}
+535: function wenikPartnerCard(x){const d=partnerDiscount(x),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([x.category,x.area].filter(Boolean).join(' • '))+'</d
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+
+--- Join lines 532-544 ---
+532: const normPartner=v=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\u0600-\u06ff]+/g,' ');
+533: function partnerIcon(v=''){const c=normPartner(v);if(/restaurant|food|مطعم|اكل|أكل/.test(c))return'🍽️';if(/cafe|coffee|قهو|كاف/.test(c))return'☕';if(/sweet|dessert|حلويات/.test(c))return'🍰';if(/shoe|bag|احذية|أحذية|شنط|حقائب/.test(c))return'👟';if(/fashion|cloth|wear|ملابس|البسة|ألبسة/.test(c))return'👕';if(/beauty|تجميل/.test(c))return'💄';if(/hair|salon|barber|صالون|حلاق/.test(c))return'✂️';if(/jewel|ذهب|مجوهر/.test(c))return'💎';if(/elect|phone|tech|كهرب|هاتف/.test(c))return'📱';if(/furniture|اثاث|أثاث/.test(c))return'🛋️';if(/fitness|gym|رياض/.test(c))return'🏋️';if(/hotel|resort|فندق|منتجع/.test(c))return'🏨';if(/pool|swim|مسبح|مسابح/.test(c))return'🏊';if(/entertain|kids|play|اطفال|أطفال|ترفيه/
+534: function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t))return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}return x.benefit_title?'WENIK OFFER':''}
+535: function wenikPartnerCard(x){const d=partnerDiscount(x),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([x.category,x.area].filter(Boolean).join(' • '))+'</d
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+
+--- Join lines 536-548 ---
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+546: function useWenikLocation(silent=false){if(!navigator.geolocation){$('homePartnerLocationStatus').textContent='Choose your area';return}$('homePartnerLocationStatus').textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const area=detectPartnerArea(p.coords.latitude,p.coords.longitude);if(area){homePartnerAreaSaved=area;localStorage.setItem('wenik_partner_area',area);$('homePartnerArea').value=area;$('homePartnerLocationStatus').textContent='Near you: '+area;renderHomePartners()}else $('homePartnerLocationStatus').textContent='Location enabled — choose your area'},()=>{if(!silent)$('homePartnerLocationStatus').textContent='Location unavailable — choose your area'
+547: async function loadPartnerDiscovery(){await loadPartners();fillHomePartnerAreas();renderHomePartnerCategories();renderHomePartners();$('homePartnerArea').onchange=()=>{homePartnerAreaSaved=$('homePartnerArea').value||'';if(homePartnerAreaSaved)localStorage.setItem('wenik_partner_area',homePartnerAreaSaved);else localStorage.removeItem('wenik_partner_area');$('homePartnerLocationStatus').textContent=homePartnerAreaSaved?'Showing '+homePartnerAreaSaved:'Showing all areas';renderHomePartners()};$('homeUseLocation').onclick=()=>useWenikLocation(false);$('homeViewAllPartners').onclick=()=>{const b=[...document.querySelectorAll('#nav button')].find(x=>x.textContent.trim().startsWith('PARTNERS'));t
+548: window.openWenikPartner=async id=>{const x=(partnerDirectory||[]).find(v=>String(v.partner_id)===String(id));if(!x)return;const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]),socials=x.social_links||{},hero=a?.[0]?.image_url||x.logo_url||'',d=partnerDiscount(x),links=[];if(x.phone)links.push('<a href="tel:'+esc(String(x.phone).replace(/[^+\d]/g,''))+'">📞 CALL</a>');if(safeUrl(x.location_url))links.push('<a href="'+esc(x.location_url)+'" target="_blank">📍 LOCATION</a>');if(safeUrl(x.menu_url))links.push('<a href="'+esc(x.menu_url)+'" target="_blank">🍽️ MENU</a>');for(const [k,label] of [['instagram','INSTAGRAM'],['facebook','FACEBOOK'],['website','WEBSITE']])if(safeUrl(soci
+
+--- Join lines 537-549 ---
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+546: function useWenikLocation(silent=false){if(!navigator.geolocation){$('homePartnerLocationStatus').textContent='Choose your area';return}$('homePartnerLocationStatus').textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const area=detectPartnerArea(p.coords.latitude,p.coords.longitude);if(area){homePartnerAreaSaved=area;localStorage.setItem('wenik_partner_area',area);$('homePartnerArea').value=area;$('homePartnerLocationStatus').textContent='Near you: '+area;renderHomePartners()}else $('homePartnerLocationStatus').textContent='Location enabled — choose your area'},()=>{if(!silent)$('homePartnerLocationStatus').textContent='Location unavailable — choose your area'
+547: async function loadPartnerDiscovery(){await loadPartners();fillHomePartnerAreas();renderHomePartnerCategories();renderHomePartners();$('homePartnerArea').onchange=()=>{homePartnerAreaSaved=$('homePartnerArea').value||'';if(homePartnerAreaSaved)localStorage.setItem('wenik_partner_area',homePartnerAreaSaved);else localStorage.removeItem('wenik_partner_area');$('homePartnerLocationStatus').textContent=homePartnerAreaSaved?'Showing '+homePartnerAreaSaved:'Showing all areas';renderHomePartners()};$('homeUseLocation').onclick=()=>useWenikLocation(false);$('homeViewAllPartners').onclick=()=>{const b=[...document.querySelectorAll('#nav button')].find(x=>x.textContent.trim().startsWith('PARTNERS'));t
+548: window.openWenikPartner=async id=>{const x=(partnerDirectory||[]).find(v=>String(v.partner_id)===String(id));if(!x)return;const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]),socials=x.social_links||{},hero=a?.[0]?.image_url||x.logo_url||'',d=partnerDiscount(x),links=[];if(x.phone)links.push('<a href="tel:'+esc(String(x.phone).replace(/[^+\d]/g,''))+'">📞 CALL</a>');if(safeUrl(x.location_url))links.push('<a href="'+esc(x.location_url)+'" target="_blank">📍 LOCATION</a>');if(safeUrl(x.menu_url))links.push('<a href="'+esc(x.menu_url)+'" target="_blank">🍽️ MENU</a>');for(const [k,label] of [['instagram','INSTAGRAM'],['facebook','FACEBOOK'],['website','WEBSITE']])if(safeUrl(soci
+549: window.closeWenikPartner=()=>{$('wenikPartnerModal').classList.add('hidden');document.body.style.overflow=''};
+
+--- Join lines 543-555 ---
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+546: function useWenikLocation(silent=false){if(!navigator.geolocation){$('homePartnerLocationStatus').textContent='Choose your area';return}$('homePartnerLocationStatus').textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const area=detectPartnerArea(p.coords.latitude,p.coords.longitude);if(area){homePartnerAreaSaved=area;localStorage.setItem('wenik_partner_area',area);$('homePartnerArea').value=area;$('homePartnerLocationStatus').textContent='Near you: '+area;renderHomePartners()}else $('homePartnerLocationStatus').textContent='Location enabled — choose your area'},()=>{if(!silent)$('homePartnerLocationStatus').textContent='Location unavailable — choose your area'
+547: async function loadPartnerDiscovery(){await loadPartners();fillHomePartnerAreas();renderHomePartnerCategories();renderHomePartners();$('homePartnerArea').onchange=()=>{homePartnerAreaSaved=$('homePartnerArea').value||'';if(homePartnerAreaSaved)localStorage.setItem('wenik_partner_area',homePartnerAreaSaved);else localStorage.removeItem('wenik_partner_area');$('homePartnerLocationStatus').textContent=homePartnerAreaSaved?'Showing '+homePartnerAreaSaved:'Showing all areas';renderHomePartners()};$('homeUseLocation').onclick=()=>useWenikLocation(false);$('homeViewAllPartners').onclick=()=>{const b=[...document.querySelectorAll('#nav button')].find(x=>x.textContent.trim().startsWith('PARTNERS'));t
+548: window.openWenikPartner=async id=>{const x=(partnerDirectory||[]).find(v=>String(v.partner_id)===String(id));if(!x)return;const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]),socials=x.social_links||{},hero=a?.[0]?.image_url||x.logo_url||'',d=partnerDiscount(x),links=[];if(x.phone)links.push('<a href="tel:'+esc(String(x.phone).replace(/[^+\d]/g,''))+'">📞 CALL</a>');if(safeUrl(x.location_url))links.push('<a href="'+esc(x.location_url)+'" target="_blank">📍 LOCATION</a>');if(safeUrl(x.menu_url))links.push('<a href="'+esc(x.menu_url)+'" target="_blank">🍽️ MENU</a>');for(const [k,label] of [['instagram','INSTAGRAM'],['facebook','FACEBOOK'],['website','WEBSITE']])if(safeUrl(soci
+549: window.closeWenikPartner=()=>{$('wenikPartnerModal').classList.add('hidden');document.body.style.overflow=''};
+550: 
+551: let partnerDirectory=[];
+552: 
+553: function renderPartners(){
+554:   const q=($('partnerSearch').value||'').trim(),area=$('partnerArea').value,category=$('partnerCategory').value;
+555:   const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,q,area,category));
+
+--- Join lines 552-564 ---
+552: 
+553: function renderPartners(){
+554:   const q=($('partnerSearch').value||'').trim(),area=$('partnerArea').value,category=$('partnerCategory').value;
+555:   const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,q,area,category));
+556:   $('partnerList').classList.add('wenikPartnerGrid');
+557:   $('partnerList').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners match your search.</div>'
+558: }
+559: 
+560: async function loadPartners(){
+561:   partnerDirectory=await rpc('public_partner_directory_v2').catch(()=>[]);
+562:   const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+563:   const categories=[...new Set((partnerDirectory||[]).map(x=>x.category).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+564:   $('partnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+
+--- Join lines 559-571 ---
+559: 
+560: async function loadPartners(){
+561:   partnerDirectory=await rpc('public_partner_directory_v2').catch(()=>[]);
+562:   const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+563:   const categories=[...new Set((partnerDirectory||[]).map(x=>x.category).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+564:   $('partnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+565:   $('partnerCategory').innerHTML='<option value="">All Categories</option>'+categories.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+566:   renderPartners();
+567: }
+568: 
+569: $('partnerSearch').addEventListener('input',renderPartners);
+570: $('partnerArea').addEventListener('change',renderPartners);
+571: $('partnerCategory').addEventListener('change',renderPartners);
+
+--- Join lines 560-572 ---
+560: async function loadPartners(){
+561:   partnerDirectory=await rpc('public_partner_directory_v2').catch(()=>[]);
+562:   const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+563:   const categories=[...new Set((partnerDirectory||[]).map(x=>x.category).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));
+564:   $('partnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+565:   $('partnerCategory').innerHTML='<option value="">All Categories</option>'+categories.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
+566:   renderPartners();
+567: }
+568: 
+569: $('partnerSearch').addEventListener('input',renderPartners);
+570: $('partnerArea').addEventListener('change',renderPartners);
+571: $('partnerCategory').addEventListener('change',renderPartners);
+572: 
+
+--- Join lines 570-582 ---
+570: $('partnerArea').addEventListener('change',renderPartners);
+571: $('partnerCategory').addEventListener('change',renderPartners);
+572: 
+573: window.partnerOffers=async(id,b)=>{
+574:   const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]);
+575:   b.nextElementSibling.innerHTML=(a||[]).map(x=>'<div class="offer"><img src="'+esc(x.image_url)+'"><h3>'+esc(x.title||'')+'</h3><div class="muted">'+esc(x.description||'')+'</div>'+(safeUrl(x.cta_url)?'<button class="btn" data-pad="'+x.id+'" data-purl="'+esc(x.cta_url)+'">'+esc(x.cta_label||'OPEN')+'</button>':'')+'</div>').join('')||'<div class="muted" style="margin-top:10px">No offers.</div>';
+576:   for(const x of a||[])rpc('track_partner_ad_impression',{p_ad_id:x.id}).catch(()=>{});
+577:   b.nextElementSibling.querySelectorAll('[data-pad]').forEach(el=>el.onclick=()=>{rpc('track_partner_ad_click',{p_ad_id:el.dataset.pad}).catch(()=>{});location.href=el.dataset.purl})
+578: };
+579: 
+580: async function loadWins(){
+581:   const[w,r]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[])]);
+582:   $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>🎉 '+esc(x.prize_name||'Prize')+'</h3><div class="muted">Congratulations! You won with WENIK.</div></div>').join('')||'<div class="card muted">No wins yet.</div>';
+
+--- Join lines 577-589 ---
+577:   b.nextElementSibling.querySelectorAll('[data-pad]').forEach(el=>el.onclick=()=>{rpc('track_partner_ad_click',{p_ad_id:el.dataset.pad}).catch(()=>{});location.href=el.dataset.purl})
+578: };
+579: 
+580: async function loadWins(){
+581:   const[w,r]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[])]);
+582:   $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>🎉 '+esc(x.prize_name||'Prize')+'</h3><div class="muted">Congratulations! You won with WENIK.</div></div>').join('')||'<div class="card muted">No wins yet.</div>';
+583:   $('recent').innerHTML=(r||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.public_display_name||'Winner')+'</b><span class="badge">WINNER</span></div></div>').join('')||'<div class="card muted">No announced winners.</div>'
+584: }
+585: 
+586: async function refreshUnread(){
+587:   const u=Number(await rpc('customer_unread_message_count').catch(()=>0));
+588:   $('unread').textContent=u;$('navUnread').textContent=u;$('navUnread').classList.toggle('hidden',u===0)
+589: }
+
+--- Join lines 578-590 ---
+578: };
+579: 
+580: async function loadWins(){
+581:   const[w,r]=await Promise.all([rpc('customer_my_wins').catch(()=>[]),rpc('public_recent_winners',{p_limit:20}).catch(()=>[])]);
+582:   $('wins').innerHTML=(w||[]).map(x=>'<div class="card"><div class="eyebrow">YOUR WIN</div><h3>🎉 '+esc(x.prize_name||'Prize')+'</h3><div class="muted">Congratulations! You won with WENIK.</div></div>').join('')||'<div class="card muted">No wins yet.</div>';
+583:   $('recent').innerHTML=(r||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.public_display_name||'Winner')+'</b><span class="badge">WINNER</span></div></div>').join('')||'<div class="card muted">No announced winners.</div>'
+584: }
+585: 
+586: async function refreshUnread(){
+587:   const u=Number(await rpc('customer_unread_message_count').catch(()=>0));
+588:   $('unread').textContent=u;$('navUnread').textContent=u;$('navUnread').classList.toggle('hidden',u===0)
+589: }
+590: 
+
+--- Join lines 593-605 ---
+593: async function pushStateCard(){if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return '<div class="card muted">Push notifications are not supported on this browser.</div>';if(Notification.permission==='denied')return '<div class="card muted">Phone notifications are blocked in browser settings.</div>';const reg=await navigator.serviceWorker.register('/sw.js');const sub=await reg.pushManager.getSubscription();return sub?'<div class="card"><div class="row"><b>Phone notifications</b><span class="badge">ON</span></div><div class="muted">WENIK can notify you even when the site is closed.</div></div>':'<div class="card"><div class="row"><b>Phone notification
+594: window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('Push notifications are not supported on this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notification permission was not granted.');const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(WENIK_VAPID_PUBLIC_KEY)});const prof=await rpc('customer_my_profile');const customer=prof?.[0];if(!customer?.customer_id)throw Error('Cu
+595: 
+596: async function loadMe(){
+597:   const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+598:   $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+599:   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
+600:   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
+601:   document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
+602:   refreshUnread()
+603: }
+604: 
+605: async function openNotification(id){
+
+--- Join lines 595-607 ---
+595: 
+596: async function loadMe(){
+597:   const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+598:   $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+599:   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
+600:   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
+601:   document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
+602:   refreshUnread()
+603: }
+604: 
+605: async function openNotification(id){
+606:   const r=await rpc('customer_open_message',{p_message_id:id}),x=Array.isArray(r)?r[0]:r;
+607:   await refreshUnread();
+
+--- Welcome lines 282-294 ---
+282:     <div id="msg" class="muted" style="margin-top:10px"></div>
+283:   </section>
+284: 
+285:   <section id="shell" class="hidden">
+286:     <section id="home">
+287:       <div class="hero"><div class="eyebrow">MORE TO DISCOVER</div><h2>Welcome to WENIK</h2><div class="muted">Offers, prizes and new opportunities in one place.</div></div>
+288:       <div class="sectionTitle"><h3>FEATURED</h3><span class="muted">Swipe</span></div>
+289:       <div id="carousel" class="carousel"><div id="track" class="track"></div><div id="dots" class="dots"></div></div>
+290: 
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+
+--- HOME lines 237-249 ---
+237: .wenikPartnerCard{background:#fff!important;border:1px solid var(--ll)!important;box-shadow:0 8px 22px rgba(52,27,70,.08)!important}.wenikPartnerMedia{background:linear-gradient(135deg,#f6efff,#fff5ec,#fffbea)!important}.wenikPartnerPlaceholder{color:var(--lp)!important}.wenikPartnerPromo{color:#d85b16!important}.wenikOff{background:linear-gradient(100deg,var(--lp),var(--lo),#f0b800)!important;color:#fff!important}
+238: .wenikEmpty{color:var(--lm)!important;border-color:#e4d9eb!important;background:#fff!important}.wenikPartnerModal{background:rgba(35,22,44,.42)!important}.wenikPartnerSheet{background:#fff!important;color:var(--li)!important;border-color:#e6ddeb!important}.wenikModalClose{background:#fff!important;color:var(--li)!important;border-color:#e3dbe8!important}.wenikDetailHero{background:linear-gradient(135deg,#f5edff,#fff3ea,#fff9dc)!important}.wenikDetailPromo{background:linear-gradient(120deg,rgba(123,44,255,.07),rgba(255,111,33,.07),rgba(255,210,28,.10))!important;border-color:#eadff0!important}.wenikDetailPromo strong{color:#d85b16!important}.wenikDetailActions a{background:#faf7fc!important;b
+239: .nav{background:rgba(255,255,255,.97)!important;border-color:#e8e0ed!important;box-shadow:0 -8px 25px rgba(52,27,70,.08)!important}.nav button{color:#756b7d!important}.nav button.active{color:var(--lp)!important}
+240: 
+241: 
+242: /* WENIK HOME CATEGORIES FIRST V1 */
+243: 
+244: 
+245: /* WENIK WIN GIFT GALLERY V1 */
+246: .winGiftGalleryBlock{margin:18px 0 8px}.winGiftGalleryHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}.winGiftGalleryHead h2{margin:2px 0 0}.winGiftEyebrow{font-size:11px;font-weight:900;letter-spacing:2px;color:#ffb6df}.winGiftCount{min-width:38px;text-align:center;border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.09);font-weight:900}.winGiftSearch{width:100%;border-radius:16px;border:1px solid rgba(255,255,255,.13);background:rgba(10,8,20,.78);color:#fff;padding:14px 15px;margin:4px 0 14px;font-size:15px}.winGiftGallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.winGiftCard{overflow:hidden;border-rad
+247: 
+248: /* WENIK WIN PREMIUM V2 */
+249: .winGiftGalleryBlock{margin:22px 0 12px!important}.winGiftGalleryHead{align-items:flex-end!important;margin-bottom:14px!important}.winGiftGalleryHead h2{font-size:28px!important;line-height:1.05!important;letter-spacing:-.8px!important}.winGiftEyebrow{font-size:12px!important;letter-spacing:2.4px!important;color:#ff9ed4!important}.winGiftCount{background:transparent!important;color:inherit!important;font-size:20px!important;padding:0!important;min-width:auto!important}.winGiftSearch{background:#fff!important;color:#201a2b!important;border:1px solid #ded9e4!important;border-radius:20px!important;padding:17px 18px!important;font-size:16px!important;box-shadow:0 8px 24px rgba(37,21,57,.06)!impo
+
+--- HOME lines 281-293 ---
+281:     </div>
+282:     <div id="msg" class="muted" style="margin-top:10px"></div>
+283:   </section>
+284: 
+285:   <section id="shell" class="hidden">
+286:     <section id="home">
+287:       <div class="hero"><div class="eyebrow">MORE TO DISCOVER</div><h2>Welcome to WENIK</h2><div class="muted">Offers, prizes and new opportunities in one place.</div></div>
+288:       <div class="sectionTitle"><h3>FEATURED</h3><span class="muted">Swipe</span></div>
+289:       <div id="carousel" class="carousel"><div id="track" class="track"></div><div id="dots" class="dots"></div></div>
+290: 
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+
+--- HOME lines 287-299 ---
+287:       <div class="hero"><div class="eyebrow">MORE TO DISCOVER</div><h2>Welcome to WENIK</h2><div class="muted">Offers, prizes and new opportunities in one place.</div></div>
+288:       <div class="sectionTitle"><h3>FEATURED</h3><span class="muted">Swipe</span></div>
+289:       <div id="carousel" class="carousel"><div id="track" class="track"></div><div id="dots" class="dots"></div></div>
+290: 
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+295:         <div id="homePartnerCategories" class="wenikCategories"></div>
+296:         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
+297:         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
+298:       </div>
+299:       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+
+--- HOME lines 288-300 ---
+288:       <div class="sectionTitle"><h3>FEATURED</h3><span class="muted">Swipe</span></div>
+289:       <div id="carousel" class="carousel"><div id="track" class="track"></div><div id="dots" class="dots"></div></div>
+290: 
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+295:         <div id="homePartnerCategories" class="wenikCategories"></div>
+296:         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
+297:         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
+298:       </div>
+299:       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+300:     </section>
+
+--- HOME lines 289-301 ---
+289:       <div id="carousel" class="carousel"><div id="track" class="track"></div><div id="dots" class="dots"></div></div>
+290: 
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+295:         <div id="homePartnerCategories" class="wenikCategories"></div>
+296:         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
+297:         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
+298:       </div>
+299:       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+300:     </section>
+301: 
+
+--- HOME lines 290-302 ---
+290: 
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+295:         <div id="homePartnerCategories" class="wenikCategories"></div>
+296:         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
+297:         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
+298:       </div>
+299:       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+300:     </section>
+301: 
+302:     <section id="win" class="hidden"><div class="hero"><div class="eyebrow">WENIK WIN</div><h2>Your chances. Your wins.</h2></div><div id="wins"></div><div class="sectionTitle"><h3>Recent Winners</h3></div><div id="recent"></div>
+
+--- HOME lines 291-303 ---
+291:       <div class="sectionTitle"><h3>PARTNERS</h3><span class="muted">Near you</span></div>
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+295:         <div id="homePartnerCategories" class="wenikCategories"></div>
+296:         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
+297:         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
+298:       </div>
+299:       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+300:     </section>
+301: 
+302:     <section id="win" class="hidden"><div class="hero"><div class="eyebrow">WENIK WIN</div><h2>Your chances. Your wins.</h2></div><div id="wins"></div><div class="sectionTitle"><h3>Recent Winners</h3></div><div id="recent"></div>
+303: 
+
+--- HOME lines 292-304 ---
+292:       <div class="card wenikDiscovery" id="homePartnerDiscovery">
+293:         <div class="wenikDiscoveryHead"><div><div class="wenikDiscoveryTitle">DISCOVER WENIK PARTNERS</div><div id="homePartnerLocationStatus" class="wenikDiscoverySub">Use your location or choose an area</div></div></div>
+294:         <div class="wenikLocationRow"><select id="homePartnerArea" class="field"><option value="">All Areas</option></select><button id="homeUseLocation" class="btn secondary" type="button">📍 LOCATION</button></div>
+295:         <div id="homePartnerCategories" class="wenikCategories"></div>
+296:         <div id="homePartnerGrid" class="wenikPartnerGrid"><div class="wenikEmpty">Loading partners…</div></div>
+297:         <button id="homeViewAllPartners" class="btn secondary" type="button" style="margin-top:12px">VIEW ALL PARTNERS</button>
+298:       </div>
+299:       <div class="sectionTitle"><h3>WIN</h3></div><div id="campaigns"></div>
+300:     </section>
+301: 
+302:     <section id="win" class="hidden"><div class="hero"><div class="eyebrow">WENIK WIN</div><h2>Your chances. Your wins.</h2></div><div id="wins"></div><div class="sectionTitle"><h3>Recent Winners</h3></div><div id="recent"></div>
+303: 
+304: <!-- WENIK WIN GIFT GALLERY V1 -->
+
+--- HOME lines 324-336 ---
+324: 
+325: 
+326: <div id="wenikPartnerModal" class="wenikPartnerModal hidden" role="dialog" aria-modal="true" aria-label="Partner details"><div class="wenikPartnerSheet"><button id="wenikPartnerClose" class="wenikModalClose" type="button">×</button><div id="wenikPartnerDetail"></div></div></div>
+327: 
+328: <nav id="nav" class="nav hidden">
+329:   <button class="active" onclick="tab('home',this)">HOME</button>
+330:   <button onclick="tab('win',this)">WIN</button>
+331:   <button id="izaBtn" onclick="tab('iza',this)">IZA</button>
+332:   <button onclick="tab('qr',this)">QR</button>
+333:   <button onclick="tab('partners',this)">PARTNERS</button>
+334:   <button onclick="tab('me',this)">ME <span id="navUnread" class="dot hidden">0</span></button>
+335: </nav>
+336: 
+
+--- HOME lines 346-358 ---
+346: 
+347: let profile,focusId=new URLSearchParams(location.search).get('iza'),ads=[],slide=0,timer,touchX=0;
+348: async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+349: 
+350: window.tab=(id,b)=>{
+351:   ['home','win','iza','qr','partners','me'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+352:   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+353:   b?.classList.add('active');
+354:   if(id==='qr')loadQr();
+355:   if(id==='win'){loadWins();loadWinGiftGallery();}
+356:   if(id==='partners')loadPartners();
+357:   if(id==='me')loadMe();
+358:   scrollTo({top:0,behavior:'smooth'})
+
+--- HOME lines 482-494 ---
+482: function showSlide(n){
+483:   if(!ads.length)return;
+484:   slide=(n+ads.length)%ads.length;
+485:   $('track').style.transform='translateX(-'+slide*100+'%)';
+486:   $('dots').innerHTML=ads.map((_,i)=>'<i class="'+(i===slide?'on':'')+'"></i>').join('');
+487:   rpc('track_customer_home_ad_impression',{p_ad_id:ads[slide].id}).catch(()=>{})
+488: }
+489: function startCarousel(){clearInterval(timer);timer=setInterval(()=>showSlide(slide+1),30000)}
+490: $('carousel').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
+491: $('carousel').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45){showSlide(slide+(dx<0?1:-1));startCarousel()}},{passive:true});
+492: 
+493: async function loadHome(){
+494:   const[a,c,e]=await Promise.all([
+
+--- HOME lines 488-500 ---
+488: }
+489: function startCarousel(){clearInterval(timer);timer=setInterval(()=>showSlide(slide+1),30000)}
+490: $('carousel').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
+491: $('carousel').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45){showSlide(slide+(dx<0?1:-1));startCarousel()}},{passive:true});
+492: 
+493: async function loadHome(){
+494:   const[a,c,e]=await Promise.all([
+495:     sb.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30),
+496:     sb.from('campaigns').select('id,title,status').eq('status','active'),
+497:     rpc('customer_my_campaign_entries').catch(()=>[])
+498:   ]);
+499:   ads=a.data||[];
+500:   $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+
+--- HOME lines 490-502 ---
+490: $('carousel').addEventListener('touchstart',e=>touchX=e.touches[0].clientX,{passive:true});
+491: $('carousel').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-touchX;if(Math.abs(dx)>45){showSlide(slide+(dx<0?1:-1));startCarousel()}},{passive:true});
+492: 
+493: async function loadHome(){
+494:   const[a,c,e]=await Promise.all([
+495:     sb.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30),
+496:     sb.from('campaigns').select('id,title,status').eq('status','active'),
+497:     rpc('customer_my_campaign_entries').catch(()=>[])
+498:   ]);
+499:   ads=a.data||[];
+500:   $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+501:   document.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>{rpc('track_customer_home_ad_click',{p_ad_id:x.closest('[data-ad]').dataset.ad}).catch(()=>{});location.href=x.dataset.url});
+502:   showSlide(0);startCarousel();
+
+--- HOME lines 496-508 ---
+496:     sb.from('campaigns').select('id,title,status').eq('status','active'),
+497:     rpc('customer_my_campaign_entries').catch(()=>[])
+498:   ]);
+499:   ads=a.data||[];
+500:   $('track').innerHTML=ads.map(x=>'<div class="slide card" data-ad="'+x.id+'"><img src="'+esc(x.image_url)+'"><div class="overlay"><b>'+esc(x.title||'Discover more')+'</b>'+(safeUrl(x.cta_url)?'<button class="btn" data-url="'+esc(x.cta_url)+'">EXPLORE</button>':'')+'</div></div>').join('')||'<div class="card muted">New WENIK stories are coming.</div>';
+501:   document.querySelectorAll('[data-url]').forEach(x=>x.onclick=()=>{rpc('track_customer_home_ad_click',{p_ad_id:x.closest('[data-ad]').dataset.ad}).catch(()=>{});location.href=x.dataset.url});
+502:   showSlide(0);startCarousel();
+503:   const joined=new Set((e||[]).filter(x=>x.eligible!==false).map(x=>x.campaign_id));
+504:   $('campaigns').innerHTML=(c.data||[]).map(x=>'<div class="card"><div class="row"><div><div class="eyebrow">ACTIVE DRAW</div><b>'+esc(x.title)+'</b></div><span class="badge">WIN</span></div><button class="btn" '+(joined.has(x.id)?'disabled':'')+' onclick="joinWin(\''+x.id+'\')">'+(joined.has(x.id)?'JOINED ✓':'JOIN DRAW')+'</button></div>').join('')||'<div class="card muted">No active campaigns.</div>'
+505: }
+506: 
+507: window.joinWin=async id=>{try{await rpc('join_active_campaign',{p_campaign_id:id});loadHome()}catch(e){alert(e.message)}};
+508: 
+
+--- HOME lines 526-538 ---
+526: }
+527: $('refreshQr').onclick=loadQr;
+528: 
+529: 
+530: /* WENIK PARTNER DISCOVERY V1 — QR/WIN/IZA behavior unchanged */
+531: let homePartnerCategory='',homePartnerAreaSaved=localStorage.getItem('wenik_partner_area')||'';
+532: const normPartner=v=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9\u0600-\u06ff]+/g,' ');
+533: function partnerIcon(v=''){const c=normPartner(v);if(/restaurant|food|مطعم|اكل|أكل/.test(c))return'🍽️';if(/cafe|coffee|قهو|كاف/.test(c))return'☕';if(/sweet|dessert|حلويات/.test(c))return'🍰';if(/shoe|bag|احذية|أحذية|شنط|حقائب/.test(c))return'👟';if(/fashion|cloth|wear|ملابس|البسة|ألبسة/.test(c))return'👕';if(/beauty|تجميل/.test(c))return'💄';if(/hair|salon|barber|صالون|حلاق/.test(c))return'✂️';if(/jewel|ذهب|مجوهر/.test(c))return'💎';if(/elect|phone|tech|كهرب|هاتف/.test(c))return'📱';if(/furniture|اثاث|أثاث/.test(c))return'🛋️';if(/fitness|gym|رياض/.test(c))return'🏋️';if(/hotel|resort|فندق|منتجع/.test(c))return'🏨';if(/pool|swim|مسبح|مسابح/.test(c))return'🏊';if(/entertain|kids|play|اطفال|أطفال|ترفيه/
+534: function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t))return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}return x.benefit_title?'WENIK OFFER':''}
+535: function wenikPartnerCard(x){const d=partnerDiscount(x),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([x.category,x.area].filter(Boolean).join(' • '))+'</d
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+
+--- HOME lines 533-545 ---
+533: function partnerIcon(v=''){const c=normPartner(v);if(/restaurant|food|مطعم|اكل|أكل/.test(c))return'🍽️';if(/cafe|coffee|قهو|كاف/.test(c))return'☕';if(/sweet|dessert|حلويات/.test(c))return'🍰';if(/shoe|bag|احذية|أحذية|شنط|حقائب/.test(c))return'👟';if(/fashion|cloth|wear|ملابس|البسة|ألبسة/.test(c))return'👕';if(/beauty|تجميل/.test(c))return'💄';if(/hair|salon|barber|صالون|حلاق/.test(c))return'✂️';if(/jewel|ذهب|مجوهر/.test(c))return'💎';if(/elect|phone|tech|كهرب|هاتف/.test(c))return'📱';if(/furniture|اثاث|أثاث/.test(c))return'🛋️';if(/fitness|gym|رياض/.test(c))return'🏋️';if(/hotel|resort|فندق|منتجع/.test(c))return'🏨';if(/pool|swim|مسبح|مسابح/.test(c))return'🏊';if(/entertain|kids|play|اطفال|أطفال|ترفيه/
+534: function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t))return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}return x.benefit_title?'WENIK OFFER':''}
+535: function wenikPartnerCard(x){const d=partnerDiscount(x),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([x.category,x.area].filter(Boolean).join(' • '))+'</d
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+
+--- HOME lines 534-546 ---
+534: function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t))return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}return x.benefit_title?'WENIK OFFER':''}
+535: function wenikPartnerCard(x){const d=partnerDiscount(x),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([x.category,x.area].filter(Boolean).join(' • '))+'</d
+536: function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&(!area||normPartner(x.area)===normPartner(area))&&(!category||categoryFamilyMatch(x.category,category))}
+537: function renderHomePartners(){if(!$('homePartnerGrid'))return;const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,'',homePartnerAreaSaved,homePartnerCategory)).slice(0,6);$('homePartnerGrid').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners found in this area yet.</div>'}
+538: /* WENIK HOME CATEGORIES V2 */
+539: const WENIK_HOME_CATEGORIES=['Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Jewelry','Electronics','Furniture','Fitness','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+540: function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,fitness:/fitness|gym|رياض/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|i
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+546: function useWenikLocation(silent=false){if(!navigator.geolocation){$('homePartnerLocationStatus').textContent='Choose your area';return}$('homePartnerLocationStatus').textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const area=detectPartnerArea(p.coords.latitude,p.coords.longitude);if(area){homePartnerAreaSaved=area;localStorage.setItem('wenik_partner_area',area);$('homePartnerArea').value=area;$('homePartnerLocationStatus').textContent='Near you: '+area;renderHomePartners()}else $('homePartnerLocationStatus').textContent='Location enabled — choose your area'},()=>{if(!silent)$('homePartnerLocationStatus').textContent='Location unavailable — choose your area'
+
+--- HOME lines 541-553 ---
+541: function renderHomePartnerCategories(){if(!$('homePartnerCategories'))return;const cats=WENIK_HOME_CATEGORIES;$('homePartnerCategories').innerHTML='<button class="wenikCat '+(homePartnerCategory?'':'active')+'" data-hcat=""><span class="wenikCatCircle">✨</span><span class="wenikCatLabel">ALL</span></button>'+cats.map(c=>'<button class="wenikCat '+(normPartner(c)===normPartner(homePartnerCategory)?'active':'')+'" data-hcat="'+esc(c)+'"><span class="wenikCatCircle">'+partnerIcon(c)+'</span><span class="wenikCatLabel">'+esc(c)+'</span></button>').join('');document.querySelectorAll('[data-hcat]').forEach(b=>b.onclick=()=>{homePartnerCategory=b.dataset.hcat||'';renderHomePartnerCategories();rende
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+546: function useWenikLocation(silent=false){if(!navigator.geolocation){$('homePartnerLocationStatus').textContent='Choose your area';return}$('homePartnerLocationStatus').textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const area=detectPartnerArea(p.coords.latitude,p.coords.longitude);if(area){homePartnerAreaSaved=area;localStorage.setItem('wenik_partner_area',area);$('homePartnerArea').value=area;$('homePartnerLocationStatus').textContent='Near you: '+area;renderHomePartners()}else $('homePartnerLocationStatus').textContent='Location enabled — choose your area'},()=>{if(!silent)$('homePartnerLocationStatus').textContent='Location unavailable — choose your area'
+547: async function loadPartnerDiscovery(){await loadPartners();fillHomePartnerAreas();renderHomePartnerCategories();renderHomePartners();$('homePartnerArea').onchange=()=>{homePartnerAreaSaved=$('homePartnerArea').value||'';if(homePartnerAreaSaved)localStorage.setItem('wenik_partner_area',homePartnerAreaSaved);else localStorage.removeItem('wenik_partner_area');$('homePartnerLocationStatus').textContent=homePartnerAreaSaved?'Showing '+homePartnerAreaSaved:'Showing all areas';renderHomePartners()};$('homeUseLocation').onclick=()=>useWenikLocation(false);$('homeViewAllPartners').onclick=()=>{const b=[...document.querySelectorAll('#nav button')].find(x=>x.textContent.trim().startsWith('PARTNERS'));t
+548: window.openWenikPartner=async id=>{const x=(partnerDirectory||[]).find(v=>String(v.partner_id)===String(id));if(!x)return;const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]),socials=x.social_links||{},hero=a?.[0]?.image_url||x.logo_url||'',d=partnerDiscount(x),links=[];if(x.phone)links.push('<a href="tel:'+esc(String(x.phone).replace(/[^+\d]/g,''))+'">📞 CALL</a>');if(safeUrl(x.location_url))links.push('<a href="'+esc(x.location_url)+'" target="_blank">📍 LOCATION</a>');if(safeUrl(x.menu_url))links.push('<a href="'+esc(x.menu_url)+'" target="_blank">🍽️ MENU</a>');for(const [k,label] of [['instagram','INSTAGRAM'],['facebook','FACEBOOK'],['website','WEBSITE']])if(safeUrl(soci
+549: window.closeWenikPartner=()=>{$('wenikPartnerModal').classList.add('hidden');document.body.style.overflow=''};
+550: 
+551: let partnerDirectory=[];
+552: 
+553: function renderPartners(){
+
+--- HOME lines 542-554 ---
+542: function fillHomePartnerAreas(){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b)));$('homePartnerArea').innerHTML='<option value="">All Areas</option>'+areas.map(a=>'<option value="'+esc(a)+'">'+esc(a)+'</option>').join('');const saved=areas.find(a=>normPartner(a)===normPartner(homePartnerAreaSaved));if(saved){homePartnerAreaSaved=saved;$('homePartnerArea').value=saved;$('homePartnerLocationStatus').textContent='Showing '+saved}else homePartnerAreaSaved=''}
+543: const WENIK_CITIES=[{a:['nabatieh','nabatiyeh','النبطية'],lat:33.3772,lng:35.4838},{a:['sour','tyre','صور'],lat:33.2705,lng:35.2038},{a:['saida','sidon','صيدا'],lat:33.5571,lng:35.3729},{a:['beirut','بيروت'],lat:33.8938,lng:35.5018},{a:['baalbek','بعلبك'],lat:34.0047,lng:36.2110},{a:['zahle','زحلة'],lat:33.8463,lng:35.9020},{a:['tripoli','طرابلس'],lat:34.4367,lng:35.8497},{a:['jounieh','جونية'],lat:33.9808,lng:35.6178},{a:['aley','عاليه'],lat:33.8104,lng:35.5970}];
+544: function distKm(a,b,c,d){const R=6371,p=(x=>x*Math.PI/180),d1=p(c-a),d2=p(d-b),z=Math.sin(d1/2)**2+Math.cos(p(a))*Math.cos(p(c))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(z))}
+545: function detectPartnerArea(lat,lng){const areas=[...new Set((partnerDirectory||[]).map(x=>x.area).filter(Boolean))],m=WENIK_CITIES.map(c=>{const area=areas.find(v=>c.a.some(a=>normPartner(v).includes(normPartner(a))||normPartner(a).includes(normPartner(v))));return area?{area,d:distKm(lat,lng,c.lat,c.lng)}:null}).filter(Boolean).sort((a,b)=>a.d-b.d);return m[0]&&m[0].d<=35?m[0].area:''}
+546: function useWenikLocation(silent=false){if(!navigator.geolocation){$('homePartnerLocationStatus').textContent='Choose your area';return}$('homePartnerLocationStatus').textContent='Getting your location…';navigator.geolocation.getCurrentPosition(p=>{const area=detectPartnerArea(p.coords.latitude,p.coords.longitude);if(area){homePartnerAreaSaved=area;localStorage.setItem('wenik_partner_area',area);$('homePartnerArea').value=area;$('homePartnerLocationStatus').textContent='Near you: '+area;renderHomePartners()}else $('homePartnerLocationStatus').textContent='Location enabled — choose your area'},()=>{if(!silent)$('homePartnerLocationStatus').textContent='Location unavailable — choose your area'
+547: async function loadPartnerDiscovery(){await loadPartners();fillHomePartnerAreas();renderHomePartnerCategories();renderHomePartners();$('homePartnerArea').onchange=()=>{homePartnerAreaSaved=$('homePartnerArea').value||'';if(homePartnerAreaSaved)localStorage.setItem('wenik_partner_area',homePartnerAreaSaved);else localStorage.removeItem('wenik_partner_area');$('homePartnerLocationStatus').textContent=homePartnerAreaSaved?'Showing '+homePartnerAreaSaved:'Showing all areas';renderHomePartners()};$('homeUseLocation').onclick=()=>useWenikLocation(false);$('homeViewAllPartners').onclick=()=>{const b=[...document.querySelectorAll('#nav button')].find(x=>x.textContent.trim().startsWith('PARTNERS'));t
+548: window.openWenikPartner=async id=>{const x=(partnerDirectory||[]).find(v=>String(v.partner_id)===String(id));if(!x)return;const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]),socials=x.social_links||{},hero=a?.[0]?.image_url||x.logo_url||'',d=partnerDiscount(x),links=[];if(x.phone)links.push('<a href="tel:'+esc(String(x.phone).replace(/[^+\d]/g,''))+'">📞 CALL</a>');if(safeUrl(x.location_url))links.push('<a href="'+esc(x.location_url)+'" target="_blank">📍 LOCATION</a>');if(safeUrl(x.menu_url))links.push('<a href="'+esc(x.menu_url)+'" target="_blank">🍽️ MENU</a>');for(const [k,label] of [['instagram','INSTAGRAM'],['facebook','FACEBOOK'],['website','WEBSITE']])if(safeUrl(soci
+549: window.closeWenikPartner=()=>{$('wenikPartnerModal').classList.add('hidden');document.body.style.overflow=''};
+550: 
+551: let partnerDirectory=[];
+552: 
+553: function renderPartners(){
+554:   const q=($('partnerSearch').value||'').trim(),area=$('partnerArea').value,category=$('partnerCategory').value;
+
+--- HOME lines 614-626 ---
+614:   if(!d?.length)return;
+615:   profile=d[0];
+616:   $('auth').classList.add('hidden');$('shell').classList.remove('hidden');$('nav').classList.remove('hidden');
+617:   $('meName').textContent=((profile.first_name||'')+' '+(profile.last_name||'')).trim();
+618:   $('meMobile').textContent=profile.mobile||'';
+619:   await Promise.all([loadHome(),loadIza(),refreshUnread(),loadPartnerDiscovery()])
+620: }
+621: 
+622: const{data:{session}}=await sb.auth.getSession();
+623: if(session)enter();
+624: 
+625: $('wenikPartnerClose').onclick=closeWenikPartner;
+626: $('wenikPartnerModal').onclick=e=>{if(e.target===$('wenikPartnerModal'))closeWenikPartner()};
+
+--- HOME lines 650-662 ---
+650: </script>
+651: 
+652: <script>
+653: /* WENIK INTERNAL BACK NAV V1 */
+654: (() => {
+655:   const views=['home','win','iza','qr','partners','me'];
+656:   const byId=id=>document.getElementById(id);
+657:   let applyingHistory=false, originalTab=null, originalOpenPartner=null;
+658:   const visibleView=()=>views.find(id=>{const el=byId(id);return el&&!el.classList.contains('hidden')})||'home';
+659:   const navButton=id=>[...(byId('nav')?.querySelectorAll('button')||[])].find(b=>(b.getAttribute('onclick')||'').includes("tab('"+id+"'"));
+660:   const shellReady=()=>byId('shell')&&!byId('shell').classList.contains('hidden');
+661:   const ensureRoot=()=>{
+662:     if(!shellReady()) return;
+
+--- HOME lines 653-665 ---
+653: /* WENIK INTERNAL BACK NAV V1 */
+654: (() => {
+655:   const views=['home','win','iza','qr','partners','me'];
+656:   const byId=id=>document.getElementById(id);
+657:   let applyingHistory=false, originalTab=null, originalOpenPartner=null;
+658:   const visibleView=()=>views.find(id=>{const el=byId(id);return el&&!el.classList.contains('hidden')})||'home';
+659:   const navButton=id=>[...(byId('nav')?.querySelectorAll('button')||[])].find(b=>(b.getAttribute('onclick')||'').includes("tab('"+id+"'"));
+660:   const shellReady=()=>byId('shell')&&!byId('shell').classList.contains('hidden');
+661:   const ensureRoot=()=>{
+662:     if(!shellReady()) return;
+663:     const v=visibleView();
+664:     if(!history.state?.wenikInternal){history.replaceState({wenikInternal:true,view:v},'',location.href)}
+665:   };
+
+--- HOME lines 710-722 ---
+710:       if(st.partner){
+711:         if(originalTab) originalTab(st.view||'partners',navButton(st.view||'partners'));
+712:         if(originalOpenPartner) await originalOpenPartner(st.partner);
+713:       }else{
+714:         closeModalOnly();
+715:         if(originalTab) originalTab(st.view||'home',navButton(st.view||'home'));
+716:       }
+717:     }finally{applyingHistory=false}
+718:   });
+719:   window.addEventListener('load',()=>{setTimeout(install,0);setTimeout(install,700);setTimeout(install,1800)});
+720:   const shell=byId('shell');
+721:   if(shell)new MutationObserver(()=>{if(shellReady()){ensureRoot();install()}}).observe(shell,{attributes:true,attributeFilter:['class']});
+722: })();
+
+--- logo lines 15-27 ---
+15: *{box-sizing:border-box}
+16: html{scroll-behavior:smooth}
+17: body{margin:0;background:radial-gradient(circle at 20% -10%,#28153d 0,transparent 28%),radial-gradient(circle at 100% 0,#3a1f12 0,transparent 24%),var(--bg);color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+18: .app{max-width:590px;margin:auto;padding:20px 14px 110px}
+19: .top{position:sticky;top:0;z-index:10;padding:10px 0 12px;background:linear-gradient(180deg,rgba(8,8,12,.98),rgba(8,8,12,.72),transparent);backdrop-filter:blur(12px)}
+20: .brandLogo{display:block;width:112px;max-width:34vw;height:auto;object-fit:contain;border-radius:50%}
+21: .hero{padding:22px;border-radius:26px;background:linear-gradient(145deg,rgba(165,107,255,.18),rgba(255,79,161,.08) 38%,rgba(255,138,36,.08));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 60px rgba(0,0,0,.25)}
+22: .hero h2{font-size:30px;margin:6px 0 4px;letter-spacing:-1px}
+23: .card{padding:16px;border-radius:22px;background:var(--panel);border:1px solid var(--line);margin-top:12px;box-shadow:0 14px 35px rgba(0,0,0,.16);backdrop-filter:blur(14px)}
+24: .muted{color:var(--muted);font-size:13px}
+25: .hidden{display:none!important}
+26: .btn,.field{width:100%;border-radius:15px;padding:13px;margin-top:9px}
+27: .btn{border:0;font-weight:950;background:linear-gradient(90deg,#c992ff,#ff7e9d,#ffad55,#ffe16d);color:#0b0b0f;box-shadow:0 8px 20px rgba(255,126,157,.12);transition:transform .15s ease,filter .15s ease}
+
+--- logo lines 51-63 ---
+51: .unread{border-color:#7b4dac;background:linear-gradient(145deg,rgba(123,77,172,.18),rgba(20,20,28,.82))}
+52: #qrImage{width:240px;max-width:100%;background:#fff;padding:12px;border-radius:24px;display:block;margin:18px auto;box-shadow:0 18px 60px rgba(255,255,255,.08)}
+53: .sectionTitle{display:flex;justify-content:space-between;align-items:end;margin:24px 2px 8px}
+54: .sectionTitle h2,.sectionTitle h3{margin:0}
+55: .partnerHead{display:flex;gap:12px;align-items:center}
+56: .partnerLogo{width:46px;height:46px;border-radius:14px;background:#1c1c24;object-fit:cover}
+57: .chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+58: .chip{padding:7px 9px;border-radius:999px;background:#1c1c24;border:1px solid #2c2c38;color:#ddd;font-size:11px;text-decoration:none}
+59: .offer{margin-top:12px}
+60: .price{font-size:24px;font-weight:950}
+61: .eyebrow{font-size:11px;letter-spacing:2px;color:#c69cff}
+62: .authTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 4px}.authTab{border:1px solid #343443;background:#15151d;color:#aaa;padding:11px;border-radius:14px;font-weight:900}.authTab.active{color:#0b0b0f;border:0;background:linear-gradient(90deg,#c992ff,#ff7e9d,#ffad55,#ffe16d)}
+63: @media(min-width:700px){.app{padding-top:28px}}
+
+--- logo lines 85-97 ---
+85:     linear-gradient(180deg,#070610 0%,#090713 48%,#06050d 100%);
+86: }
+87: .top{
+88:   background:linear-gradient(180deg,rgba(6,5,13,.99),rgba(8,6,17,.82),transparent);
+89: }
+90: .brandLogo{
+91:   filter:drop-shadow(0 0 18px rgba(239,21,157,.18)) drop-shadow(0 0 26px rgba(255,174,0,.08));
+92: }
+93: .hero{
+94:   position:relative;
+95:   overflow:hidden;
+96:   background:
+97:     radial-gradient(circle at 0 0,rgba(143,36,255,.28),transparent 38%),
+
+--- logo lines 168-180 ---
+168: }
+169: .sectionTitle h2,.sectionTitle h3{
+170:   background:linear-gradient(90deg,#fff 0%,#f7eaff 55%,#ffd797 100%);
+171:   -webkit-background-clip:text;background-clip:text;color:transparent;
+172: }
+173: .partnerLogo{
+174:   background:#171020;
+175:   border:1px solid rgba(178,92,255,.25);
+176:   box-shadow:0 6px 18px rgba(143,36,255,.10);
+177: }
+178: .chip{
+179:   background:linear-gradient(145deg,rgba(40,21,61,.90),rgba(20,15,31,.92));
+180:   border:1px solid rgba(239,21,157,.20);
+
+--- logo lines 249-261 ---
+249: .winGiftGalleryBlock{margin:22px 0 12px!important}.winGiftGalleryHead{align-items:flex-end!important;margin-bottom:14px!important}.winGiftGalleryHead h2{font-size:28px!important;line-height:1.05!important;letter-spacing:-.8px!important}.winGiftEyebrow{font-size:12px!important;letter-spacing:2.4px!important;color:#ff9ed4!important}.winGiftCount{background:transparent!important;color:inherit!important;font-size:20px!important;padding:0!important;min-width:auto!important}.winGiftSearch{background:#fff!important;color:#201a2b!important;border:1px solid #ded9e4!important;border-radius:20px!important;padding:17px 18px!important;font-size:16px!important;box-shadow:0 8px 24px rgba(37,21,57,.06)!impo
+250: </style>
+251: </head>
+252: <body>
+253: <main class="app">
+254:   <div class="top"><img class="brandLogo" src="data:image/png;base64,[omitted]
+255: 
+256:   <section id="auth" class="hero">
+257:     <div class="eyebrow">WELCOME TO WENIK</div><h2 id="authTitle">JOIN US</h2>
+258:     <div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>
+259: 
+260:     <div id="joinForm">
+261:       <p class="muted">Create your WENIK test account and enter directly.</p>
+
+--- logo lines 316-328 ---
+316: 
+317:     <section id="qr" class="hidden"><div class="hero"><div class="eyebrow">YOUR ACCESS</div><h2>My QR</h2><div class="muted">Show this code to a WENIK partner.</div></div><div class="card"><img id="qrImage"><div id="qrExpiry" class="muted" style="text-align:center"></div><button id="refreshQr" class="btn">REFRESH QR</button></div></section>
+318: 
+319:     <section id="partners" class="hidden"><div class="hero"><div class="eyebrow">DISCOVER</div><h2>WENIK Partners</h2><input id="partnerSearch" class="field" placeholder="Search partner name"><select id="partnerArea" class="field"><option value="">All Areas</option></select><select id="partnerCategory" class="field"><option value="">All Categories</option></select></div><div id="partnerList" class="wenikPartnerGrid"></div></section>
+320: 
+321:     <section id="me" class="hidden"><div class="hero"><div class="eyebrow">YOUR WENIK</div><h2 id="meName"></h2><div id="meMobile" class="muted"></div></div><div class="sectionTitle"><h3>Activity</h3></div><div id="activity"></div><div class="sectionTitle"><h3>Notifications <span id="unread" class="badge">0</span></h3></div><div id="inbox"></div><button id="logout" class="btn secondary">LOG OUT</button></section>
+322:   </section>
+323: </main>
+324: 
+325: 
+326: <div id="wenikPartnerModal" class="wenikPartnerModal hidden" role="dialog" aria-modal="true" aria-label="Partner details"><div class="wenikPartnerSheet"><button id="wenikPartnerClose" class="wenikModalClose" type="button">×</button><div id="wenikPartnerDetail"></div></div></div>
+327: 
+328: <nav id="nav" class="nav hidden">
+
+--- logo lines 475-487 ---
+475:   if(error)return $('msg').textContent=error.message;
+476:   $('msg').textContent='';showResetOtp(phone);
+477: };
+478: 
+479: 
+480: $('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
+481: 
+482: function showSlide(n){
+483:   if(!ads.length)return;
+484:   slide=(n+ads.length)%ads.length;
+485:   $('track').style.transform='translateX(-'+slide*100+'%)';
+486:   $('dots').innerHTML=ads.map((_,i)=>'<i class="'+(i===slide?'on':'')+'"></i>').join('');
+487:   rpc('track_customer_home_ad_impression',{p_ad_id:ads[slide].id}).catch(()=>{})
+
+--- logo lines 631-643 ---
+631: let __winGiftRows=[],__winGiftFiltered=[],__winGiftShown=0;
+632: const __winGiftBatch=24;
+633: function __wgNum(v){const n=Number(v);return Number.isFinite(n)?n:null}
+634: function __winGiftNormalize(x){
+635:   const remain=__wgNum(x.remaining_quantity??x.remaining??x.remaining_gifts??x.stock_remaining);
+636:   return {id:x.gift_id||x.id||'',title:x.gift_title||x.title||x.name||x.gift_name||'WENIK Gift',partner:x.partner_name||x.business_name||x.partner||'',image:x.image_url||x.gift_image_url||x.photo_url||x.partner_logo_url||x.image||'',remain};
+637: }
+638: function __winGiftRender(reset=false){
+639:   const box=$('winGiftGallery'),more=$('winGiftMore'),count=$('winGiftCount');if(!box||!more||!count)return;
+640:   if(reset){__winGiftShown=0;box.innerHTML=''}count.textContent=String(__winGiftFiltered.length);
+641:   const end=Math.min(__winGiftShown+__winGiftBatch,__winGiftFiltered.length),rows=__winGiftFiltered.slice(__winGiftShown,end);
+642:   if(reset&&!rows.length)box.innerHTML='<div class="winGiftEmpty">No gifts available right now.</div>';
+643:   for(const g of rows){const card=document.createElement('article');card.className='winGiftCard';const img=g.image?'<img class="winGiftImg" loading="lazy" decoding="async" src="'+esc(g.image)+'" alt="'+esc(g.title)+'">':'<div class="winGiftImgFallback">🎁</div>';const rem=g.remain===null?'':'<span class="winGiftRemain">'+esc(g.remain)+' left</span>';card.innerHTML='<div class="winGiftImgWrap">'+img+rem+'</div><div class="winGiftBody"><div class="winGiftTitle">'+esc(g.title)+'</div><div class="winGiftPartner">'+esc(g.partner||'WENIK')+'</div></div>';const im=card.querySelector('img');if(im)im.addEventListener('error',()=>{im.parentElement.innerHTML='<div class="winGiftImgFallback">🎁</div>'},{o
+
+--- nav lines 7-19 ---
+7: <meta name="apple-mobile-web-app-capable" content="yes">
+8: <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+9: <meta name="application-name" content="WENIK">
+10: <title>WENIK</title>
+11: <link rel="manifest" href="/manifest.webmanifest">
+12: <link rel="icon" type="image/png" href="data:image/png;base64,[omitted]
+13: <style>
+14: :root{--bg:#08080c;--panel:rgba(20,20,28,.82);--line:#2a2a36;--muted:#9b9ba8;--purple:#a56bff;--pink:#ff4fa1;--orange:#ff8a24;--yellow:#ffd54a}
+15: *{box-sizing:border-box}
+16: html{scroll-behavior:smooth}
+17: body{margin:0;background:radial-gradient(circle at 20% -10%,#28153d 0,transparent 28%),radial-gradient(circle at 100% 0,#3a1f12 0,transparent 24%),var(--bg);color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+18: .app{max-width:590px;margin:auto;padding:20px 14px 110px}
+19: .top{position:sticky;top:0;z-index:10;padding:10px 0 12px;background:linear-gradient(180deg,rgba(8,8,12,.98),rgba(8,8,12,.72),transparent);backdrop-filter:blur(12px)}
+
+--- nav lines 28-40 ---
+28: .btn:active{transform:scale(.985)}
+29: .btn.secondary{background:#20202a;color:#fff;border:1px solid #343443;box-shadow:none}
+30: .field{border:1px solid #34343e;background:#0d0d12;color:#fff;outline:none}
+31: .field:focus{border-color:#a56bff;box-shadow:0 0 0 3px rgba(165,107,255,.12)}
+32: label{font-size:13px;color:#d5d5dc}
+33: .nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:50;width:min(560px,calc(100% - 18px));display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:rgba(14,14,20,.86);border:1px solid #2d2d38;padding:8px;border-radius:22px;backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+34: .nav button{background:none;border:0;color:#858590;font-size:9px;font-weight:800;padding:8px 2px;border-radius:14px}
+35: .nav .active{color:#fff;background:linear-gradient(180deg,rgba(165,107,255,.2),rgba(255,138,36,.08))}
+36: .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+37: .selected{outline:2px solid #fff;box-shadow:0 0 0 4px rgba(165,107,255,.18)}
+38: .focus{border-color:#b66cff;box-shadow:0 0 0 1px #b66cff,0 16px 50px rgba(165,107,255,.18)}
+39: .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+40: .carousel{overflow:hidden;touch-action:pan-y;border-radius:26px}
+
+--- nav lines 29-41 ---
+29: .btn.secondary{background:#20202a;color:#fff;border:1px solid #343443;box-shadow:none}
+30: .field{border:1px solid #34343e;background:#0d0d12;color:#fff;outline:none}
+31: .field:focus{border-color:#a56bff;box-shadow:0 0 0 3px rgba(165,107,255,.12)}
+32: label{font-size:13px;color:#d5d5dc}
+33: .nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:50;width:min(560px,calc(100% - 18px));display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:rgba(14,14,20,.86);border:1px solid #2d2d38;padding:8px;border-radius:22px;backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+34: .nav button{background:none;border:0;color:#858590;font-size:9px;font-weight:800;padding:8px 2px;border-radius:14px}
+35: .nav .active{color:#fff;background:linear-gradient(180deg,rgba(165,107,255,.2),rgba(255,138,36,.08))}
+36: .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+37: .selected{outline:2px solid #fff;box-shadow:0 0 0 4px rgba(165,107,255,.18)}
+38: .focus{border-color:#b66cff;box-shadow:0 0 0 1px #b66cff,0 16px 50px rgba(165,107,255,.18)}
+39: .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+40: .carousel{overflow:hidden;touch-action:pan-y;border-radius:26px}
+41: .track{display:flex;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+
+--- nav lines 30-42 ---
+30: .field{border:1px solid #34343e;background:#0d0d12;color:#fff;outline:none}
+31: .field:focus{border-color:#a56bff;box-shadow:0 0 0 3px rgba(165,107,255,.12)}
+32: label{font-size:13px;color:#d5d5dc}
+33: .nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:50;width:min(560px,calc(100% - 18px));display:grid;grid-template-columns:repeat(6,1fr);gap:3px;background:rgba(14,14,20,.86);border:1px solid #2d2d38;padding:8px;border-radius:22px;backdrop-filter:blur(18px);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+34: .nav button{background:none;border:0;color:#858590;font-size:9px;font-weight:800;padding:8px 2px;border-radius:14px}
+35: .nav .active{color:#fff;background:linear-gradient(180deg,rgba(165,107,255,.2),rgba(255,138,36,.08))}
+36: .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+37: .selected{outline:2px solid #fff;box-shadow:0 0 0 4px rgba(165,107,255,.18)}
+38: .focus{border-color:#b66cff;box-shadow:0 0 0 1px #b66cff,0 16px 50px rgba(165,107,255,.18)}
+39: .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+40: .carousel{overflow:hidden;touch-action:pan-y;border-radius:26px}
+41: .track{display:flex;transition:transform .45s cubic-bezier(.2,.8,.2,1)}
+42: .slide{min-width:100%;padding:0;overflow:hidden;position:relative}
+
+--- nav lines 138-150 ---
+138: }
+139: .field:focus{
+140:   border-color:var(--pink);
+141:   box-shadow:0 0 0 3px rgba(239,21,157,.12),0 0 20px rgba(143,36,255,.08);
+142: }
+143: .nav{
+144:   background:rgba(9,7,17,.90);
+145:   border:1px solid rgba(178,92,255,.26);
+146:   box-shadow:0 18px 55px rgba(0,0,0,.58),0 0 32px rgba(143,36,255,.09);
+147: }
+148: .nav button{color:#9e98ae}
+149: .nav .active{
+150:   color:#fff;
+
+--- nav lines 143-155 ---
+143: .nav{
+144:   background:rgba(9,7,17,.90);
+145:   border:1px solid rgba(178,92,255,.26);
+146:   box-shadow:0 18px 55px rgba(0,0,0,.58),0 0 32px rgba(143,36,255,.09);
+147: }
+148: .nav button{color:#9e98ae}
+149: .nav .active{
+150:   color:#fff;
+151:   background:linear-gradient(135deg,rgba(143,36,255,.48),rgba(239,21,157,.38) 45%,rgba(255,111,33,.34));
+152:   box-shadow:0 7px 18px rgba(239,21,157,.13);
+153: }
+154: .badge{
+155:   color:#fff;
+
+--- nav lines 144-156 ---
+144:   background:rgba(9,7,17,.90);
+145:   border:1px solid rgba(178,92,255,.26);
+146:   box-shadow:0 18px 55px rgba(0,0,0,.58),0 0 32px rgba(143,36,255,.09);
+147: }
+148: .nav button{color:#9e98ae}
+149: .nav .active{
+150:   color:#fff;
+151:   background:linear-gradient(135deg,rgba(143,36,255,.48),rgba(239,21,157,.38) 45%,rgba(255,111,33,.34));
+152:   box-shadow:0 7px 18px rgba(239,21,157,.13);
+153: }
+154: .badge{
+155:   color:#fff;
+156:   background:linear-gradient(100deg,rgba(143,36,255,.88),rgba(239,21,157,.88));
+
+--- nav lines 234-246 ---
+234: .btn{background:linear-gradient(100deg,var(--lp),#b02fff)!important;color:#fff!important;border:0!important}.btn.secondary{background:#fff!important;color:var(--lp)!important;border:1px solid rgba(123,44,255,.24)!important;box-shadow:none!important}
+235: .wenikDiscovery{position:relative;background:#fff!important}.wenikDiscovery:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,var(--lp) 0 38%,var(--lo) 38% 72%,var(--ly) 72%)}
+236: .wenikCat{color:var(--li)!important}.wenikCatCircle{background:#fff!important;border:1px solid #eadff1!important;box-shadow:0 7px 18px rgba(52,27,70,.07)!important}.wenikCat.active .wenikCatCircle{outline:2px solid var(--lp)!important;box-shadow:0 0 0 4px rgba(123,44,255,.07)!important}.wenikCatLabel{color:#665d6d!important}
+237: .wenikPartnerCard{background:#fff!important;border:1px solid var(--ll)!important;box-shadow:0 8px 22px rgba(52,27,70,.08)!important}.wenikPartnerMedia{background:linear-gradient(135deg,#f6efff,#fff5ec,#fffbea)!important}.wenikPartnerPlaceholder{color:var(--lp)!important}.wenikPartnerPromo{color:#d85b16!important}.wenikOff{background:linear-gradient(100deg,var(--lp),var(--lo),#f0b800)!important;color:#fff!important}
+238: .wenikEmpty{color:var(--lm)!important;border-color:#e4d9eb!important;background:#fff!important}.wenikPartnerModal{background:rgba(35,22,44,.42)!important}.wenikPartnerSheet{background:#fff!important;color:var(--li)!important;border-color:#e6ddeb!important}.wenikModalClose{background:#fff!important;color:var(--li)!important;border-color:#e3dbe8!important}.wenikDetailHero{background:linear-gradient(135deg,#f5edff,#fff3ea,#fff9dc)!important}.wenikDetailPromo{background:linear-gradient(120deg,rgba(123,44,255,.07),rgba(255,111,33,.07),rgba(255,210,28,.10))!important;border-color:#eadff0!important}.wenikDetailPromo strong{color:#d85b16!important}.wenikDetailActions a{background:#faf7fc!important;b
+239: .nav{background:rgba(255,255,255,.97)!important;border-color:#e8e0ed!important;box-shadow:0 -8px 25px rgba(52,27,70,.08)!important}.nav button{color:#756b7d!important}.nav button.active{color:var(--lp)!important}
+240: 
+241: 
+242: /* WENIK HOME CATEGORIES FIRST V1 */
+243: 
+244: 
+245: /* WENIK WIN GIFT GALLERY V1 */
+246: .winGiftGalleryBlock{margin:18px 0 8px}.winGiftGalleryHead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:10px}.winGiftGalleryHead h2{margin:2px 0 0}.winGiftEyebrow{font-size:11px;font-weight:900;letter-spacing:2px;color:#ffb6df}.winGiftCount{min-width:38px;text-align:center;border-radius:999px;padding:7px 10px;background:rgba(255,255,255,.09);font-weight:900}.winGiftSearch{width:100%;border-radius:16px;border:1px solid rgba(255,255,255,.13);background:rgba(10,8,20,.78);color:#fff;padding:14px 15px;margin:4px 0 14px;font-size:15px}.winGiftGallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.winGiftCard{overflow:hidden;border-rad
+
+--- nav lines 323-335 ---
+323: </main>
+324: 
+325: 
+326: <div id="wenikPartnerModal" class="wenikPartnerModal hidden" role="dialog" aria-modal="true" aria-label="Partner details"><div class="wenikPartnerSheet"><button id="wenikPartnerClose" class="wenikModalClose" type="button">×</button><div id="wenikPartnerDetail"></div></div></div>
+327: 
+328: <nav id="nav" class="nav hidden">
+329:   <button class="active" onclick="tab('home',this)">HOME</button>
+330:   <button onclick="tab('win',this)">WIN</button>
+331:   <button id="izaBtn" onclick="tab('iza',this)">IZA</button>
+332:   <button onclick="tab('qr',this)">QR</button>
+333:   <button onclick="tab('partners',this)">PARTNERS</button>
+334:   <button onclick="tab('me',this)">ME <span id="navUnread" class="dot hidden">0</span></button>
+335: </nav>
+
+--- nav lines 329-341 ---
+329:   <button class="active" onclick="tab('home',this)">HOME</button>
+330:   <button onclick="tab('win',this)">WIN</button>
+331:   <button id="izaBtn" onclick="tab('iza',this)">IZA</button>
+332:   <button onclick="tab('qr',this)">QR</button>
+333:   <button onclick="tab('partners',this)">PARTNERS</button>
+334:   <button onclick="tab('me',this)">ME <span id="navUnread" class="dot hidden">0</span></button>
+335: </nav>
+336: 
+337: <script type="module">
+338: import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+339: import QRCode from'https://esm.sh/qrcode@1.5.4';
+340: 
+341: const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
+
+--- nav lines 330-342 ---
+330:   <button onclick="tab('win',this)">WIN</button>
+331:   <button id="izaBtn" onclick="tab('iza',this)">IZA</button>
+332:   <button onclick="tab('qr',this)">QR</button>
+333:   <button onclick="tab('partners',this)">PARTNERS</button>
+334:   <button onclick="tab('me',this)">ME <span id="navUnread" class="dot hidden">0</span></button>
+335: </nav>
+336: 
+337: <script type="module">
+338: import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
+339: import QRCode from'https://esm.sh/qrcode@1.5.4';
+340: 
+341: const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
+342: const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
+
+--- nav lines 347-359 ---
+347: let profile,focusId=new URLSearchParams(location.search).get('iza'),ads=[],slide=0,timer,touchX=0;
+348: async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+349: 
+350: window.tab=(id,b)=>{
+351:   ['home','win','iza','qr','partners','me'].forEach(x=>$(x).classList.toggle('hidden',x!==id));
+352:   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+353:   b?.classList.add('active');
+354:   if(id==='qr')loadQr();
+355:   if(id==='win'){loadWins();loadWinGiftGallery();}
+356:   if(id==='partners')loadPartners();
+357:   if(id==='me')loadMe();
+358:   scrollTo({top:0,behavior:'smooth'})
+359: };
+
+--- nav lines 583-595 ---
+583:   $('recent').innerHTML=(r||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.public_display_name||'Winner')+'</b><span class="badge">WINNER</span></div></div>').join('')||'<div class="card muted">No announced winners.</div>'
+584: }
+585: 
+586: async function refreshUnread(){
+587:   const u=Number(await rpc('customer_unread_message_count').catch(()=>0));
+588:   $('unread').textContent=u;$('navUnread').textContent=u;$('navUnread').classList.toggle('hidden',u===0)
+589: }
+590: 
+591: const WENIK_VAPID_PUBLIC_KEY='BH1kiwu9TR9zO7U8tzXJKPdmVzMTtXKcTM8EVUGZsz7PBgJFK6nIjp9wCkqWoAOZDymWCmxkELxC8jspxxMsExg';
+592: function b64u8(s){const pad='='.repeat((4-s.length%4)%4),b=(s+pad).replace(/-/g,'+').replace(/_/g,'/'),raw=atob(b);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
+593: async function pushStateCard(){if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return '<div class="card muted">Push notifications are not supported on this browser.</div>';if(Notification.permission==='denied')return '<div class="card muted">Phone notifications are blocked in browser settings.</div>';const reg=await navigator.serviceWorker.register('/sw.js');const sub=await reg.pushManager.getSubscription();return sub?'<div class="card"><div class="row"><b>Phone notifications</b><span class="badge">ON</span></div><div class="muted">WENIK can notify you even when the site is closed.</div></div>':'<div class="card"><div class="row"><b>Phone notification
+594: window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('Push notifications are not supported on this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notification permission was not granted.');const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(WENIK_VAPID_PUBLIC_KEY)});const prof=await rpc('customer_my_profile');const customer=prof?.[0];if(!customer?.customer_id)throw Error('Cu
+595: 
+
+--- nav lines 588-600 ---
+588:   $('unread').textContent=u;$('navUnread').textContent=u;$('navUnread').classList.toggle('hidden',u===0)
+589: }
+590: 
+591: const WENIK_VAPID_PUBLIC_KEY='BH1kiwu9TR9zO7U8tzXJKPdmVzMTtXKcTM8EVUGZsz7PBgJFK6nIjp9wCkqWoAOZDymWCmxkELxC8jspxxMsExg';
+592: function b64u8(s){const pad='='.repeat((4-s.length%4)%4),b=(s+pad).replace(/-/g,'+').replace(/_/g,'/'),raw=atob(b);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
+593: async function pushStateCard(){if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return '<div class="card muted">Push notifications are not supported on this browser.</div>';if(Notification.permission==='denied')return '<div class="card muted">Phone notifications are blocked in browser settings.</div>';const reg=await navigator.serviceWorker.register('/sw.js');const sub=await reg.pushManager.getSubscription();return sub?'<div class="card"><div class="row"><b>Phone notifications</b><span class="badge">ON</span></div><div class="muted">WENIK can notify you even when the site is closed.</div></div>':'<div class="card"><div class="row"><b>Phone notification
+594: window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('Push notifications are not supported on this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notification permission was not granted.');const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(WENIK_VAPID_PUBLIC_KEY)});const prof=await rpc('customer_my_profile');const customer=prof?.[0];if(!customer?.customer_id)throw Error('Cu
+595: 
+596: async function loadMe(){
+597:   const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+598:   $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+599:   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
+600:   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
+
+--- nav lines 589-601 ---
+589: }
+590: 
+591: const WENIK_VAPID_PUBLIC_KEY='BH1kiwu9TR9zO7U8tzXJKPdmVzMTtXKcTM8EVUGZsz7PBgJFK6nIjp9wCkqWoAOZDymWCmxkELxC8jspxxMsExg';
+592: function b64u8(s){const pad='='.repeat((4-s.length%4)%4),b=(s+pad).replace(/-/g,'+').replace(/_/g,'/'),raw=atob(b);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
+593: async function pushStateCard(){if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return '<div class="card muted">Push notifications are not supported on this browser.</div>';if(Notification.permission==='denied')return '<div class="card muted">Phone notifications are blocked in browser settings.</div>';const reg=await navigator.serviceWorker.register('/sw.js');const sub=await reg.pushManager.getSubscription();return sub?'<div class="card"><div class="row"><b>Phone notifications</b><span class="badge">ON</span></div><div class="muted">WENIK can notify you even when the site is closed.</div></div>':'<div class="card"><div class="row"><b>Phone notification
+594: window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('Push notifications are not supported on this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notification permission was not granted.');const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(WENIK_VAPID_PUBLIC_KEY)});const prof=await rpc('customer_my_profile');const customer=prof?.[0];if(!customer?.customer_id)throw Error('Cu
+595: 
+596: async function loadMe(){
+597:   const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+598:   $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+599:   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
+600:   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
+601:   document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
+
+--- nav lines 594-606 ---
+594: window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('Push notifications are not supported on this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notification permission was not granted.');const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(WENIK_VAPID_PUBLIC_KEY)});const prof=await rpc('customer_my_profile');const customer=prof?.[0];if(!customer?.customer_id)throw Error('Cu
+595: 
+596: async function loadMe(){
+597:   const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+598:   $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+599:   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
+600:   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
+601:   document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
+602:   refreshUnread()
+603: }
+604: 
+605: async function openNotification(id){
+606:   const r=await rpc('customer_open_message',{p_message_id:id}),x=Array.isArray(r)?r[0]:r;
+
+--- nav lines 611-623 ---
+611: 
+612: async function enter(){
+613:   const d=await rpc('customer_my_profile');
+614:   if(!d?.length)return;
+615:   profile=d[0];
+616:   $('auth').classList.add('hidden');$('shell').classList.remove('hidden');$('nav').classList.remove('hidden');
+617:   $('meName').textContent=((profile.first_name||'')+' '+(profile.last_name||'')).trim();
+618:   $('meMobile').textContent=profile.mobile||'';
+619:   await Promise.all([loadHome(),loadIza(),refreshUnread(),loadPartnerDiscovery()])
+620: }
+621: 
+622: const{data:{session}}=await sb.auth.getSession();
+623: if(session)enter();
+
+--- nav lines 642-654 ---
+642:   if(reset&&!rows.length)box.innerHTML='<div class="winGiftEmpty">No gifts available right now.</div>';
+643:   for(const g of rows){const card=document.createElement('article');card.className='winGiftCard';const img=g.image?'<img class="winGiftImg" loading="lazy" decoding="async" src="'+esc(g.image)+'" alt="'+esc(g.title)+'">':'<div class="winGiftImgFallback">🎁</div>';const rem=g.remain===null?'':'<span class="winGiftRemain">'+esc(g.remain)+' left</span>';card.innerHTML='<div class="winGiftImgWrap">'+img+rem+'</div><div class="winGiftBody"><div class="winGiftTitle">'+esc(g.title)+'</div><div class="winGiftPartner">'+esc(g.partner||'WENIK')+'</div></div>';const im=card.querySelector('img');if(im)im.addEventListener('error',()=>{im.parentElement.innerHTML='<div class="winGiftImgFallback">🎁</div>'},{o
+644:   __winGiftShown=end;more.classList.toggle('hidden',__winGiftShown>=__winGiftFiltered.length);
+645: }
+646: async function loadWinGiftGallery(){
+647:   const box=$('winGiftGallery');if(!box)return;try{if(!__winGiftRows.length){box.innerHTML='<div class="winGiftEmpty">Loading gifts…</div>';const rows=await rpc('public_active_win_gifts',{p_limit:500});__winGiftRows=(rows||[]).map(__winGiftNormalize).filter(g=>g.remain===null||g.remain>0)}const q=($('winGiftSearch')?.value||'').trim().toLowerCase();__winGiftFiltered=!q?__winGiftRows:__winGiftRows.filter(g=>(g.title+' '+g.partner).toLowerCase().includes(q));__winGiftRender(true)}catch(e){box.innerHTML='<div class="winGiftEmpty">Gifts are temporarily unavailable.</div>';console.error('WIN gifts gallery',e)}
+648: }
+649: $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore')?.addEventListener('click',()=>__winGiftRender(false));
+650: </script>
+651: 
+652: <script>
+653: /* WENIK INTERNAL BACK NAV V1 */
+654: (() => {
+
+--- nav lines 648-660 ---
+648: }
+649: $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore')?.addEventListener('click',()=>__winGiftRender(false));
+650: </script>
+651: 
+652: <script>
+653: /* WENIK INTERNAL BACK NAV V1 */
+654: (() => {
+655:   const views=['home','win','iza','qr','partners','me'];
+656:   const byId=id=>document.getElementById(id);
+657:   let applyingHistory=false, originalTab=null, originalOpenPartner=null;
+658:   const visibleView=()=>views.find(id=>{const el=byId(id);return el&&!el.classList.contains('hidden')})||'home';
+659:   const navButton=id=>[...(byId('nav')?.querySelectorAll('button')||[])].find(b=>(b.getAttribute('onclick')||'').includes("tab('"+id+"'"));
+660:   const shellReady=()=>byId('shell')&&!byId('shell').classList.contains('hidden');
+
+--- nav lines 654-666 ---
+654: (() => {
+655:   const views=['home','win','iza','qr','partners','me'];
+656:   const byId=id=>document.getElementById(id);
+657:   let applyingHistory=false, originalTab=null, originalOpenPartner=null;
+658:   const visibleView=()=>views.find(id=>{const el=byId(id);return el&&!el.classList.contains('hidden')})||'home';
+659:   const navButton=id=>[...(byId('nav')?.querySelectorAll('button')||[])].find(b=>(b.getAttribute('onclick')||'').includes("tab('"+id+"'"));
+660:   const shellReady=()=>byId('shell')&&!byId('shell').classList.contains('hidden');
+661:   const ensureRoot=()=>{
+662:     if(!shellReady()) return;
+663:     const v=visibleView();
+664:     if(!history.state?.wenikInternal){history.replaceState({wenikInternal:true,view:v},'',location.href)}
+665:   };
+666:   const pushView=id=>{
+
+--- nav lines 706-718 ---
+706:     const st=e.state;
+707:     if(!st?.wenikInternal) return;
+708:     applyingHistory=true;
+709:     try{
+710:       if(st.partner){
+711:         if(originalTab) originalTab(st.view||'partners',navButton(st.view||'partners'));
+712:         if(originalOpenPartner) await originalOpenPartner(st.partner);
+713:       }else{
+714:         closeModalOnly();
+715:         if(originalTab) originalTab(st.view||'home',navButton(st.view||'home'));
+716:       }
+717:     }finally{applyingHistory=false}
+718:   });
+
+--- panel lines 9-21 ---
+9: <meta name="application-name" content="WENIK">
+10: <title>WENIK</title>
+11: <link rel="manifest" href="/manifest.webmanifest">
+12: <link rel="icon" type="image/png" href="data:image/png;base64,[omitted]
+13: <style>
+14: :root{--bg:#08080c;--panel:rgba(20,20,28,.82);--line:#2a2a36;--muted:#9b9ba8;--purple:#a56bff;--pink:#ff4fa1;--orange:#ff8a24;--yellow:#ffd54a}
+15: *{box-sizing:border-box}
+16: html{scroll-behavior:smooth}
+17: body{margin:0;background:radial-gradient(circle at 20% -10%,#28153d 0,transparent 28%),radial-gradient(circle at 100% 0,#3a1f12 0,transparent 24%),var(--bg);color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+18: .app{max-width:590px;margin:auto;padding:20px 14px 110px}
+19: .top{position:sticky;top:0;z-index:10;padding:10px 0 12px;background:linear-gradient(180deg,rgba(8,8,12,.98),rgba(8,8,12,.72),transparent);backdrop-filter:blur(12px)}
+20: .brandLogo{display:block;width:112px;max-width:34vw;height:auto;object-fit:contain;border-radius:50%}
+21: .hero{padding:22px;border-radius:26px;background:linear-gradient(145deg,rgba(165,107,255,.18),rgba(255,79,161,.08) 38%,rgba(255,138,36,.08));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 60px rgba(0,0,0,.25)}
+
+--- panel lines 18-30 ---
+18: .app{max-width:590px;margin:auto;padding:20px 14px 110px}
+19: .top{position:sticky;top:0;z-index:10;padding:10px 0 12px;background:linear-gradient(180deg,rgba(8,8,12,.98),rgba(8,8,12,.72),transparent);backdrop-filter:blur(12px)}
+20: .brandLogo{display:block;width:112px;max-width:34vw;height:auto;object-fit:contain;border-radius:50%}
+21: .hero{padding:22px;border-radius:26px;background:linear-gradient(145deg,rgba(165,107,255,.18),rgba(255,79,161,.08) 38%,rgba(255,138,36,.08));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 60px rgba(0,0,0,.25)}
+22: .hero h2{font-size:30px;margin:6px 0 4px;letter-spacing:-1px}
+23: .card{padding:16px;border-radius:22px;background:var(--panel);border:1px solid var(--line);margin-top:12px;box-shadow:0 14px 35px rgba(0,0,0,.16);backdrop-filter:blur(14px)}
+24: .muted{color:var(--muted);font-size:13px}
+25: .hidden{display:none!important}
+26: .btn,.field{width:100%;border-radius:15px;padding:13px;margin-top:9px}
+27: .btn{border:0;font-weight:950;background:linear-gradient(90deg,#c992ff,#ff7e9d,#ffad55,#ffe16d);color:#0b0b0f;box-shadow:0 8px 20px rgba(255,126,157,.12);transition:transform .15s ease,filter .15s ease}
+28: .btn:active{transform:scale(.985)}
+29: .btn.secondary{background:#20202a;color:#fff;border:1px solid #343443;box-shadow:none}
+30: .field{border:1px solid #34343e;background:#0d0d12;color:#fff;outline:none}
+
+--- panel lines 64-76 ---
+64: 
+65: 
+66: /* WENIK COLOR REFRESH — visual-only overrides, no functional changes */
+67: :root{
+68:   --bg:#06050d;
+69:   --panel:rgba(15,12,27,.88);
+70:   --line:rgba(178,92,255,.22);
+71:   --muted:#b9b4c8;
+72:   --purple:#8f24ff;
+73:   --violet:#5b21d6;
+74:   --pink:#ef159d;
+75:   --coral:#ff3f64;
+76:   --orange:#ff6f21;
+
+--- IDs ---
+auth, authTitle, joinTab, loginTab, joinForm, first, last, phone, newPassword, terms, privacy, marketing, send, loginForm, loginPhone, loginPassword, login, forgotPassword, msg, shell, home, carousel, track, dots, homePartnerDiscovery, homePartnerLocationStatus, homePartnerArea, homeUseLocation, homePartnerCategories, homePartnerGrid, homeViewAllPartners, campaigns, win, wins, recent, winGiftCount, winGiftSearch, winGiftGallery, winGiftMore, iza, izaList, qr, qrImage, qrExpiry, refreshQr, partners, partnerSearch, partnerArea, partnerCategory, partnerList, me, meName, meMobile, activity, unread, inbox, logout, wenikPartnerModal, wenikPartnerClose, wenikPartnerDetail, nav, izaBtn, navUnread, otpVerifyBox, otpCode, verifyOtpBtn, otpBackBtn, otpMsg, resetPasswordBox, resetOtpCode, verifyResetOtpBtn, resetBackBtn, resetMsg, resetNewPassword, resetConfirmPassword, saveResetPasswordBtn, resetMsg, iza-
