@@ -1,0 +1,36 @@
+name: Partner eye preview
+on:
+  push:
+    branches: [partner-media-upload-clean-preview-20260906]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: partner-media-upload-clean-preview-20260906
+      - name: Add explicit password eye
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('partner.html')
+          s=p.read_text()
+          old='  <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password">'
+          new='''  <div style="position:relative">\n    <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:64px">\n    <button id="togglePassword" type="button" aria-label="Show password" title="Show password" style="position:absolute;right:12px;top:20px;width:44px;height:44px;border:0;border-radius:14px;background:transparent;color:#fff;font-size:22px;cursor:pointer;z-index:3">👁️</button>\n  </div>'''
+          if old not in s: raise SystemExit('password input marker not found')
+          s=s.replace(old,new,1)
+          marker="$('loginBtn').onclick=async()=>"
+          js="""$('togglePassword').onclick=()=>{const f=$('password'),show=f.type==='password';f.type=show?'text':'password';$('togglePassword').textContent=show?'🙈':'👁️';$('togglePassword').setAttribute('aria-label',show?'Hide password':'Show password');$('togglePassword').title=show?'Hide password':'Show password'};\n"""
+          if marker not in s: raise SystemExit('login marker not found')
+          s=s.replace(marker,js+marker,1)
+          p.write_text(s)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add partner.html
+          git diff --cached --quiet || (git commit -m "Add explicit partner password visibility control" && git push)
