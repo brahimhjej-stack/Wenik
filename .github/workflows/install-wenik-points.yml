@@ -1,0 +1,35 @@
+name: Install WENIK Points UI
+on:
+  push:
+    paths:
+      - 'wenik-points.js'
+      - '.github/workflows/install-wenik-points.yml'
+permissions:
+  contents: write
+jobs:
+  install:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inject points module without changing existing UI
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          tag='<script type="module" src="/wenik-points.js"></script>'
+          for name in ['index.html','partner.html','admin.html']:
+              p=Path(name)
+              s=p.read_text(encoding='utf-8')
+              if tag not in s:
+                  if '</body>' not in s:
+                      raise SystemExit(f'No closing body in {name}')
+                  s=s.replace('</body>', tag+'\n</body>', 1)
+                  p.write_text(s,encoding='utf-8')
+          PY
+      - name: Commit integration
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html partner.html admin.html
+          git diff --cached --quiet || git commit -m 'Integrate WENIK points UI'
+          git push
