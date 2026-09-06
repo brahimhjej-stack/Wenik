@@ -52,7 +52,10 @@ video{border:2px solid transparent;background:linear-gradient(#000,#000) padding
 <section id="login" class="hero hidden">
   <div class="eyebrow">WENIK PARTNER</div><h1>Partner Login</h1>
   <input id="username" class="field" placeholder="Username" autocomplete="username">
-  <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password">
+  <div style="position:relative">
+    <input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password" style="padding-right:64px">
+    <button id="togglePassword" type="button" aria-label="Show password" title="Show password" style="position:absolute;right:12px;top:20px;width:44px;height:44px;border:0;border-radius:14px;background:transparent;color:#fff;font-size:22px;cursor:pointer;z-index:3">👁️</button>
+  </div>
   <button id="loginBtn" class="btn">LOGIN</button><div id="loginMsg" class="muted"></div>
 </section>
 
@@ -139,6 +142,7 @@ async function start(){
   catch(e){await sb.auth.signOut();showLogin(e.message)}
 }
 function showLogin(m=''){$('app').classList.add('hidden');$('login').classList.remove('hidden');$('loginMsg').textContent=m}
+$('togglePassword').onclick=()=>{const f=$('password'),show=f.type==='password';f.type=show?'text':'password';$('togglePassword').textContent=show?'🙈':'👁️';$('togglePassword').setAttribute('aria-label',show?'Hide password':'Show password');$('togglePassword').title=show?'Hide password':'Show password'};
 $('loginBtn').onclick=async()=>{try{$('loginMsg').textContent='Signing in…';const username=$('username').value.trim().toLowerCase(),password=$('password').value;if(!username||!password)throw Error('Enter username and password.');const{data,error}=await sb.functions.invoke('partner-login',{body:{username,password}});if(error)throw error;if(data?.error)throw Error(data.error==='account_locked'?'Account temporarily locked. Try again later.':'Invalid username or password.');const r=await sb.auth.setSession({access_token:data.access_token,refresh_token:data.refresh_token});if(r.error)throw r.error;await start()}catch(e){$('loginMsg').textContent=e.message||'Login failed.'}};
 function stopCamera(){scanning=false;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('camera').srcObject=null}
 function qrUuid(raw){const s=String(raw||'').trim();const m=s.match(/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);return m?.[0]||''}
