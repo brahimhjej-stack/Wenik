@@ -815,5 +815,53 @@ $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore'
 })();
 </script>
 
+<!-- WENIK GLOBAL PASSWORD VISIBILITY V1 -->
+<style>
+.wenik-password-wrap{position:relative;width:100%}
+.wenik-password-wrap>.field,.wenik-password-wrap>input[type="password"],.wenik-password-wrap>input[type="text"]{padding-right:58px!important}
+.wenik-password-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;font-size:20px;line-height:1;z-index:3;opacity:.78}
+.wenik-password-eye:active{transform:translateY(-50%) scale(.96)}
+.wenik-password-eye:focus-visible{outline:2px solid #ef159d;outline-offset:2px}
+</style>
+<script>
+(function(){
+  function enhancePassword(input){
+    if(!input || input.dataset.wenikPasswordEye==='1') return;
+    input.dataset.wenikPasswordEye='1';
+    var parent=input.parentElement;
+    var wrap=document.createElement('div');
+    wrap.className='wenik-password-wrap';
+    parent.insertBefore(wrap,input);
+    wrap.appendChild(input);
+    var btn=document.createElement('button');
+    btn.type='button';
+    btn.className='wenik-password-eye';
+    btn.setAttribute('aria-label','Show password');
+    btn.setAttribute('title','Show password');
+    btn.textContent='👁齯';
+    btn.addEventListener('click',function(){
+      var showing=input.type==='text';
+      input.type=showing?'password'*'text';
+      btn.setAttribute('aria-label',showing?'Show password':'Hide password');
+      btn.setAttribute('title',showing?'Show password':'Hide password');
+      btn.textContent=showing?'👁鎫':'🙉';
+      input.focus({preventScroll:true});
+      try{input.setSelectionRange(input.value.length,input.value.length)}catch(e){}
+    });
+    wrap.appendChild(btn);
+  }
+  function scan(root){
+    (root||document).querySelectorAll('input[type="password"]').forEach(enhancePassword);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){scan(document)});
+  else scan(document);
+  new MutationObserver(function(mutations){
+    mutations.forEach(function(m){
+      m.addedNodes.forEach(function(n){if(n.nodeType===1){if(n.matches&&n.matches('input[type="password"]'))enhancePassword(n);scan(n)}})
+    });
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
 </body>
 </html>
