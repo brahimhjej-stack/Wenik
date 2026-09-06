@@ -1,12 +1,13 @@
 name: Admin approval image preview
-on:
+'on':
   push:
-    branches: [admin-approval-image-preview-20260906]
+    branches:
+      - admin-approval-image-preview-20260906
 permissions:
   contents: write
 jobs:
   patch:
-    if: github.actor != 'github-actions[bot]'
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,30 +17,28 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
           p=Path('admin.html'); s=p.read_text()
-          s=s.replace('</style></head>', '''
-.approvalImg{width:100%;max-height:280px;object-fit:contain;border-radius:16px;margin-top:12px;border:1px solid rgba(178,92,255,.22);background:#070610;cursor:zoom-in}
-.approvalHint{font-size:12px;color:#b9b4c8;margin-top:7px;text-align:center}
-.imageViewer{position:fixed;inset:0;background:rgba(2,1,8,.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
-.imageViewer.hidden{display:none!important}.imageViewerBox{width:min(980px,100%);max-height:94vh;overflow:auto;background:#0d0b16;border:1px solid rgba(178,92,255,.4);border-radius:24px;padding:14px;box-shadow:0 24px 80px #000}.imageViewerTop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.imageViewerClose{width:auto;margin:0;padding:10px 14px}.imageViewer img{display:block;width:100%;max-height:74vh;object-fit:contain;background:#05040a;border-radius:18px}.imageViewerActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-</style></head>''')
-          s=s.replace('<section id="approvals" class="panel">', '''<div id="approvalImageViewer" class="imageViewer hidden" role="dialog" aria-modal="true" aria-label="Partner image preview"><div class="imageViewerBox"><div class="imageViewerTop"><div><b id="approvalViewerPartner">Partner image</b><div id="approvalViewerSlot" class="muted"></div></div><button id="approvalViewerClose" class="btn secondary imageViewerClose" type="button">CLOSE ✕</button></div><img id="approvalViewerImg" alt="Partner image preview"><div class="imageViewerActions"><button id="approvalViewerApprove" class="btn ok" type="button">APPROVE</button><button id="approvalViewerReject" class="btn danger" type="button">REJECT</button></div></div></div>
-<section id="approvals" class="panel">''')
-          old="async function loadApprovals(){try{const[ads,items]=await Promise.all([rpc('admin_pending_ads'),rpc('admin_pending_items')]);$('pendingAds').innerHTML=(ads||[]).map(a=>'<div class=\"card\"><div class=\"row\"><b>'+esc(a.business_name)+'</b><span class=\"pill\">Slot '+a.slot_no+'</span></div><h3>'+esc(a.title||'Partner ad')+'</h3><div class=\"muted\">'+esc(a.description||'')+'</div>'+(a.image_url?'<img class=\"itemImg\" src=\"'+esc(a.image_url)+'\" alt=\"\">':'')+'<div class=\"actions\"><button class=\"btn ok\" onclick=\"review(\\'ad\\',\\''+a.id+'\\',\\'approved\\')\">APPROVE</button><button class=\"btn danger\" onclick=\"review(\\'ad\\',\\''+a.id+'\\',\\'rejected\\')\">REJECT</button></div></div>').join('')||'<div class=\"card muted\">No pending ads.</div>';$('pendingItems').innerHTML=(items||[]).map(i=>'<div class=\"card\"><b>'+esc(i.business_name)+'</b><h3>'+esc(i.name)+'</h3><div class=\"muted\">'+esc(i.category||'')+' · '+money(i.regular_price)+' → '+money(i.wenik_price)+'</div>'+(i.image_url?'<img class=\"itemImg\" src=\"'+esc(i.image_url)+'\" alt=\"\">':'')+'<div class=\"actions\"><button class=\"btn ok\" onclick=\"review(\\'item\\',\\''+i.id+'\\',\\'approved\\')\">APPROVE</button><button class=\"btn danger\" onclick=\"review(\\'item\\',\\''+i.id+'\\',\\'rejected\\')\">REJECT</button></div></div>').join('')||'<div class=\"card muted\">No pending items.</div>'}catch(e){$('pendingAds').innerHTML='<div class=\"card error\">'+esc(e.message)+'</div>'}}"
-          new="""let approvalViewerAd=null;
+          css='''.approvalImg{width:100%;max-height:280px;object-fit:contain;border-radius:16px;margin-top:12px;border:1px solid rgba(178,92,255,.22);background:#070610;cursor:zoom-in}.approvalHint{font-size:12px;color:#b9b4c8;margin-top:7px;text-align:center}.imageViewer{position:fixed;inset:0;background:rgba(2,1,8,.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}.imageViewer.hidden{display:none!important}.imageViewerBox{width:min(980px,100%);max-height:94vh;overflow:auto;background:#0d0b16;border:1px solid rgba(178,92,255,.4);border-radius:24px;padding:14px}.imageViewer img{display:block;width:100%;max-height:74vh;object-fit:contain;background:#05040a;border-radius:18px}.imageViewerActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}'''
+          s=s.replace('</style></head>',css+'</style></head>')
+          modal='''<div id="approvalImageViewer" class="imageViewer hidden"><div class="imageViewerBox"><div class="row"><div><b id="approvalViewerPartner">Partner image</b><div id="approvalViewerSlot" class="muted"></div></div><button id="approvalViewerClose" class="btn secondary" style="width:auto" type="button">CLOSE ✕</button></div><img id="approvalViewerImg" alt="Partner image preview"><div class="imageViewerActions"><button id="approvalViewerApprove" class="btn ok" type="button">APPROVE</button><button id="approvalViewerReject" class="btn danger" type="button">REJECT</button></div></div></div>'''
+          s=s.replace('<section id="approvals" class="panel">',modal+'<section id="approvals" class="panel">')
+          start=s.index('async function loadApprovals()')
+          end=s.index("$('refreshApprovals').onclick=loadApprovals;",start)
+          new=r'''let approvalViewerAd=null;
 function closeApprovalViewer(){$('approvalImageViewer').classList.add('hidden');$('approvalViewerImg').removeAttribute('src');approvalViewerAd=null}
 window.openApprovalImage=(id,url,business,slot)=>{approvalViewerAd={id};$('approvalViewerPartner').textContent=business||'Partner image';$('approvalViewerSlot').textContent='Slot '+slot+' · PENDING';$('approvalViewerImg').src=url;$('approvalImageViewer').classList.remove('hidden')};
-$('approvalViewerClose').onclick=closeApprovalViewer;$('approvalImageViewer').onclick=e=>{if(e.target===$('approvalImageViewer'))closeApprovalViewer()};document.addEventListener('keydown',e=>{if(e.key==='Escape')closeApprovalViewer()});
+$('approvalViewerClose').onclick=closeApprovalViewer;$('approvalImageViewer').onclick=e=>{if(e.target===$('approvalImageViewer'))closeApprovalViewer()};
 $('approvalViewerApprove').onclick=async()=>{if(!approvalViewerAd)return;const id=approvalViewerAd.id;closeApprovalViewer();await review('ad',id,'approved')};
 $('approvalViewerReject').onclick=async()=>{if(!approvalViewerAd)return;const id=approvalViewerAd.id;closeApprovalViewer();await review('ad',id,'rejected')};
-async function loadApprovals(){try{const[rawAds,items]=await Promise.all([rpc('admin_pending_ads'),rpc('admin_pending_items')]);const ads=(rawAds||[]).filter(a=>String(a.image_url||'').trim());$('pendingAds').innerHTML=ads.map(a=>'<div class=\"card\"><div class=\"row\"><b>'+esc(a.business_name)+'</b><span class=\"pill\">Slot '+a.slot_no+'</span></div><h3>'+esc(a.title||'Partner ad')+'</h3><img class=\"approvalImg\" loading=\"lazy\" decoding=\"async\" src=\"'+esc(a.image_url)+'\" alt=\"Partner image\" onclick=\"openApprovalImage(\\''+a.id+'\\',this.src,\\''+esc(String(a.business_name||'').replace(/'/g,'&#39;'))+'\\',\\''+a.slot_no+'\\')\"><div class=\"approvalHint\">Tap image to view full size before approval</div><div class=\"actions\"><button class=\"btn ok\" onclick=\"review(\\'ad\\',\\''+a.id+'\\',\\'approved\\')\">APPROVE</button><button class=\"btn danger\" onclick=\"review(\\'ad\\',\\''+a.id+'\\',\\'rejected\\')\">REJECT</button></div></div>').join('')||'<div class=\"card muted\">No pending uploaded images.</div>';$('pendingItems').innerHTML=(items||[]).map(i=>'<div class=\"card\"><b>'+esc(i.business_name)+'</b><h3>'+esc(i.name)+'</h3><div class=\"muted\">'+esc(i.category||'')+' · '+money(i.regular_price)+' → '+money(i.wenik_price)+'</div>'+(i.image_url?'<img class=\"itemImg\" src=\"'+esc(i.image_url)+'\" alt=\"\">':'')+'<div class=\"actions\"><button class=\"btn ok\" onclick=\"review(\\'item\\',\\''+i.id+'\\',\\'approved\\')\">APPROVE</button><button class=\"btn danger\" onclick=\"review(\\'item\\',\\''+i.id+'\\',\\'rejected\\')\">REJECT</button></div></div>').join('')||'<div class=\"card muted\">No pending items.</div>'}catch(e){$('pendingAds').innerHTML='<div class=\"card error\">'+esc(e.message)+'</div>'}}"""
-          if old not in s: raise SystemExit('loadApprovals target not found')
-          s=s.replace(old,new)
+async function loadApprovals(){try{const[rawAds,items]=await Promise.all([rpc('admin_pending_ads'),rpc('admin_pending_items')]);const ads=(rawAds||[]).filter(a=>String(a.image_url||'').trim());$('pendingAds').innerHTML=ads.map(a=>'<div class="card"><div class="row"><b>'+esc(a.business_name)+'</b><span class="pill">Slot '+a.slot_no+'</span></div><h3>'+esc(a.title||'Partner image')+'</h3><img class="approvalImg" src="'+esc(a.image_url)+'" alt="Partner image" onclick="openApprovalImage(\''+a.id+'\',this.src,\''+esc(a.business_name||'Partner')+'\',\''+a.slot_no+'\')"><div class="approvalHint">Tap image to view full size before approval</div><div class="actions"><button class="btn ok" onclick="review(\'ad\',\''+a.id+'\',\'approved\')">APPROVE</button><button class="btn danger" onclick="review(\'ad\',\''+a.id+'\',\'rejected\')">REJECT</button></div></div>').join('')||'<div class="card muted">No pending uploaded images.</div>';$('pendingItems').innerHTML=(items||[]).map(i=>'<div class="card"><b>'+esc(i.business_name)+'</b><h3>'+esc(i.name)+'</h3><div class="muted">'+esc(i.category||'')+' · '+money(i.regular_price)+' → '+money(i.wenik_price)+'</div>'+(i.image_url?'<img class="itemImg" src="'+esc(i.image_url)+'" alt="">':'')+'<div class="actions"><button class="btn ok" onclick="review(\'item\',\''+i.id+'\',\'approved\')">APPROVE</button><button class="btn danger" onclick="review(\'item\',\''+i.id+'\',\'rejected\')">REJECT</button></div></div>').join('')||'<div class="card muted">No pending items.</div>'}catch(e){$('pendingAds').innerHTML='<div class="card error">'+esc(e.message)+'</div>'}}
+'''
+          s=s[:start]+new+s[end:]
           p.write_text(s)
           PY
-      - name: Commit
+      - name: Commit preview
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add admin.html
-          git diff --cached --quiet || (git commit -m "Fix admin image approvals and full-size preview" && git push)
+          git diff --cached --quiet || (git commit -m "Fix admin image approval preview" && git push)
