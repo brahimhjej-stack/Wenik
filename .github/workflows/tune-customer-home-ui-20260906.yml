@@ -22,33 +22,7 @@ jobs:
           marker='/* WENIK CUSTOMER HOME POLISH V2 */'
           if marker in s:
               raise SystemExit('already applied')
-          css=r'''
-
-/* WENIK CUSTOMER HOME POLISH V2 */
-/* Compact premium brand header — keeps the original logo asset untouched */
-.top{padding:6px 0 8px!important}
-.brandLogo{width:118px!important;max-width:38vw!important;height:auto!important;object-fit:contain!important;filter:drop-shadow(0 7px 18px rgba(109,40,217,.16))!important}
-
-/* Promo line: larger, clearer and more WENIK-color forward */
-.wenikPromoTicker{min-height:46px!important;margin:2px 0 11px!important;border-radius:17px!important;background:linear-gradient(105deg,rgba(109,40,217,.58),rgba(239,21,157,.46) 42%,rgba(255,122,26,.48) 75%,rgba(255,196,0,.34))!important;border:1px solid rgba(255,255,255,.20)!important;box-shadow:0 10px 28px rgba(109,40,217,.20)!important}
-.wenikPromoDot{width:9px!important;height:9px!important;flex-basis:9px!important;background:#ffd21c!important;box-shadow:0 0 16px rgba(255,210,28,.92)!important}
-.wenikPromoText{padding:10px 15px 10px 9px!important;font-size:13px!important;line-height:1.15!important;font-weight:950!important;letter-spacing:1.05px!important;color:#fff!important;text-shadow:0 1px 10px rgba(0,0,0,.16)!important}
-
-/* Everything starts here: shorter, richer and easier to read */
-#home>.hero{min-height:0!important;margin-top:0!important;padding:15px 17px 14px!important;border-radius:22px!important;background:radial-gradient(circle at 92% 4%,rgba(255,196,0,.27),transparent 32%),linear-gradient(145deg,rgba(109,40,217,.66),rgba(239,21,157,.42) 48%,rgba(255,122,26,.40))!important;border:1px solid rgba(255,255,255,.24)!important;box-shadow:0 14px 36px rgba(68,24,117,.20)!important}
-#home>.hero .eyebrow{font-size:10px!important;letter-spacing:1.65px!important;color:#ffe4f5!important}
-#home>.hero h2{font-size:24px!important;line-height:1.03!important;margin:5px 0 6px!important;letter-spacing:-.35px!important;color:#fff!important}
-#home>.hero .muted{font-size:12.5px!important;line-height:1.35!important;color:rgba(255,255,255,.88)!important}
-#home>.hero:after{margin-top:10px!important;padding:6px 10px!important;border-radius:999px!important;background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.20)!important;font-size:9px!important;letter-spacing:1.15px!important;color:#fff!important}
-
-@media(max-width:420px){
-  .brandLogo{width:112px!important;max-width:36vw!important}
-  .wenikPromoTicker{min-height:44px!important}
-  .wenikPromoText{font-size:12px!important;letter-spacing:.9px!important}
-  #home>.hero{padding:14px 15px 13px!important}
-  #home>.hero h2{font-size:23px!important}
-}
-'''
+          css='''\n/* WENIK CUSTOMER HOME POLISH V2 */\n.top{padding:6px 0 8px!important}\n.brandLogo{width:118px!important;max-width:38vw!important;height:auto!important;object-fit:contain!important;filter:drop-shadow(0 7px 18px rgba(109,40,217,.16))!important}\n.wenikPromoTicker{min-height:46px!important;margin:2px 0 11px!important;border-radius:17px!important;background:linear-gradient(105deg,rgba(109,40,217,.58),rgba(239,21,157,.46) 42%,rgba(255,122,26,.48) 75%,rgba(255,196,0,.34))!important;border:1px solid rgba(255,255,255,.20)!important;box-shadow:0 10px 28px rgba(109,40,217,.20)!important}\n.wenikPromoDot{width:9px!important;height:9px!important;flex-basis:9px!important;background:#ffd21c!important;box-shadow:0 0 16px rgba(255,210,28,.92)!important}\n.wenikPromoText{padding:10px 15px 10px 9px!important;font-size:13px!important;line-height:1.15!important;font-weight:950!important;letter-spacing:1.05px!important;color:#fff!important;text-shadow:0 1px 10px rgba(0,0,0,.16)!important}\n#home>.hero{min-height:0!important;margin-top:0!important;padding:15px 17px 14px!important;border-radius:22px!important;background:radial-gradient(circle at 92% 4%,rgba(255,196,0,.27),transparent 32%),linear-gradient(145deg,rgba(109,40,217,.66),rgba(239,21,157,.42) 48%,rgba(255,122,26,.40))!important;border:1px solid rgba(255,255,255,.24)!important;box-shadow:0 14px 36px rgba(68,24,117,.20)!important}\n#home>.hero .eyebrow{font-size:10px!important;letter-spacing:1.65px!important;color:#ffe4f5!important}\n#home>.hero h2{font-size:24px!important;line-height:1.03!important;margin:5px 0 6px!important;letter-spacing:-.35px!important;color:#fff!important}\n#home>.hero .muted{font-size:12.5px!important;line-height:1.35!important;color:rgba(255,255,255,.88)!important}\n#home>.hero:after{margin-top:10px!important;padding:6px 10px!important;border-radius:999px!important;background:rgba(255,255,255,.14)!important;border:1px solid rgba(255,255,255,.20)!important;font-size:9px!important;letter-spacing:1.15px!important;color:#fff!important}\n@media(max-width:420px){.brandLogo{width:112px!important;max-width:36vw!important}.wenikPromoTicker{min-height:44px!important}.wenikPromoText{font-size:12px!important;letter-spacing:.9px!important}#home>.hero{padding:14px 15px 13px!important}#home>.hero h2{font-size:23px!important}}\n'''
           s=s.replace('\n</style>',css+'\n</style>',1)
           p.write_text(s)
           PY
