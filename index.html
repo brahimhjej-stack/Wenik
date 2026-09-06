@@ -428,7 +428,54 @@ $('login').onclick=async()=>{
   if(error)return $('msg').textContent=error.message;
   enter()
 };
-$('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});\n\nlet resetPhone='';\nfunction showResetOtp(phone){\n  resetPhone=phone;\n  $('joinForm').classList.add('hidden');$('loginForm').classList.add('hidden');\n  $('authTitle').textContent='RESET PASSWORD';\n  let box=$('resetPasswordBox');\n  if(!box){\n    box=document.createElement('div');box.id='resetPasswordBox';\n    box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="resetOtpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyResetOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="resetBackBtn" class="btn secondary" type="button">BACK TO LOGIN</button><div id="resetMsg" class="muted" style="margin-top:10px"></div>';\n    $('loginForm').parentElement.appendChild(box);\n    $('resetOtpCode').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});\n    $('verifyResetOtpBtn').onclick=verifyResetOtp;\n    $('resetBackBtn').onclick=()=>{box.classList.add('hidden');authMode('login')};\n  }\n  box.classList.remove('hidden');$('resetMsg').textContent='Code sent. Enter it below.';\n}\nasync function verifyResetOtp(){\n  const token=$('resetOtpCode').value.replace(/\D/g,'');\n  if(token.length!==6)return $('resetMsg').textContent='Enter the 6-digit code.';\n  $('verifyResetOtpBtn').disabled=true;$('resetMsg').textContent='Verifying...';\n  const{data,error}=await sb.auth.verifyOtp({phone:resetPhone,token,type:'sms'});\n  $('verifyResetOtpBtn').disabled=false;\n  if(error||!data?.session)return $('resetMsg').textContent=error?.message||'Could not verify code.';\n  const box=$('resetPasswordBox');\n  box.innerHTML='<div class="muted" style="margin:8px 0 14px">Choose your new password.</div><input id="resetNewPassword" class="field" type="password" minlength="6" autocomplete="new-password" placeholder="New password"><input id="resetConfirmPassword" class="field" type="password" minlength="6" autocomplete="new-password" placeholder="Confirm new password"><button id="saveResetPasswordBtn" class="btn" type="button">SAVE NEW PASSWORD</button><div id="resetMsg" class="muted" style="margin-top:10px"></div>';\n  $('saveResetPasswordBtn').onclick=saveCustomerResetPassword;\n}\nasync function saveCustomerResetPassword(){\n  const a=$('resetNewPassword').value,b=$('resetConfirmPassword').value;\n  if(a.length<6)return $('resetMsg').textContent='Password must be at least 6 characters.';\n  if(a!==b)return $('resetMsg').textContent='Passwords do not match.';\n  $('saveResetPasswordBtn').disabled=true;$('resetMsg').textContent='Saving new password...';\n  const{error}=await sb.auth.updateUser({password:a});\n  $('saveResetPasswordBtn').disabled=false;\n  if(error)return $('resetMsg').textContent=error.message;\n  $('resetMsg').textContent='Password changed ✓';setTimeout(()=>enter(),500);\n}\n$('forgotPassword').onclick=async()=>{\n  if(!$('loginPhone').value.trim())return $('msg').textContent='Enter your mobile number first.';\n  const phone=ph($('loginPhone').value);$('msg').textContent='Sending reset code...';$('forgotPassword').disabled=true;\n  const{error}=await sb.auth.signInWithOtp({phone,options:{shouldCreateUser:false}});\n  $('forgotPassword').disabled=false;\n  if(error)return $('msg').textContent=error.message;\n  $('msg').textContent='';showResetOtp(phone);\n};\n
+$('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')$('login').click()});
+
+let resetPhone='';
+function showResetOtp(phone){
+  resetPhone=phone;
+  $('joinForm').classList.add('hidden');$('loginForm').classList.add('hidden');
+  $('authTitle').textContent='RESET PASSWORD';
+  let box=$('resetPasswordBox');
+  if(!box){
+    box=document.createElement('div');box.id='resetPasswordBox';
+    box.innerHTML='<div class="muted" style="margin:8px 0 14px">We sent a 6-digit code to your mobile.</div><input id="resetOtpCode" class="field" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code"><button id="verifyResetOtpBtn" class="btn" type="button">VERIFY CODE</button><button id="resetBackBtn" class="btn secondary" type="button">BACK TO LOGIN</button><div id="resetMsg" class="muted" style="margin-top:10px"></div>';
+    $('loginForm').parentElement.appendChild(box);
+    $('resetOtpCode').addEventListener('input',e=>{e.target.value=e.target.value.replace(/\D/g,'').slice(0,6)});
+    $('verifyResetOtpBtn').onclick=verifyResetOtp;
+    $('resetBackBtn').onclick=()=>{box.classList.add('hidden');authMode('login')};
+  }
+  box.classList.remove('hidden');$('resetMsg').textContent='Code sent. Enter it below.';
+}
+async function verifyResetOtp(){
+  const token=$('resetOtpCode').value.replace(/\D/g,'');
+  if(token.length!==6)return $('resetMsg').textContent='Enter the 6-digit code.';
+  $('verifyResetOtpBtn').disabled=true;$('resetMsg').textContent='Verifying...';
+  const{data,error}=await sb.auth.verifyOtp({phone:resetPhone,token,type:'sms'});
+  $('verifyResetOtpBtn').disabled=false;
+  if(error||!data?.session)return $('resetMsg').textContent=error?.message||'Could not verify code.';
+  const box=$('resetPasswordBox');
+  box.innerHTML='<div class="muted" style="margin:8px 0 14px">Choose your new password.</div><input id="resetNewPassword" class="field" type="password" minlength="6" autocomplete="new-password" placeholder="New password"><input id="resetConfirmPassword" class="field" type="password" minlength="6" autocomplete="new-password" placeholder="Confirm new password"><button id="saveResetPasswordBtn" class="btn" type="button">SAVE NEW PASSWORD</button><div id="resetMsg" class="muted" style="margin-top:10px"></div>';
+  $('saveResetPasswordBtn').onclick=saveCustomerResetPassword;
+}
+async function saveCustomerResetPassword(){
+  const a=$('resetNewPassword').value,b=$('resetConfirmPassword').value;
+  if(a.length<6)return $('resetMsg').textContent='Password must be at least 6 characters.';
+  if(a!==b)return $('resetMsg').textContent='Passwords do not match.';
+  $('saveResetPasswordBtn').disabled=true;$('resetMsg').textContent='Saving new password...';
+  const{error}=await sb.auth.updateUser({password:a});
+  $('saveResetPasswordBtn').disabled=false;
+  if(error)return $('resetMsg').textContent=error.message;
+  $('resetMsg').textContent='Password changed ✓';setTimeout(()=>enter(),500);
+}
+$('forgotPassword').onclick=async()=>{
+  if(!$('loginPhone').value.trim())return $('msg').textContent='Enter your mobile number first.';
+  const phone=ph($('loginPhone').value);$('msg').textContent='Sending reset code...';$('forgotPassword').disabled=true;
+  const{error}=await sb.auth.signInWithOtp({phone,options:{shouldCreateUser:false}});
+  $('forgotPassword').disabled=false;
+  if(error)return $('msg').textContent=error.message;
+  $('msg').textContent='';showResetOtp(phone);
+};
+
 
 $('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};
 
