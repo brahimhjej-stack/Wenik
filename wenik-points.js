@@ -5,13 +5,13 @@ const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
 const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
 const sb=createClient(U,K);
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
 const style=document.createElement('style');
 style.textContent=`
 .wenikPointsHero{position:relative;overflow:hidden;border:1px solid rgba(178,92,255,.28);border-radius:26px;padding:22px;margin:14px 0;background:radial-gradient(circle at 0 0,rgba(143,36,255,.32),transparent 42%),radial-gradient(circle at 100% 100%,rgba(255,111,33,.22),transparent 45%),linear-gradient(145deg,rgba(30,14,60,.97),rgba(17,11,31,.96));box-shadow:0 18px 50px rgba(0,0,0,.28)}
 .wenikPointsHero:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#8f24ff,#ef159d,#ff6f21,#ffd21c)}
-.wenikPointsBalance{font-size:42px;font-weight:1000;line-height:1;margin:10px 0}.wenikPointsRule{font-weight:900;color:#ffd7ef}.wenikRewardGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.wenikReward{border:1px solid rgba(178,92,255,.22);border-radius:20px;padding:14px;background:#100d19}.wenikReward img{width:100%;aspect-ratio:1.4/1;object-fit:cover;border-radius:14px;margin-bottom:9px}.wenikRewardCost{font-weight:1000;font-size:18px;color:#ffd553}.wenikMini{font-size:12px;color:#b9b4c8}.wenikRedeemCode{font-family:monospace;word-break:break-all;font-size:12px;color:#ffd553}.wenikQr{display:block;width:180px;max-width:100%;margin:12px auto;border-radius:14px;background:#fff;padding:8px}.wenikPointsTabPanel{display:none}.wenikPointsTabPanel.active{display:block}@media(max-width:520px){.wenikRewardGrid{grid-template-columns:1fr}.wenikPointsBalance{font-size:36px}}
+.wenikPointsBalance{font-size:42px;font-weight:1000;line-height:1;margin:10px 0}.wenikPointsRule{font-weight:900;color:#ffd7ef}.wenikRewardGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.wenikReward{border:1px solid rgba(178,92,255,.22);border-radius:20px;padding:14px;background:#100d19}.wenikReward>b{display:block;color:#fff!important;font-size:18px;font-weight:900;line-height:1.25;margin-bottom:4px}.wenikReward img{width:100%;aspect-ratio:1.4/1;object-fit:cover;border-radius:14px;margin-bottom:9px}.wenikRewardCost{font-weight:1000;font-size:18px;color:#ffd553}.wenikMini{font-size:12px;color:#b9b4c8}.wenikRedeemCode{font-family:monospace;word-break:break-all;font-size:12px;color:#ffd553}.wenikQr{display:block;width:180px;max-width:100%;margin:12px auto;border-radius:14px;background:#fff;padding:8px}.wenikPointsTabPanel{display:none}.wenikPointsTabPanel.active{display:block}@media(max-width:520px){.wenikRewardGrid{grid-template-columns:1fr}.wenikPointsBalance{font-size:36px}}
 `;
 document.head.appendChild(style);
 
