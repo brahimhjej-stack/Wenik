@@ -5,7 +5,7 @@ const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
 const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
 const sb=createClient(U,K);
 const $=id=>document.getElementById(id);
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
 const style=document.createElement('style');
 style.textContent=`
