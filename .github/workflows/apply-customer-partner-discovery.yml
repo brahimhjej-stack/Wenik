@@ -9,6 +9,7 @@ on:
       - 'scripts/fix_partner_area_list_clarity.py'
       - 'scripts/upgrade_customer_partner_area_overlay.py'
       - 'scripts/fix_customer_partner_card_image_and_modal_area.py'
+      - 'scripts/repair_customer_partner_image_after_v5.py'
       - 'scripts/premium_customer_partner_cards.py'
       - 'scripts/fix_customer_partner_card_badge_and_height.py'
 
@@ -35,10 +36,12 @@ jobs:
       - name: Apply partner card image + modal area fix
         run: |
           if grep -q 'WENIK CUSTOMER PARTNER CARD IMAGE + MODAL AREA FIX V1' index.html; then
-            echo 'Customer partner card image + modal area fix already applied'
+            echo 'Base Customer partner image helpers already present'
           else
             python3 scripts/fix_customer_partner_card_image_and_modal_area.py
           fi
+      - name: Repair Partner image hydration after V5 rewrite
+        run: python3 scripts/repair_customer_partner_image_after_v5.py
       - name: Apply premium partner card styling
         run: |
           if grep -q 'WENIK CUSTOMER PARTNER CARDS PREMIUM V1' index.html; then
@@ -58,6 +61,7 @@ jobs:
       - name: Verify Customer partner fixes
         run: |
           grep -q 'WENIK CUSTOMER PARTNER CARD IMAGE + MODAL AREA FIX V1' index.html
+          grep -q 'WENIK CUSTOMER PARTNER IMAGE REPAIR AFTER V5 V1' index.html
           grep -q 'WENIK CUSTOMER PARTNER CARDS PREMIUM V1' index.html
           grep -q 'WENIK CUSTOMER PARTNER CARD BADGE + EQUAL HEIGHT V1' index.html
           grep -q 'data-wenik-partner-id' index.html
@@ -83,5 +87,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Align WENIK Partner cards and discount badge'
+          git commit -m 'Keep approved Partner images on Customer cards'
           git push
