@@ -155,3 +155,65 @@ async function installAdmin(){
   if(document.body)start();else document.addEventListener('DOMContentLoaded',start,{once:true});
   [250,700,1500,3000].forEach(ms=>setTimeout(remove,ms));
 })();
+
+/* WENIK HOME BANNER FINAL BEHAVIOR V1 */
+(function installBannerFinalBehavior(){
+  function adminFix(){
+    if(!isAdminPage)return;
+    const active=document.getElementById('homeAdActive');
+    if(active && !document.getElementById('homeAdId')?.value) active.value='true';
+    const clear=document.getElementById('clearHomeAd');
+    if(clear && !clear.dataset.wenikBannerDefaultBound){
+      clear.dataset.wenikBannerDefaultBound='1';
+      clear.addEventListener('click',()=>setTimeout(()=>{const a=document.getElementById('homeAdActive');if(a)a.value='true'},0));
+    }
+    const upload=document.getElementById('homeAdUpload');
+    if(upload && !upload.dataset.wenikBannerActiveBound){
+      upload.dataset.wenikBannerActiveBound='1';
+      upload.addEventListener('change',()=>{const a=document.getElementById('homeAdActive');if(a)a.value='true'});
+    }
+    const btn=document.getElementById('saveHomeAd');
+    if(btn && !btn.dataset.wenikBannerSaveBound){
+      btn.dataset.wenikBannerSaveBound='1';
+      btn.addEventListener('click',()=>{const a=document.getElementById('homeAdActive');if(a)a.value='true'},true);
+    }
+  }
+
+  function customerAutoRotate(){
+    if(isAdminPage||document.title.includes('Partner'))return;
+    const track=document.getElementById('track'),dots=document.getElementById('dots'),carousel=document.getElementById('carousel');
+    if(!track||!dots||!carousel)return false;
+    if(carousel.dataset.wenikFiveSecondRotation==='1')return true;
+    carousel.dataset.wenikFiveSecondRotation='1';
+    let idx=0,timer=null,touchX=null;
+    const slides=()=>Array.from(track.children).filter(x=>x.classList.contains('slide'));
+    const dotList=()=>Array.from(dots.children);
+    const currentIndex=()=>{
+      const ds=dotList();
+      const n=ds.findIndex(d=>d.classList.contains('on'));
+      return n>=0?n:idx;
+    };
+    const go=n=>{
+      const ss=slides(); if(ss.length<2)return;
+      idx=(n+ss.length)%ss.length;
+      track.style.transform='translateX(-'+(idx*100)+'%)';
+      dotList().forEach((d,i)=>d.classList.toggle('on',i===idx));
+    };
+    const start=()=>{
+      if(timer)clearInterval(timer);
+      timer=setInterval(()=>{const ss=slides();if(ss.length>1)go(currentIndex()+1)},5000);
+    };
+    carousel.addEventListener('touchstart',e=>{touchX=e.touches[0]?.clientX??null},{passive:true});
+    carousel.addEventListener('touchend',e=>{if(touchX==null)return;const dx=(e.changedTouches[0]?.clientX??touchX)-touchX;if(Math.abs(dx)>45){go(currentIndex()+(dx<0?1:-1));start()}touchX=null},{passive:true});
+    document.addEventListener('visibilitychange',()=>{if(document.hidden){if(timer)clearInterval(timer)}else start()});
+    start();
+    return true;
+  }
+
+  function boot(){
+    adminFix();
+    if(customerAutoRotate())return;
+    let n=0;const t=setInterval(()=>{adminFix();n++;if(customerAutoRotate()||n>40)clearInterval(t)},250);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
