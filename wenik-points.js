@@ -92,14 +92,6 @@ async function installAdmin(){
   .wenikHomePremiumQuick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 20px 2px!important}
   .wenikHomePremiumQuick button{min-width:0;border:0;border-radius:18px;background:#fff;color:#21172d;padding:11px 4px 10px;box-shadow:0 7px 22px rgba(43,24,59,.08);font:inherit;font-size:9.5px;font-weight:950;line-height:1.12}
   .wenikHomePremiumQuick .i{display:grid;place-items:center;width:34px;height:34px;margin:0 auto 6px;border-radius:12px;background:linear-gradient(145deg,#f4e8ff,#fff0e6);font-size:17px}
-  .wenikHomePremiumCategories{margin:20px 20px 4px}
-  .wenikHomePremiumCategoriesHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-  .wenikHomePremiumCategoriesHead h3{margin:0;color:#201729;font-size:19px;letter-spacing:.1px}
-  .wenikHomePremiumCategoriesHead button{border:0;background:none;color:#862cff;font-weight:950;font-size:11px;padding:5px}
-  .wenikHomePremiumCategoryRow{display:flex;gap:8px;overflow-x:auto;padding:1px 0 5px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-  .wenikHomePremiumCategoryRow::-webkit-scrollbar{display:none}
-  .wenikHomePremiumCategory{flex:0 0 74px;border:0;border-radius:17px;background:#fff;color:#21172d;padding:10px 5px 9px;box-shadow:0 7px 19px rgba(43,24,59,.07);font:inherit;font-size:9.5px;font-weight:900}
-  .wenikHomePremiumCategory span{display:grid;place-items:center;width:31px;height:31px;margin:0 auto 6px;border-radius:11px;background:linear-gradient(145deg,#f8e8ff,#fff1e4);font-size:16px}
   @media(max-width:390px){
     #home #carousel{margin-left:16px!important;margin-right:16px!important}
     #home #track .slide img{max-height:220px!important;aspect-ratio:16/9!important}
@@ -107,7 +99,6 @@ async function installAdmin(){
     .wenikHomePremiumQuick{margin-left:16px!important;margin-right:16px!important;gap:6px}
     .wenikHomePremiumQuick button{padding:10px 2px 9px;font-size:9px}
     .wenikHomePremiumQuick .i{width:31px;height:31px;font-size:16px}
-    .wenikHomePremiumCategories{margin-left:16px;margin-right:16px}
   }`;
   document.head.appendChild(s);
 
@@ -140,16 +131,27 @@ async function installAdmin(){
       q.querySelector('[data-wq="shopping"]').onclick=()=>goPartners('clothing');
       q.querySelector('[data-wq="prizes"]').onclick=goWin;
     }
-    if(!home.querySelector('.wenikHomePremiumCategories')){
-      const c=document.createElement('section');c.className='wenikHomePremiumCategories';
-      c.innerHTML='<div class="wenikHomePremiumCategoriesHead"><h3>EXPLORE BY CATEGORY</h3><button type="button">See all ›</button></div><div class="wenikHomePremiumCategoryRow"><button class="wenikHomePremiumCategory" data-cat="restaurant"><span>🍴</span>Restaurants</button><button class="wenikHomePremiumCategory" data-cat="cafe"><span>☕</span>Cafés</button><button class="wenikHomePremiumCategory" data-cat="clothing"><span>🛍️</span>Clothing</button><button class="wenikHomePremiumCategory" data-cat="salon"><span>✨</span>Salons</button><button class="wenikHomePremiumCategory" data-cat="gym"><span>🏋️</span>Gyms</button><button class="wenikHomePremiumCategory" data-cat="hotel"><span>🛏️</span>Hotels</button></div>';
-      const after=carousel;
-      after.insertAdjacentElement('afterend',c);
-      c.querySelector('.wenikHomePremiumCategoriesHead button').onclick=()=>goPartners('');
-      c.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>goPartners(b.dataset.cat));
-    }
     return true;
   }
   function boot(){if(make())return;let n=0;const t=setInterval(()=>{n++;if(make()||n>40)clearInterval(t)},250)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+
+/* Remove duplicated Explore by Category section from Customer Home */
+(function removeExploreByCategory(){
+  if(isAdminPage || document.title.includes('Partner')) return;
+  const remove=()=>{
+    document.querySelectorAll('#home .wenikHomePremiumCategories,#home .homeCategories').forEach(el=>el.remove());
+    document.querySelectorAll('#home h1,#home h2,#home h3,#home h4').forEach(h=>{
+      if((h.textContent||'').trim().toUpperCase()==='EXPLORE BY CATEGORY'){
+        const block=h.closest('.wenikHomePremiumCategories,.homeCategories');
+        if(block) block.remove();
+      }
+    });
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',remove,{once:true});else remove();
+  const observer=new MutationObserver(remove);
+  const start=()=>{if(document.body)observer.observe(document.body,{childList:true,subtree:true})};
+  if(document.body)start();else document.addEventListener('DOMContentLoaded',start,{once:true});
+  [250,700,1500,3000].forEach(ms=>setTimeout(remove,ms));
 })();
