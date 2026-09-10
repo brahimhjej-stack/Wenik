@@ -16,6 +16,7 @@ on:
       - 'scripts/enlarge_partner_image_and_overlay_text.py'
       - 'scripts/polish_partner_cards_image_above_text_v2.py'
       - 'scripts/refine_partner_card_footer_badge.py'
+      - 'scripts/compact_partner_card_body_v1.py'
 
 permissions:
   contents: write
@@ -88,6 +89,13 @@ jobs:
           else
             python3 scripts/refine_partner_card_footer_badge.py
           fi
+      - name: Apply compact Partner card body
+        run: |
+          if grep -q 'WENIK PARTNER CARD COMPACT BODY V1' index.html; then
+            echo 'Compact Partner card body already applied'
+          else
+            python3 scripts/compact_partner_card_body_v1.py
+          fi
       - name: Verify protected files unchanged
         run: sha256sum -c /tmp/protected.sha256
       - name: Verify Customer partner fixes
@@ -100,6 +108,7 @@ jobs:
           grep -q 'WENIK PARTNER CARD LARGE IMAGE + TEXT OVERLAY V1' index.html
           grep -q 'WENIK PARTNER CARD IMAGE ABOVE TEXT PREMIUM V2' index.html
           grep -q 'WENIK PARTNER CARD FOOTER BADGE V1' index.html
+          grep -q 'WENIK PARTNER CARD COMPACT BODY V1' index.html
           grep -q 'data-wenik-partner-id' index.html
           grep -q 'hideWenikAreaSearchForDetail(true)' index.html
           grep -q 'observeWenikPartnerCardImages' index.html
@@ -123,5 +132,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Refine WENIK Partner cards and footer badge'
+          git commit -m 'Compact WENIK Partner card body'
           git push
