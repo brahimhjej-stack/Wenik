@@ -12,6 +12,7 @@ on:
       - 'scripts/repair_customer_partner_image_after_v5.py'
       - 'scripts/premium_customer_partner_cards.py'
       - 'scripts/fix_customer_partner_card_badge_and_height.py'
+      - 'scripts/fix_partner_image_and_discount_badge_v2.py'
 
 permissions:
   contents: write
@@ -56,6 +57,13 @@ jobs:
           else
             python3 scripts/fix_customer_partner_card_badge_and_height.py
           fi
+      - name: Apply robust Partner image + discount badge V2
+        run: |
+          if grep -q 'WENIK PARTNER IMAGE + DISCOUNT BADGE V2' index.html; then
+            echo 'Partner image + discount badge V2 already applied'
+          else
+            python3 scripts/fix_partner_image_and_discount_badge_v2.py
+          fi
       - name: Verify protected files unchanged
         run: sha256sum -c /tmp/protected.sha256
       - name: Verify Customer partner fixes
@@ -64,6 +72,7 @@ jobs:
           grep -q 'WENIK CUSTOMER PARTNER IMAGE REPAIR AFTER V5 V1' index.html
           grep -q 'WENIK CUSTOMER PARTNER CARDS PREMIUM V1' index.html
           grep -q 'WENIK CUSTOMER PARTNER CARD BADGE + EQUAL HEIGHT V1' index.html
+          grep -q 'WENIK PARTNER IMAGE + DISCOUNT BADGE V2' index.html
           grep -q 'data-wenik-partner-id' index.html
           grep -q 'hideWenikAreaSearchForDetail(true)' index.html
           grep -q 'observeWenikPartnerCardImages' index.html
@@ -87,5 +96,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Keep approved Partner images on Customer cards'
+          git commit -m 'Fix Partner image and discount badge on Customer cards'
           git push
