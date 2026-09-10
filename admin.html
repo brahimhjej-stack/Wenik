@@ -7,7 +7,12 @@
 .approvalHint{font-size:12px;color:#b9b4c8;margin-top:7px;text-align:center}
 .imageViewer{position:fixed;inset:0;background:rgba(2,1,8,.92);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
 .imageViewer.hidden{display:none!important}.imageViewerBox{width:min(980px,100%);max-height:94vh;overflow:auto;background:#0d0b16;border:1px solid rgba(178,92,255,.4);border-radius:24px;padding:14px;box-shadow:0 24px 80px #000}.imageViewerTop{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}.imageViewerClose{width:auto;margin:0;padding:10px 14px}.imageViewer img{display:block;width:100%;max-height:74vh;object-fit:contain;background:#05040a;border-radius:18px}.imageViewerActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-</style></head><body><div class="wrap">
+</style>
+<style id="wenikAdminDashboardMobilePolishV1">
+/* WENIK ADMIN DASHBOARD MOBILE POLISH V1 */
+.wenikDashHead,.wenikDashEditor{max-width:760px;margin-left:auto;margin-right:auto}.wenikDashHead{padding:18px 20px}.wenikDashEditor{padding:20px}.wenikMiniBtn{width:auto!important;margin-top:0!important;padding:10px 14px!important}.wenikFieldLabel{display:block;font-size:12px;font-weight:900;color:#ddd6e8;margin:16px 0 4px}.wenikFieldLabel .muted{font-weight:600}.wenikUploadBox{border:1px dashed rgba(178,92,255,.42);border-radius:18px;padding:13px;background:rgba(255,255,255,.025)}.wenikFileInput{display:block;width:100%;color:#cfc7d9;margin-bottom:8px}.wenikHint{font-size:12px;line-height:1.35;margin-top:8px}.wenikDashPreview{width:100%;aspect-ratio:16/9;object-fit:cover;object-position:center;border-radius:16px;margin-top:12px;border:1px solid rgba(178,92,255,.22);background:#070610}.wenikAdvancedUrl{margin-top:10px}.wenikAdvancedUrl summary{cursor:pointer;color:#b9b4c8;font-size:12px;font-weight:800}.wenikAdvancedGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.wenikAdvancedGrid label{font-size:11px;font-weight:800;color:#aaa1b8}.wenikAdvancedGrid .field{margin-top:6px}.wenikSavedTitle{max-width:760px;margin:22px auto 8px}.wenikDashEditor .field,.wenikDashEditor select{min-height:50px}.wenikDashEditor .actions{margin-top:16px}@media(max-width:520px){.wenikDashHead,.wenikDashEditor{border-radius:22px;padding:16px}.wenikDashHead .row{align-items:center}.wenikDashHead h2{font-size:24px;margin-bottom:5px}.wenikDashEditor h3{font-size:22px}.wenikAdvancedGrid{grid-template-columns:1fr}.wenikMiniBtn{padding:9px 11px!important;font-size:12px!important}.wenikDashEditor .actions{grid-template-columns:1.35fr .65fr}.wenikDashEditor .field,.wenikDashEditor select{padding:13px 14px;margin-top:7px}}
+</style>
+</head><body><div class="wrap">
 <div class="brand">WENIK</div><div class="sub">SECURE MANAGEMENT</div>
 <section id="login" class="hero"><h1>Admin Login</h1><input id="email" class="field" type="email" placeholder="Admin email" autocomplete="username"><input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password"><button id="loginBtn" class="btn">LOGIN</button><div id="loginMsg" class="status"></div></section>
 <section id="app" class="hidden">
@@ -41,21 +46,37 @@
 
 <!-- WENIK ADMIN PRODUCTION TOOLS -->
 <section id="dashboard" class="panel">
-  <div class="card">
-    <div class="row"><div><h2>Home Dashboard</h2><div class="muted">Control customer home banners without touching the website code.</div></div><button id="refreshHomeAds" class="btn secondary" style="width:auto">REFRESH</button></div>
+  <!-- WENIK ADMIN DASHBOARD MOBILE POLISH V1 -->
+  <div class="card wenikDashHead">
+    <div class="row"><div><div class="sub">CUSTOMER HOME</div><h2>Home Dashboard</h2><div class="muted">Manage the rotating customer banners from here.</div></div><button id="refreshHomeAds" class="btn secondary wenikMiniBtn">REFRESH</button></div>
   </div>
-  <div class="card">
-    <h3>Add / Edit Banner</h3>
+  <div class="card wenikDashEditor">
+    <div class="row"><div><div class="sub">BANNER EDITOR</div><h3>Add / Edit Banner</h3></div><span class="pill">AUTO SIZE</span></div>
     <input id="homeAdId" type="hidden">
-    <input id="homeAdImage" class="field" placeholder="Image URL · required">
-    <input id="homeAdTitle" class="field" placeholder="Title (optional)">
-    <div class="two"><select id="homeAdCtaType" class="field"><option value="partner_page">Partner page</option><option value="url">URL</option><option value="none">No action</option></select><input id="homeAdCtaUrl" class="field" placeholder="CTA URL or /path"></div>
-    <div class="two"><input id="homeAdSort" class="field" type="number" value="100" placeholder="Sort order"><input id="homeAdPriority" class="field" type="number" value="0" placeholder="Priority"></div>
-    <div class="two"><input id="homeAdStart" class="field" type="datetime-local"><input id="homeAdEnd" class="field" type="datetime-local"></div>
-    <select id="homeAdActive" class="field"><option value="false">Inactive</option><option value="true">Active</option></select>
+    <label class="wenikFieldLabel">Banner image</label>
+    <div class="wenikUploadBox">
+      <input id="homeAdUpload" type="file" accept="image/*" class="wenikFileInput">
+      <button id="homeAdUploadBtn" class="btn secondary" type="button">UPLOAD IMAGE</button>
+      <div class="muted wenikHint">Images are displayed in one fixed dashboard size automatically.</div>
+      <img id="homeAdPreview" class="wenikDashPreview hidden" alt="Banner preview">
+    </div>
+    <details class="wenikAdvancedUrl"><summary>Or use image URL</summary><input id="homeAdImage" class="field" placeholder="https://..."></details>
+    <label class="wenikFieldLabel">Title <span class="muted">optional</span></label>
+    <input id="homeAdTitle" class="field" placeholder="Banner title">
+    <label class="wenikFieldLabel">When customer taps the banner</label>
+    <div class="two"><select id="homeAdCtaType" class="field"><option value="partner_page">Open Partner page</option><option value="url">Open URL</option><option value="none">No action</option></select><input id="homeAdCtaUrl" class="field" placeholder="URL or /path"></div>
+    <div class="wenikAdvancedGrid">
+      <label>Display order<input id="homeAdSort" class="field" type="number" value="100" placeholder="100"></label>
+      <label>Priority<input id="homeAdPriority" class="field" type="number" value="0" placeholder="0"></label>
+      <label>Starts at<input id="homeAdStart" class="field" type="datetime-local"></label>
+      <label>Ends at<input id="homeAdEnd" class="field" type="datetime-local"></label>
+    </div>
+    <label class="wenikFieldLabel">Status</label>
+    <select id="homeAdActive" class="field"><option value="true">Active · show on Customer Home</option><option value="false">Inactive · keep hidden</option></select>
     <div class="actions"><button id="saveHomeAd" class="btn">SAVE BANNER</button><button id="clearHomeAd" class="btn secondary">CLEAR</button></div>
     <div id="homeAdStatus" class="status"></div>
   </div>
+  <h3 class="wenikSavedTitle">Current banners</h3>
   <div id="homeAdsList"></div>
 </section>
 
@@ -248,4 +269,33 @@ $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs
 
 <script type="module" src="/wenik-points.js"></script>
 <script type="module" src="/wenik-gift-points-admin.js"></script>
+
+<script id="wenikAdminDashboardUploadV1">
+(function(){
+ function el(id){return document.getElementById(id)}
+ function showPreview(url){const p=el('homeAdPreview');if(!p)return;if(url){p.src=url;p.classList.remove('hidden')}else{p.removeAttribute('src');p.classList.add('hidden')}}
+ function bind(){
+  const file=el('homeAdUpload'),btn=el('homeAdUploadBtn'),url=el('homeAdImage');if(!file||!btn||!url)return;
+  file.addEventListener('change',()=>{const f=file.files&&file.files[0];if(f)showPreview(URL.createObjectURL(f))});
+  url.addEventListener('input',()=>showPreview(url.value.trim()));
+  btn.addEventListener('click',async()=>{
+   const f=file.files&&file.files[0];if(!f){if(window.setStatus)setStatus('homeAdStatus','Choose an image first.');return}
+   if(!/^image\//.test(f.type)){if(window.setStatus)setStatus('homeAdStatus','Please choose an image file.');return}
+   if(f.size>8*1024*1024){if(window.setStatus)setStatus('homeAdStatus','Image is too large. Maximum 8 MB.');return}
+   const old=btn.textContent;btn.disabled=true;btn.textContent='UPLOADING...';
+   try{
+    const ext=(f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg';
+    const path='home-dashboard/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    const r=await sb.storage.from('partner-media').upload(path,f,{cacheControl:'3600',upsert:false,contentType:f.type});
+    if(r.error)throw r.error;
+    const pub=sb.storage.from('partner-media').getPublicUrl(path);
+    const publicUrl=pub&&pub.data&&pub.data.publicUrl;if(!publicUrl)throw Error('Could not create image URL.');
+    url.value=publicUrl;showPreview(publicUrl);if(window.setStatus)setStatus('homeAdStatus','Image uploaded. Now press SAVE BANNER.',true);
+   }catch(e){if(window.setStatus)setStatus('homeAdStatus',(e&&e.message)||'Image upload failed. You can still use Image URL.')}finally{btn.disabled=false;btn.textContent=old}
+  });
+  const clear=el('clearHomeAd');if(clear)clear.addEventListener('click',()=>{file.value='';showPreview('')});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+})();
+</script>
 </body></html>
