@@ -9,6 +9,7 @@ on:
       - 'scripts/fix_partner_area_list_clarity.py'
       - 'scripts/upgrade_customer_partner_area_overlay.py'
       - 'scripts/fix_customer_partner_card_image_and_modal_area.py'
+      - 'scripts/premium_customer_partner_cards.py'
 
 permissions:
   contents: write
@@ -37,11 +38,19 @@ jobs:
           else
             python3 scripts/fix_customer_partner_card_image_and_modal_area.py
           fi
+      - name: Apply premium partner card styling
+        run: |
+          if grep -q 'WENIK CUSTOMER PARTNER CARDS PREMIUM V1' index.html; then
+            echo 'Premium Customer partner cards already applied'
+          else
+            python3 scripts/premium_customer_partner_cards.py
+          fi
       - name: Verify protected files unchanged
         run: sha256sum -c /tmp/protected.sha256
       - name: Verify Customer partner fixes
         run: |
           grep -q 'WENIK CUSTOMER PARTNER CARD IMAGE + MODAL AREA FIX V1' index.html
+          grep -q 'WENIK CUSTOMER PARTNER CARDS PREMIUM V1' index.html
           grep -q 'data-wenik-partner-id' index.html
           grep -q 'hideWenikAreaSearchForDetail(true)' index.html
           grep -q 'observeWenikPartnerCardImages' index.html
@@ -65,5 +74,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Fix Customer partner card image and modal area'
+          git commit -m 'Polish WENIK Customer partner cards'
           git push
