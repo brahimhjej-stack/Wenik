@@ -597,6 +597,95 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 </script>
 
 \n<style id="wenikPartnerCardDirectFixV2">\n/* WENIK CUSTOMER PARTNER IMAGE REPAIR AFTER V5 V2 */\n.wenikPartnerCard .wenikPartnerMedia{position:relative!important;overflow:hidden!important}\n.wenikPartnerCard .wenikPartnerMedia>.wenikOff{position:absolute!important;top:9px!important;left:9px!important;right:auto!important;bottom:auto!important;z-index:99!important;width:auto!important;max-width:calc(100% - 18px)!important;margin:0!important;padding:6px 9px!important;border-radius:999px!important;background:linear-gradient(135deg,#ff6b00,#ff3d00)!important;color:#fff!important;border:1px solid rgba(255,255,255,.55)!important;box-shadow:0 5px 15px rgba(27,12,12,.28)!important;font-size:11px!important;font-weight:900!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}\n.wenikPartnerCard .wenikPartnerMedia>img{width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;object-position:center!important}\n</style>\n
+
+<style id="wenikPartnerLargeImageTextOverlayV1">
+/* WENIK PARTNER CARD LARGE IMAGE + TEXT OVERLAY V1 */
+.wenikPartnerCard{
+  position:relative!important;
+  overflow:hidden!important;
+  min-height:0!important;
+  background:#17131f!important;
+}
+.wenikPartnerMedia{
+  position:relative!important;
+  width:100%!important;
+  aspect-ratio:5/4!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  background:linear-gradient(135deg,#f4ebff,#fff1e8,#fff8d9)!important;
+}
+.wenikPartnerMedia>img,
+.wenikPartnerMedia img{
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  display:block!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+}
+.wenikPartnerMedia:after{
+  content:""!important;
+  position:absolute!important;
+  inset:34% 0 0 0!important;
+  z-index:2!important;
+  pointer-events:none!important;
+  background:linear-gradient(180deg,rgba(15,8,23,0) 0%,rgba(15,8,23,.18) 28%,rgba(15,8,23,.88) 100%)!important;
+}
+.wenikPartnerBody{
+  position:absolute!important;
+  left:0!important;right:0!important;bottom:0!important;
+  z-index:12!important;
+  padding:42px 13px 12px!important;
+  background:transparent!important;
+  pointer-events:none!important;
+}
+.wenikPartnerName{
+  color:#fff!important;
+  font-size:16px!important;
+  font-weight:950!important;
+  line-height:1.12!important;
+  text-shadow:0 2px 8px rgba(0,0,0,.55)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.wenikPartnerMeta{
+  margin-top:4px!important;
+  color:rgba(255,255,255,.88)!important;
+  font-size:11px!important;
+  font-weight:750!important;
+  text-shadow:0 2px 7px rgba(0,0,0,.5)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.wenikPartnerPromo{
+  display:block!important;
+  margin-top:5px!important;
+  padding:0!important;
+  min-height:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:#fff!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  text-shadow:0 2px 7px rgba(0,0,0,.55)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.wenikPartnerMedia .wenikOff{
+  z-index:20!important;
+}
+@media(max-width:390px){
+  .wenikPartnerMedia{aspect-ratio:5/4!important}
+  .wenikPartnerBody{padding:38px 10px 10px!important}
+  .wenikPartnerName{font-size:14px!important}
+  .wenikPartnerMeta{font-size:10px!important}
+  .wenikPartnerPromo{font-size:9px!important}
+}
+</style>
+
 </head>
 <body>
 <main class="app">
