@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/apply-customer-partner-discovery.yml'
       - 'scripts/upgrade_customer_partner_discovery.py'
+      - 'scripts/fix_partner_area_list_clarity.py'
 
 permissions:
   contents: write
@@ -23,6 +24,8 @@ jobs:
           sha256sum admin.html partner.html sw.js > /tmp/protected.sha256
       - name: Apply Customer Home + Partner discovery upgrade
         run: python3 scripts/upgrade_customer_partner_discovery.py
+      - name: Apply clear Area list UI
+        run: python3 scripts/fix_partner_area_list_clarity.py
       - name: Verify protected files unchanged
         run: sha256sum -c /tmp/protected.sha256
       - name: Verify only index.html changed
