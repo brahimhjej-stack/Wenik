@@ -96,7 +96,16 @@ video{border:2px solid transparent;background:linear-gradient(#000,#000) padding
   <div class="card" id="profileCard">
     <div class="eyebrow">BUSINESS PROFILE</div><h2>Complete My Profile</h2>
     <div class="muted">Keep your business information accurate for WENIK customers.</div>
-    <input id="profileArea" class="field" placeholder="Area / city">
+    <!-- WENIK PARTNER PROFILE AREA SYNC V1 -->
+    <select id="profileArea" class="field" aria-label="Area / city">
+      <option value="">Select Area / City</option>
+      <optgroup label="Beirut"><option>Beirut</option><option>Dahieh</option></optgroup>
+      <optgroup label="Mount Lebanon"><option>Baabda</option><option>Metn</option><option>Jounieh</option><option>Jbeil</option><option>Aley</option><option>Chouf</option></optgroup>
+      <optgroup label="South Lebanon"><option>Saida</option><option>Tyre</option><option>Jezzine</option></optgroup>
+      <optgroup label="Nabatieh"><option>Nabatieh</option><option>Bint Jbeil</option><option>Marjayoun</option><option>Hasbaya</option></optgroup>
+      <optgroup label="Bekaa"><option>Zahle</option><option>Baalbek</option><option>Hermel</option></optgroup>
+      <optgroup label="North Lebanon"><option>Tripoli</option><option>Zgharta</option><option>Batroun</option><option>Bsharri</option><option>Akkar</option></optgroup>
+    </select>
     <input id="profileAddress" class="field" placeholder="Address">
     <input id="profilePhone" class="field" placeholder="Business phone" inputmode="tel">
     <input id="profileMenu" class="field" placeholder="Menu URL (optional)">
