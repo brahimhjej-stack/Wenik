@@ -18,6 +18,7 @@ on:
       - 'scripts/refine_partner_card_footer_badge.py'
       - 'scripts/compact_partner_card_body_v1.py'
       - 'scripts/compact_customer_home_dashboard_v1.py'
+      - 'scripts/finalize_customer_home_mobile_v2.py'
 
 permissions:
   contents: write
@@ -68,6 +69,9 @@ jobs:
       - name: Apply compact rotating Customer Home dashboard
         run: |
           if grep -q 'WENIK CUSTOMER HOME COMPACT ROTATING DASHBOARD V1' index.html; then echo 'Customer Home dashboard already applied'; else python3 scripts/compact_customer_home_dashboard_v1.py; fi
+      - name: Apply final Customer Home mobile polish
+        run: |
+          if grep -q 'WENIK CUSTOMER HOME MOBILE APP FINISH V2' index.html; then echo 'Customer Home mobile finish already applied'; else python3 scripts/finalize_customer_home_mobile_v2.py; fi
       - name: Verify protected files unchanged
         run: sha256sum -c /tmp/protected.sha256
       - name: Verify Customer upgrades
@@ -75,13 +79,10 @@ jobs:
           grep -q 'WENIK CUSTOMER PARTNER CARD IMAGE + MODAL AREA FIX V1' index.html
           grep -q 'WENIK CUSTOMER PARTNER IMAGE REPAIR AFTER V5 V1' index.html
           grep -q 'WENIK CUSTOMER PARTNER CARDS PREMIUM V1' index.html
-          grep -q 'WENIK CUSTOMER PARTNER CARD BADGE + EQUAL HEIGHT V1' index.html
-          grep -q 'WENIK PARTNER IMAGE + DISCOUNT BADGE V3' index.html
-          grep -q 'WENIK PARTNER CARD LARGE IMAGE + TEXT OVERLAY V1' index.html
-          grep -q 'WENIK PARTNER CARD IMAGE ABOVE TEXT PREMIUM V2' index.html
-          grep -q 'WENIK PARTNER CARD FOOTER BADGE V1' index.html
           grep -q 'WENIK PARTNER CARD COMPACT BODY V1' index.html
           grep -q 'WENIK CUSTOMER HOME COMPACT ROTATING DASHBOARD V1' index.html
+          grep -q 'WENIK CUSTOMER HOME MOBILE APP FINISH V2' index.html
+          grep -q "return '0';" index.html
           grep -q 'data-wenik-partner-id' index.html
           grep -q 'hideWenikAreaSearchForDetail(true)' index.html
           grep -q 'observeWenikPartnerCardImages' index.html
@@ -97,5 +98,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Add rotating WENIK Customer Home dashboard'
+          git commit -m 'Finalize WENIK Customer Home mobile polish'
           git push
