@@ -791,6 +791,7 @@ function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPa
 function areaFamilyMatch(actual,wanted){if(!wanted)return true;const a=normPartner(actual),w=normPartner(wanted);if(a===w||a.includes(w)||w.includes(a))return true;const fam=WENIK_AREA_FAMILIES[areaKey(wanted)]||[];return fam.some(v=>{const n=normPartner(v);return a===n||a.includes(n)||n.includes(a)})}
 function partnerMatches(x,q='',area='',category=''){const text=normPartner([x.business_name,x.category,x.area,x.address,x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));return(!q||text.includes(normPartner(q)))&&areaFamilyMatch(x.area,area)&&(!category||categoryFamilyMatch(x.category,category))}
 
+/* WENIK CUSTOMER PARTNER IMAGE REPAIR AFTER V5 V1 */
 /* WENIK CUSTOMER PARTNER CARD IMAGE + MODAL AREA FIX V1 */
 const WENIK_PARTNER_IMAGE_CACHE=new Map();
 const WENIK_PARTNER_IMAGE_PENDING=new Map();
