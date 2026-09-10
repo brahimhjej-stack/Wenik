@@ -14,6 +14,7 @@ on:
       - 'scripts/fix_customer_partner_card_badge_and_height.py'
       - 'scripts/fix_partner_image_and_discount_badge_v2.py'
       - 'scripts/enlarge_partner_image_and_overlay_text.py'
+      - 'scripts/polish_partner_cards_image_above_text_v2.py'
 
 permissions:
   contents: write
@@ -65,12 +66,19 @@ jobs:
           else
             python3 scripts/fix_partner_image_and_discount_badge_v2.py
           fi
-      - name: Apply larger Partner image + text overlay
+      - name: Apply larger Partner image + text overlay legacy
         run: |
           if grep -q 'WENIK PARTNER CARD LARGE IMAGE + TEXT OVERLAY V1' index.html; then
             echo 'Large Partner image + text overlay already applied'
           else
             python3 scripts/enlarge_partner_image_and_overlay_text.py
+          fi
+      - name: Apply final polished image-above-text card design
+        run: |
+          if grep -q 'WENIK PARTNER CARD IMAGE ABOVE TEXT PREMIUM V2' index.html; then
+            echo 'Final polished Partner card design already applied'
+          else
+            python3 scripts/polish_partner_cards_image_above_text_v2.py
           fi
       - name: Verify protected files unchanged
         run: sha256sum -c /tmp/protected.sha256
@@ -82,6 +90,7 @@ jobs:
           grep -q 'WENIK CUSTOMER PARTNER CARD BADGE + EQUAL HEIGHT V1' index.html
           grep -q 'WENIK PARTNER IMAGE + DISCOUNT BADGE V3' index.html
           grep -q 'WENIK PARTNER CARD LARGE IMAGE + TEXT OVERLAY V1' index.html
+          grep -q 'WENIK PARTNER CARD IMAGE ABOVE TEXT PREMIUM V2' index.html
           grep -q 'data-wenik-partner-id' index.html
           grep -q 'hideWenikAreaSearchForDetail(true)' index.html
           grep -q 'observeWenikPartnerCardImages' index.html
@@ -105,5 +114,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Enlarge Partner images and overlay text'
+          git commit -m 'Polish WENIK Partner cards with image above text'
           git push
