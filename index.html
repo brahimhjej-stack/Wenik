@@ -326,6 +326,68 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;bac
 .wenikAreaOption:hover,.wenikAreaOption:focus{background:#f3edff!important;color:#2b125f!important;outline:none!important}
 .wenikAreaOption:first-child{background:#f5efff!important;color:#2b125f!important}
 </style>
+
+<style id="wenikCustomerPartnerCardsPremiumV1">
+/* WENIK CUSTOMER PARTNER CARDS PREMIUM V1 */
+.wenikPartnerGrid{gap:14px!important}
+.wenikPartnerCard{
+  border-radius:22px!important;
+  overflow:hidden!important;
+  background:#fff!important;
+  border:1px solid rgba(49,25,68,.08)!important;
+  box-shadow:0 12px 30px rgba(52,27,70,.10)!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+.wenikPartnerCard:active{transform:scale(.985)!important}
+.wenikPartnerMedia{
+  position:relative!important;
+  width:100%!important;
+  aspect-ratio:4/3!important;
+  background:linear-gradient(135deg,#f4ebff,#fff1e8,#fff8d9)!important;
+  overflow:hidden!important;
+}
+.wenikPartnerMedia:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:34%;pointer-events:none;
+  background:linear-gradient(180deg,transparent,rgba(20,12,30,.10));
+}
+.wenikPartnerMedia img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+.wenikPartnerPlaceholder{font-size:22px!important;font-weight:950!important;letter-spacing:-.4px!important;color:#7b2cff!important}
+.wenikOff{
+  top:11px!important;left:11px!important;right:auto!important;
+  padding:7px 10px!important;border-radius:999px!important;
+  font-size:11px!important;font-weight:950!important;line-height:1!important;
+  background:rgba(255,255,255,.94)!important;color:#d95b16!important;
+  border:1px solid rgba(255,255,255,.82)!important;
+  box-shadow:0 6px 18px rgba(31,18,44,.16)!important;
+  backdrop-filter:blur(8px)!important;
+}
+.wenikPartnerBody{padding:13px 14px 15px!important}
+.wenikPartnerName{
+  font-size:16px!important;font-weight:950!important;line-height:1.18!important;
+  color:#21172d!important;letter-spacing:-.25px!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.wenikPartnerMeta{
+  margin-top:7px!important;font-size:12px!important;font-weight:650!important;
+  color:#786f80!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+.wenikPartnerPromo{
+  display:inline-flex!important;align-items:center!important;max-width:100%!important;
+  min-height:0!important;margin-top:9px!important;padding:6px 9px!important;border-radius:999px!important;
+  background:linear-gradient(90deg,rgba(123,44,255,.08),rgba(255,111,33,.08))!important;
+  color:#c95d1c!important;font-size:11px!important;font-weight:900!important;
+  white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+}
+@media(max-width:390px){
+  .wenikPartnerGrid{gap:10px!important}
+  .wenikPartnerCard{border-radius:19px!important}
+  .wenikPartnerBody{padding:11px 11px 13px!important}
+  .wenikPartnerName{font-size:14px!important}
+  .wenikPartnerMeta{font-size:11px!important}
+  .wenikPartnerPromo{font-size:10px!important;padding:5px 8px!important}
+}
+</style>
+
 </head>
 <body>
 <main class="app">
@@ -659,7 +721,7 @@ const draw=()=>{const q=queryValue();const rows=areaSearchRows(q);menu.innerHTML
 
 function partnerIcon(v=''){const c=normPartner(v);if(/restaurant|food|مطعم|اكل|أكل/.test(c))return'🍽️';if(/cafe|coffee|قهو|كاف/.test(c))return'☕';if(/sweet|dessert|حلويات/.test(c))return'🍰';if(/shoe|bag|احذية|أحذية|شنط|حقائب/.test(c))return'👟';if(/fashion|cloth|wear|ملابس|البسة|ألبسة/.test(c))return'👕';if(/beauty|تجميل|cosmetic/.test(c))return'💄';if(/hair|salon|barber|صالون|حلاق/.test(c))return'✂️';if(/fitness|gym|رياض/.test(c))return'🏋️';if(/perfume|عطر/.test(c))return'🌸';if(/optic|eyewear|نظارات/.test(c))return'👓';if(/jewel|ذهب|مجوهر/.test(c))return'💎';if(/elect|phone|tech|كهرب|هاتف/.test(c))return'📱';if(/furniture|اثاث|أثاث/.test(c))return'🛋️';if(/hotel|resort|فندق|منتجع/.test(c))return'🏨';if(/pool|swim|مسبح|مسابح/.test(c))return'🏊';if(/entertain|kids|play|اطفال|أطفال|ترفيه/.test(c))return'🎈';if(/auto|car|سيار/.test(c))return'🚗';if(/education|school|institute|تعليم|معهد/.test(c))return'🎓';if(/service|خدمات/.test(c))return'🛠️';return'⭐'}
 function partnerDiscount(x){const t=normPartner(x.benefit_type),v=Number(x.benefit_value),txt=String([x.benefit_title,x.benefit_conditions].filter(Boolean).join(' '));if(Number.isFinite(v)&&v>0){if(/percent|percentage|discount|خصم/.test(t)||v<=100)return Math.round(v)+'% OFF';if(/cash|amount|fixed/.test(t))return'$'+(v%1?v.toFixed(2):Math.round(v))+' OFF'}const m=txt.match(/(\d{1,2}(?:\.\d+)?)\s*%/);if(m)return Number(m[1])+'% OFF';return x.benefit_title?'WENIK OFFER':''}
-function wenikPartnerCard(x){const d=partnerDiscount(x),cat=displayPartnerCategory(x.category),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" data-wenik-partner-id="'+esc(x.partner_id)+'" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([cat,x.area].filter(Boolean).join(' • '))+'</div><div class="wenikPartnerPromo">'+esc(x.benefit_title||'WENIK PARTNER')+'</div></div></article>'}
+function wenikPartnerCard(x){const d=partnerDiscount(x),cat=displayPartnerCategory(x.category),logo=x.logo_url?'<img src="'+esc(x.logo_url)+'" alt="'+esc(x.business_name)+'" loading="lazy">':'<div class="wenikPartnerPlaceholder">WENIK</div>';return'<article class="wenikPartnerCard" tabindex="0" onclick="openWenikPartner(\''+x.partner_id+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();openWenikPartner(\''+x.partner_id+'\')}>'+(d?'<div class="wenikOff">'+esc(d)+'</div>':'')+'<div class="wenikPartnerMedia">'+logo+'</div><div class="wenikPartnerBody"><div class="wenikPartnerName">'+esc(x.business_name)+'</div><div class="wenikPartnerMeta">'+esc([cat,x.area].filter(Boolean).join(' • '))+'</div><div class="wenikPartnerPromo">'+esc(x.benefit_title||'WENIK PARTNER')+'</div></div></article>'}
 
 function categoryFamilyMatch(actual,wanted){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(a===w||a.includes(w)||w.includes(a))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|cosmetic|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,fitness:/fitness|gym|رياض/,perfumes:/perfume|عطر/,optics:/optic|eyewear|نظارات/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|institute|تعليم|معهد/,services:/service|خدمات/,pools:/pool|swim|مسبح|مسابح/};const key=w.includes('restaurant')?'restaurants':w.includes('cafe')?'cafes':w.includes('sweet')?'sweets':w==='fashion'?'fashion':w.includes('shoe')||w.includes('bag')?'shoesbags':w==='beauty'?'beauty':w.includes('hair')||w.includes('salon')?'hair':w.includes('fitness')?'fitness':w.includes('perfume')?'perfumes':w.includes('optic')?'optics':w.includes('jewel')?'jewelry':w.includes('elect')?'electronics':w.includes('furniture')?'furniture':w.includes('hotel')?'hotels':w.includes('entertain')?'entertainment':w.includes('auto')?'automotive':w.includes('education')?'education':w.includes('service')?'services':w.includes('pool')?'pools':'';return key?groups[key].test(a):false}
 function areaFamilyMatch(actual,wanted){if(!wanted)return true;const a=normPartner(actual),w=normPartner(wanted);if(a===w||a.includes(w)||w.includes(a))return true;const fam=WENIK_AREA_FAMILIES[areaKey(wanted)]||[];return fam.some(v=>{const n=normPartner(v);return a===n||a.includes(n)||n.includes(a)})}
