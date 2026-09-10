@@ -68,3 +68,88 @@ async function installAdmin(){
 }
 
 (async()=>{await waitSession();if($('win')&&$('shell'))return installCustomer();if(document.title.includes('Partner'))return installPartner();if(document.title.includes('Management'))return installAdmin()})();
+
+/* WENIK CUSTOMER HOME PREMIUM MOBILE V3 */
+(function installWenikHomePremiumV3(){
+  if(isAdminPage || document.title.includes('Partner')) return;
+  const s=document.createElement('style');
+  s.id='wenikHomePremiumV3';
+  s.textContent=`
+  #home{padding-bottom:22px!important}
+  #home .sectionTitle{align-items:center!important;margin:20px 20px 9px!important}
+  #home .sectionTitle h3{font-size:20px!important;letter-spacing:.15px!important;color:#201729!important}
+  #home .sectionTitle .muted{font-size:12px!important;font-weight:800!important;color:#91899a!important}
+  #home #carousel{margin:0 20px!important;border-radius:22px!important;overflow:hidden!important;background:transparent!important}
+  #home #track{display:flex!important;transition:transform .42s cubic-bezier(.22,.61,.36,1)!important}
+  #home #track .slide{flex:0 0 100%!important;min-width:100%!important;margin:0!important;padding:0!important;border:0!important;border-radius:22px!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important;position:relative!important}
+  #home #track .slide img{display:block!important;width:100%!important;height:auto!important;aspect-ratio:16/9!important;max-height:260px!important;object-fit:cover!important;object-position:center!important;border-radius:22px!important;box-shadow:0 11px 27px rgba(44,24,62,.14)!important}
+  #home #track .slide .overlay{left:0!important;right:0!important;bottom:0!important;padding:42px 14px 13px!important;border-radius:0 0 22px 22px!important;background:linear-gradient(180deg,transparent,rgba(11,7,17,.70))!important}
+  #home #track .slide .overlay b{font-size:16px!important;color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.4)!important}
+  #home #track .slide .overlay .btn{width:auto!important;min-width:104px!important;min-height:0!important;margin-top:7px!important;padding:8px 13px!important;border-radius:999px!important;font-size:10.5px!important}
+  #home #dots{margin:6px 0 0!important;text-align:center!important}
+  #home #dots i{width:6px!important;height:6px!important;margin:4px 3px!important;background:#d9d3df!important}
+  #home #dots i.on{width:21px!important;border-radius:99px!important;background:linear-gradient(90deg,#862cff,#ef35b7,#ff8a22)!important}
+  .wenikHomePremiumQuick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 20px 2px!important}
+  .wenikHomePremiumQuick button{min-width:0;border:0;border-radius:18px;background:#fff;color:#21172d;padding:11px 4px 10px;box-shadow:0 7px 22px rgba(43,24,59,.08);font:inherit;font-size:9.5px;font-weight:950;line-height:1.12}
+  .wenikHomePremiumQuick .i{display:grid;place-items:center;width:34px;height:34px;margin:0 auto 6px;border-radius:12px;background:linear-gradient(145deg,#f4e8ff,#fff0e6);font-size:17px}
+  .wenikHomePremiumCategories{margin:20px 20px 4px}
+  .wenikHomePremiumCategoriesHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+  .wenikHomePremiumCategoriesHead h3{margin:0;color:#201729;font-size:19px;letter-spacing:.1px}
+  .wenikHomePremiumCategoriesHead button{border:0;background:none;color:#862cff;font-weight:950;font-size:11px;padding:5px}
+  .wenikHomePremiumCategoryRow{display:flex;gap:8px;overflow-x:auto;padding:1px 0 5px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .wenikHomePremiumCategoryRow::-webkit-scrollbar{display:none}
+  .wenikHomePremiumCategory{flex:0 0 74px;border:0;border-radius:17px;background:#fff;color:#21172d;padding:10px 5px 9px;box-shadow:0 7px 19px rgba(43,24,59,.07);font:inherit;font-size:9.5px;font-weight:900}
+  .wenikHomePremiumCategory span{display:grid;place-items:center;width:31px;height:31px;margin:0 auto 6px;border-radius:11px;background:linear-gradient(145deg,#f8e8ff,#fff1e4);font-size:16px}
+  @media(max-width:390px){
+    #home #carousel{margin-left:16px!important;margin-right:16px!important}
+    #home #track .slide img{max-height:220px!important;aspect-ratio:16/9!important}
+    #home .sectionTitle{margin-left:16px!important;margin-right:16px!important}
+    .wenikHomePremiumQuick{margin-left:16px!important;margin-right:16px!important;gap:6px}
+    .wenikHomePremiumQuick button{padding:10px 2px 9px;font-size:9px}
+    .wenikHomePremiumQuick .i{width:31px;height:31px;font-size:16px}
+    .wenikHomePremiumCategories{margin-left:16px;margin-right:16px}
+  }`;
+  document.head.appendChild(s);
+
+  function navButton(label){return [...document.querySelectorAll('#nav button')].find(b=>(b.textContent||'').trim().startsWith(label))||null}
+  function goPartners(category){
+    if(typeof window.tab!=='function')return;
+    window.tab('partners',navButton('PARTNERS'));
+    setTimeout(()=>{
+      const select=document.getElementById('partnerCategory');
+      if(!select)return;
+      if(category){
+        const n=String(category).toLowerCase();
+        const opt=[...select.options].find(o=>String(o.value||o.textContent||'').toLowerCase().includes(n));
+        if(opt){select.value=opt.value;select.dispatchEvent(new Event('change',{bubbles:true}))}
+      }
+    },80);
+  }
+  function goWin(){if(typeof window.tab==='function')window.tab('win',navButton('WIN'))}
+  function make(){
+    const home=document.getElementById('home');
+    const carousel=document.getElementById('carousel');
+    if(!home||!carousel)return false;
+    if(!home.querySelector('.wenikHomePremiumQuick')){
+      const q=document.createElement('div');q.className='wenikHomePremiumQuick';
+      q.innerHTML='<button type="button" data-wq="near"><span class="i">📍</span>NEAR ME</button><button type="button" data-wq="restaurants"><span class="i">🍴</span>RESTAURANTS</button><button type="button" data-wq="shopping"><span class="i">🛍️</span>SHOPPING</button><button type="button" data-wq="prizes"><span class="i">🎁</span>PRIZES</button>';
+      const dash=home.querySelector('.wenikHomeDash');
+      if(dash)dash.insertAdjacentElement('afterend',q);else carousel.parentElement.insertBefore(q,carousel.previousElementSibling||carousel);
+      q.querySelector('[data-wq="near"]').onclick=()=>goPartners('');
+      q.querySelector('[data-wq="restaurants"]').onclick=()=>goPartners('restaurant');
+      q.querySelector('[data-wq="shopping"]').onclick=()=>goPartners('clothing');
+      q.querySelector('[data-wq="prizes"]').onclick=goWin;
+    }
+    if(!home.querySelector('.wenikHomePremiumCategories')){
+      const c=document.createElement('section');c.className='wenikHomePremiumCategories';
+      c.innerHTML='<div class="wenikHomePremiumCategoriesHead"><h3>EXPLORE BY CATEGORY</h3><button type="button">See all ›</button></div><div class="wenikHomePremiumCategoryRow"><button class="wenikHomePremiumCategory" data-cat="restaurant"><span>🍴</span>Restaurants</button><button class="wenikHomePremiumCategory" data-cat="cafe"><span>☕</span>Cafés</button><button class="wenikHomePremiumCategory" data-cat="clothing"><span>🛍️</span>Clothing</button><button class="wenikHomePremiumCategory" data-cat="salon"><span>✨</span>Salons</button><button class="wenikHomePremiumCategory" data-cat="gym"><span>🏋️</span>Gyms</button><button class="wenikHomePremiumCategory" data-cat="hotel"><span>🛏️</span>Hotels</button></div>';
+      const after=carousel;
+      after.insertAdjacentElement('afterend',c);
+      c.querySelector('.wenikHomePremiumCategoriesHead button').onclick=()=>goPartners('');
+      c.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>goPartners(b.dataset.cat));
+    }
+    return true;
+  }
+  function boot(){if(make())return;let n=0;const t=setInterval(()=>{n++;if(make()||n>40)clearInterval(t)},250)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
