@@ -1407,7 +1407,9 @@ document.querySelectorAll('button#login').forEach(btn=>{
     const password=passInput?.value||'';
     if(!raw||!password){if(msg)msg.textContent='Mobile and password are required.';return;}
     if(msg)msg.textContent='Signing in…';
-    const{error}=await sb.auth.signInWithPassword({phone:ph(raw),password});
+    const normalized=ph(raw);
+    let{error}=await sb.auth.signInWithPassword({phone:normalized,password});
+    if(error&&normalized.startsWith('+'))({error}=await sb.auth.signInWithPassword({phone:normalized.slice(1),password}));
     if(error){if(msg)msg.textContent=error.message;return;}
     enter();
   };
