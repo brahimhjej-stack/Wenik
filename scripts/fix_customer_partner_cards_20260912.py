@@ -143,7 +143,7 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
 <!-- WENIK PARTNER CARDS UNIFORM V1 END -->'''
 
 if start in s and end in s:
-    s = re.sub(re.escape(start) + r'.*?' + re.escape(end), block, s, flags=re.S)
+    s = re.sub(re.escape(start) + r'.*?' + re.escape(end), lambda _m: block, s, flags=re.S)
 else:
     pos = s.lower().rfind('</body>')
     if pos == -1:
