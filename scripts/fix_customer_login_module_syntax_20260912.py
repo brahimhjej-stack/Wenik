@@ -20,3 +20,4 @@ if out == s:
     raise SystemExit('No change')
 p.write_text(out, encoding='utf-8')
 print('Fixed malformed inline quoting in wenikPartnerCard only; customer module can parse and bind LOGIN.')
+# trigger workflow after workflow file exists
