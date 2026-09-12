@@ -21,6 +21,20 @@ jobs:
         run: sha256sum admin.html partner.html sw.js > /tmp/protected.sha256
       - name: Apply uniform customer partner cards
         run: python3 scripts/fix_customer_partner_cards_20260912.py
+      - name: Fix customer auth tabs
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old='<div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>'
+          new='''<div class="authTabs"><button id="joinTab" class="authTab active" type="button" onclick="document.getElementById(\'joinForm\').classList.remove(\'hidden\');document.getElementById(\'loginForm\').classList.add(\'hidden\');document.getElementById(\'joinTab\').classList.add(\'active\');document.getElementById(\'loginTab\').classList.remove(\'active\');document.getElementById(\'authTitle\').textContent=\'JOIN US\';document.getElementById(\'msg\').textContent=\'\';">JOIN US</button><button id="loginTab" class="authTab" type="button" onclick="document.getElementById(\'joinForm\').classList.add(\'hidden\');document.getElementById(\'loginForm\').classList.remove(\'hidden\');document.getElementById(\'loginTab\').classList.add(\'active\');document.getElementById(\'joinTab\').classList.remove(\'active\');document.getElementById(\'authTitle\').textContent=\'LOGIN\';document.getElementById(\'msg\').textContent=\'\';">LOGIN</button></div>'''
+          if old in s:
+              s=s.replace(old,new)
+          else:
+              raise SystemExit('auth tabs markup not found')
+          p.write_text(s,encoding='utf-8')
+          PY
       - name: Verify protected files
         run: sha256sum -c /tmp/protected.sha256
       - name: Verify only index changed
@@ -35,5 +49,5 @@ jobs:
           git config user.name 'WENIK automation'
           git config user.email 'actions@users.noreply.github.com'
           git add index.html
-          git commit -m 'Normalize customer partner cards and area metadata'
+          git commit -m 'Normalize customer partner cards and fix login tab'
           git push
