@@ -1259,6 +1259,30 @@ button,a,[role="button"]{touch-action:manipulation}
     <div id="msg" class="muted" style="margin-top:10px"></div>
   </section>
 
+  <!-- WENIK CUSTOMER LOGIN TAB DIRECT BIND 20260912 -->
+  <script>
+  (function(){
+    const join=document.getElementById('joinTab');
+    const login=document.getElementById('loginTab');
+    const joinForm=document.getElementById('joinForm');
+    const loginForm=document.getElementById('loginForm');
+    const title=document.getElementById('authTitle');
+    const msg=document.getElementById('msg');
+    if(!join||!login||!joinForm||!loginForm||!title)return;
+    function setMode(mode){
+      const isJoin=mode==='join';
+      joinForm.classList.toggle('hidden',!isJoin);
+      loginForm.classList.toggle('hidden',isJoin);
+      join.classList.toggle('active',isJoin);
+      login.classList.toggle('active',!isJoin);
+      title.textContent=isJoin?'JOIN US':'LOGIN';
+      if(msg)msg.textContent='';
+    }
+    join.addEventListener('click',()=>setMode('join'));
+    login.addEventListener('click',()=>setMode('login'));
+  })();
+  </script>
+
   <section id="shell" class="hidden">
     <section id="home">
       <div class="hero"><div class="eyebrow">YOUR WENIK</div><h2>Everything starts here.</h2><div class="muted">Discover partners, unlock benefits and keep your next win close.</div></div>
