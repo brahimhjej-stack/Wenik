@@ -8,11 +8,11 @@ if marker in s:
     print('Already patched; no changes needed.')
     raise SystemExit(0)
 
-html_anchor = '''    <button id="resetPartnerPasswordBtn" class="btn">RESET PASSWORD</button>\n    <div id="resetPartnerPasswordStatus" class="status"></div>\n  </div>'''
-html_insert = html_anchor + '''\n\n  <!-- WENIK MISSING PARTNER ACCESS BULK V1 -->\n  <div class="card" id="missingPartnerAccessCard"><h2>Missing Partner Access</h2><div class="muted">Create Login access for the 9 Partners that were added as directory data only. Existing Partner data stays unchanged.</div><button id="createMissingPartnerAccessBtn" class="btn">CREATE ACCESS FOR 9 PARTNERS</button><div id="missingPartnerAccessStatus" class="status"></div><div id="missingPartnerAccessResults"></div></div>'''
-if s.count(html_anchor) != 1:
-    raise SystemExit(f'Expected exactly one Partner Access HTML anchor, found {s.count(html_anchor)}')
-s = s.replace(html_anchor, html_insert, 1)
+subscription_anchor = '<div class="card"><div class="row"><div><h2>Partner Subscriptions</h2><div class="muted">3 months FREE, then Manual or Whish payment.</div></div><button id="refreshSubscriptions" class="btn secondary" style="width:auto">REFRESH</button></div></div>'
+html_block = '''<!-- WENIK MISSING PARTNER ACCESS BULK V1 -->\n  <div class="card" id="missingPartnerAccessCard"><h2>Missing Partner Access</h2><div class="muted">Create Login access for the 9 Partners that were added as directory data only. Existing Partner data stays unchanged.</div><button id="createMissingPartnerAccessBtn" class="btn">CREATE ACCESS FOR 9 PARTNERS</button><div id="missingPartnerAccessStatus" class="status"></div><div id="missingPartnerAccessResults"></div></div>\n  '''
+if s.count(subscription_anchor) != 1:
+    raise SystemExit(f'Expected exactly one Partner Subscriptions anchor, found {s.count(subscription_anchor)}')
+s = s.replace(subscription_anchor, html_block + subscription_anchor, 1)
 
 js_anchor = "$('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs();start();"
 js_block = r'''// WENIK MISSING PARTNER ACCESS BULK V1
