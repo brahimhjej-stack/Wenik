@@ -1,0 +1,29 @@
+name: Fix visible WENIK customer login click
+on:
+  push:
+    paths:
+      - 'scripts/fix_visible_customer_login_click_20260912.py'
+      - '.github/workflows/fix-visible-customer-login-click-20260912.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Bridge only visible customer login button
+        run: python scripts/fix_visible_customer_login_click_20260912.py
+      - name: Verify only index changed
+        run: |
+          changed=$(git status --short | awk '{print $2}' | grep -v '^$' || true)
+          test "$changed" = "index.html"
+      - name: Commit
+        run: |
+          git config user.name "WENIK automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix visible customer login click only"
+          git push origin main
