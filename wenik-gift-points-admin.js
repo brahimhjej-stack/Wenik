@@ -82,3 +82,57 @@ document.addEventListener('pointerup',e=>{const t=e.target?.closest?.('#homeAdUp
 if(!installUploadController()){
   let tries=0;const timer=setInterval(()=>{tries++;if(installUploadController()||tries>40)clearInterval(timer)},250);
 }
+
+// WENIK standardized Add Partner taxonomy
+const WENIK_PARTNER_CATEGORIES=[
+  'Restaurant','Café','Bakery & Sweets','Desserts','Clothing','Shoes','Accessories','Sportswear',
+  'Beauty Salon','Beauty Center','Barber Shop','Spa','Gym & Fitness','Hotel','Furniture','Home Décor',
+  'Home Appliances','Electronics','Mobile & Electronics','Kids & Toys','Kids & Baby','Jewelry','Florist',
+  'Pet Shop','Optical','Dental Clinic','Clinic','Pharmacy','Supermarket','Car Care','Car Rental',
+  'Education / Institute','Books & Stationery','Gifts & Handicrafts','Others'
+];
+
+const WENIK_PARTNER_AREAS=[
+  'Beirut – Achrafieh','Beirut – Badaro','Beirut – Downtown','Beirut – Gemmayzeh','Beirut – Hamra',
+  'Beirut – Mar Mikhael','Beirut – Raouche','Beirut – Verdun','Beirut – Ras Beirut','Beirut – Clemenceau',
+  'Beirut – Mazraa','Beirut – Mar Elias','Beirut – Jnah','Beirut – Bir Hassan','Beirut – Ain El Mreisseh','Beirut – Saifi',
+  'Dahieh – Haret Hreik','Dahieh – Ghobeiry','Dahieh – Bourj El Barajneh','Dahieh – Chiyah',
+  'Dahieh – Mcharafieh','Dahieh – Hadath','Dahieh – Laylakeh','Dahieh – Hay El Sellom',
+  'Mount Lebanon – Baabda','Mount Lebanon – Hazmieh','Mount Lebanon – Furn El Chebbak','Mount Lebanon – Ain El Remmaneh',
+  'Mount Lebanon – Sin El Fil','Mount Lebanon – Dekwaneh','Mount Lebanon – Mkalles','Mount Lebanon – Jdeideh',
+  'Mount Lebanon – Baouchriyeh','Mount Lebanon – Bourj Hammoud','Mount Lebanon – Dora','Mount Lebanon – Zalka',
+  'Mount Lebanon – Jal El Dib','Mount Lebanon – Antelias','Mount Lebanon – Naccache','Mount Lebanon – Dbayeh',
+  'Mount Lebanon – Rabieh','Mount Lebanon – Bsalim','Mount Lebanon – Beit Mery','Mount Lebanon – Broummana',
+  'Mount Lebanon – Mansourieh','Mount Lebanon – Fanar','Mount Lebanon – Aley','Mount Lebanon – Bhamdoun',
+  'Mount Lebanon – Choueifat','Mount Lebanon – Jounieh','Mount Lebanon – Kaslik','Mount Lebanon – Zouk Mikael',
+  'Mount Lebanon – Zouk Mosbeh','Mount Lebanon – Ghazir','Mount Lebanon – Jbeil','Mount Lebanon – Batroun',
+  'Nabatieh – Nabatieh','South – Saida','South – Tyre','Bekaa – Zahle','North – Tripoli','Akkar – Halba','Other Area'
+];
+
+function replaceInputWithSelect(id,placeholder,values){
+  const old=$(id);if(!old||old.tagName==='SELECT')return false;
+  const sel=document.createElement('select');
+  sel.id=id;sel.className=old.className||'field';sel.required=true;
+  sel.innerHTML='<option value="">'+placeholder+'</option>'+values.map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+  old.replaceWith(sel);return true;
+}
+function installPartnerTaxonomy(){
+  const categoryReady=replaceInputWithSelect('newPartnerCategory','Select Category',WENIK_PARTNER_CATEGORIES);
+  const areaReady=replaceInputWithSelect('newPartnerArea','Select Area',WENIK_PARTNER_AREAS);
+  const area=$('newPartnerArea');if(area)area.required=true;
+  return categoryReady||areaReady||($('newPartnerCategory')?.tagName==='SELECT'&&$('newPartnerArea')?.tagName==='SELECT');
+}
+if(!installPartnerTaxonomy()){
+  let taxonomyTries=0;const taxonomyTimer=setInterval(()=>{taxonomyTries++;if(installPartnerTaxonomy()||taxonomyTries>40)clearInterval(taxonomyTimer)},250);
+}
+
+// Extra validation: Area is mandatory for standardized reports and filters.
+document.addEventListener('click',e=>{
+  const btn=e.target?.closest?.('#createPartnerBtn');if(!btn)return;
+  const category=$('newPartnerCategory')?.value?.trim();
+  const area=$('newPartnerArea')?.value?.trim();
+  if(!category||!area){
+    e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+    const status=$('createPartnerStatus');if(status){status.className='status error';status.textContent='Category and Area are required.'}
+  }
+},true);
