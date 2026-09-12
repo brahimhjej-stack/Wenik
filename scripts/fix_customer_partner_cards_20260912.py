@@ -8,74 +8,18 @@ end = '<!-- WENIK PARTNER CARDS UNIFORM V1 END -->'
 
 block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
 <style id="wenikPartnerCardsUniformV1">
-/* FINAL V3: layout-only fix. Every partner media box is square and card height follows its content. */
-.wenikPartnerGrid{
-  align-items:start!important;
-  grid-auto-rows:auto!important;
-}
-.wenikPartnerCard{
-  display:flex!important;
-  flex-direction:column!important;
-  align-self:start!important;
-  min-width:0!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  overflow:hidden!important;
-  border-radius:22px!important;
-  background:#fff!important;
-}
-.wenikPartnerCard>.wenikPartnerMedia,
-.wenikPartnerCard .wenikPartnerMedia{
-  position:relative!important;
-  display:block!important;
-  width:100%!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  aspect-ratio:1/1!important;
-  flex:0 0 auto!important;
-  overflow:hidden!important;
-  box-sizing:border-box!important;
-  background:linear-gradient(135deg,#f4ebff,#fff1e8,#fff8d9)!important;
-}
-.wenikPartnerCard>.wenikPartnerMedia>img,
-.wenikPartnerCard .wenikPartnerMedia img{
-  position:absolute!important;
-  inset:0!important;
-  display:block!important;
-  width:100%!important;
-  height:100%!important;
-  min-width:100%!important;
-  min-height:100%!important;
-  max-width:none!important;
-  max-height:none!important;
-  object-fit:cover!important;
-  object-position:center center!important;
-  margin:0!important;
-  padding:0!important;
-}
-.wenikPartnerCard .wenikPartnerPlaceholder{
-  position:absolute!important;
-  inset:0!important;
-  width:100%!important;
-  height:100%!important;
-  display:grid!important;
-  place-items:center!important;
-  box-sizing:border-box!important;
-}
-.wenikPartnerCard>.wenikPartnerBody,
-.wenikPartnerCard .wenikPartnerBody{
-  flex:0 0 auto!important;
-  height:auto!important;
-  min-height:0!important;
-  max-height:none!important;
-  box-sizing:border-box!important;
-}
+/* FINAL V4: every visible partner image uses the exact card width as its image height. */
+.wenikPartnerGrid{align-items:start!important;grid-auto-rows:auto!important}
+.wenikPartnerCard{display:flex!important;flex-direction:column!important;align-self:start!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important;border-radius:22px!important;background:#fff!important}
+.wenikPartnerCard .wenikPartnerMedia{position:relative!important;display:block!important;width:100%!important;aspect-ratio:1/1!important;flex:none!important;overflow:hidden!important;box-sizing:border-box!important;background:linear-gradient(135deg,#f4ebff,#fff1e8,#fff8d9)!important}
+.wenikPartnerCard .wenikPartnerMedia>img{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center center!important;margin:0!important;padding:0!important}
+.wenikPartnerCard .wenikPartnerPlaceholder{position:absolute!important;inset:0!important;display:grid!important;place-items:center!important;width:100%!important;height:100%!important}
+.wenikPartnerCard .wenikPartnerBody{flex:none!important;height:auto!important;min-height:0!important;max-height:none!important}
 @media(max-width:390px){.wenikPartnerCard{border-radius:19px!important}}
 </style>
 <script id="wenikPartnerCardsUniformRuntimeV1">
 (function(){
+  let queued=false;
   function cleanArea(value){
     const raw=String(value||'').replace(/^📍\s*/,'').trim();
     if(!raw)return '';
@@ -87,6 +31,34 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
     const id=card?.dataset?.wenikPartnerId;
     const list=window.partnerDirectory||[];
     return list.find(x=>String(x.partner_id||x.id||'')===String(id||''))||null;
+  }
+  function lockSquare(card){
+    if(!card||!card.isConnected)return;
+    const media=card.querySelector('.wenikPartnerMedia');
+    if(!media)return;
+    const width=Math.round(card.getBoundingClientRect().width||media.getBoundingClientRect().width||card.offsetWidth||0);
+    if(width<2)return;
+    const px=width+'px';
+    media.style.setProperty('width','100%','important');
+    media.style.setProperty('height',px,'important');
+    media.style.setProperty('min-height',px,'important');
+    media.style.setProperty('max-height',px,'important');
+    media.style.setProperty('aspect-ratio','1 / 1','important');
+    media.style.setProperty('flex','0 0 '+px,'important');
+    media.style.setProperty('position','relative','important');
+    media.style.setProperty('overflow','hidden','important');
+    const img=media.querySelector('img');
+    if(img){
+      img.style.setProperty('position','absolute','important');
+      img.style.setProperty('inset','0','important');
+      img.style.setProperty('width','100%','important');
+      img.style.setProperty('height','100%','important');
+      img.style.setProperty('object-fit','cover','important');
+      img.style.setProperty('object-position','center center','important');
+    }
+    card.style.setProperty('height','auto','important');
+    card.style.setProperty('min-height','0','important');
+    card.style.setProperty('align-self','start','important');
   }
   function fixMeta(card){
     const meta=card&&card.querySelector('.wenikPartnerMeta');
@@ -102,10 +74,16 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
     const wanted=area&&category?'📍 '+area+' · '+category:area?'📍 '+area:'';
     if(wanted&&meta.textContent!==wanted)meta.textContent=wanted;
   }
-  function fixAll(){document.querySelectorAll('.wenikPartnerCard').forEach(fixMeta)}
+  function fixAll(){document.querySelectorAll('.wenikPartnerCard').forEach(card=>{lockSquare(card);fixMeta(card)})}
+  function queue(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;fixAll()})}
   function boot(){
     fixAll();
-    new MutationObserver(()=>requestAnimationFrame(fixAll)).observe(document.body,{childList:true,subtree:true});
+    const mo=new MutationObserver(queue);
+    mo.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','class','src']});
+    if('ResizeObserver' in window){const ro=new ResizeObserver(queue);ro.observe(document.documentElement);document.querySelectorAll('.wenikPartnerGrid').forEach(x=>ro.observe(x));window.__wenikPartnerSquareRO=ro}
+    addEventListener('resize',queue,{passive:true});
+    addEventListener('orientationchange',queue,{passive:true});
+    [0,50,120,250,500,900,1500,2500,4000].forEach(ms=>setTimeout(fixAll,ms));
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
@@ -120,10 +98,8 @@ else:
         raise SystemExit('index.html has no </body>')
     s = s[:pos] + block + '\n' + s[pos:]
 
-# Remove old competing 4:3 geometry anywhere in the accumulated stylesheet.
-s = s.replace('aspect-ratio:4/3!important;', 'aspect-ratio:1/1!important;')
-s = s.replace('aspect-ratio: 4/3!important;', 'aspect-ratio:1/1!important;')
-s = s.replace('aspect-ratio:4 / 3!important;', 'aspect-ratio:1/1!important;')
+# Neutralize accumulated competing aspect-ratios on partner media.
+s = re.sub(r'(\.wenikPartnerMedia[^{}]*\{[^{}]*?)aspect-ratio\s*:\s*[^;}]+' , lambda m: m.group(1)+'aspect-ratio:1/1!important', s)
 
 p.write_text(s, encoding='utf-8')
-print('Applied WENIK partner-card V3: square media and natural card heights')
+print('Applied WENIK partner-card V4: exact square media lock on every card')
