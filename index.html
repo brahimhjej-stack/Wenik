@@ -1313,7 +1313,7 @@ button,a,[role="button"]{touch-action:manipulation}
 
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
-import QRCode from'https://esm.sh/qrcode@1.5.4';
+
 
 const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
 const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
@@ -1507,6 +1507,7 @@ async function loadIza(){
 }
 
 async function loadQr(){
+  const {default:QRCode}=await import('https://esm.sh/qrcode@1.5.4');
   const r=(await rpc('customer_refresh_qr'))?.[0];
   if(!r)return;
   $('qrImage').src=await QRCode.toDataURL(String(r.qr_token),{width:360,margin:1});
