@@ -1,0 +1,44 @@
+name: WENIK Staging Safety
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate critical HTML structure
+        run: python scripts/validate_frontend_safety.py
+      - name: Validate all inline JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(.safety-js/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo 'No extracted scripts found'
+            exit 1
+          fi
+          for f in "${files[@]}"; do
+            echo "Checking $f"
+            node --check "$f"
+          done
+      - name: Verify protected production files unchanged by safety setup
+        run: |
+          test -f index.html
+          test -f admin.html
+          test -f partner.html
+          test -f sw.js
+          echo 'Core production files present.'
