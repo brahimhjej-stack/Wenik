@@ -1,0 +1,36 @@
+name: Add production missing partner access
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/add_missing_partner_access_production_20260913.py'
+      - '.github/workflows/add-missing-partner-access-production-20260913.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Patch admin only
+        run: python scripts/add_missing_partner_access_production_20260913.py
+      - name: Verify scope
+        run: |
+          CHANGED="$(git status --short | awk '{print $2}')"
+          echo "$CHANGED"
+          if [ "$CHANGED" != "admin.html" ]; then
+            echo "Unexpected changed files"
+            exit 1
+          fi
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add admin.html
+          git commit -m "Add missing partner access to production admin"
+          git push origin main
