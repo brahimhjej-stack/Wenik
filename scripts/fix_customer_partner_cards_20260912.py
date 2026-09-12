@@ -7,7 +7,7 @@ start = '<!-- WENIK PARTNER CARDS UNIFORM V1 START -->'
 end = '<!-- WENIK PARTNER CARDS UNIFORM V1 END -->'
 block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
 <style id="wenikPartnerCardsUniformV1">
-/* Final customer partner-card normalization: same media size + same card proportions. */
+/* Final customer partner-card normalization: all cards use the same large square photo treatment. */
 .wenikPartnerGrid{
   align-items:stretch!important;
   grid-auto-rows:1fr!important;
@@ -18,6 +18,8 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
   height:100%!important;
   min-height:0!important;
   overflow:hidden!important;
+  border-radius:22px!important;
+  background:#fff!important;
 }
 .wenikPartnerCard .wenikPartnerMedia{
   position:relative!important;
@@ -25,9 +27,10 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
   height:auto!important;
   min-height:0!important;
   max-height:none!important;
-  aspect-ratio:16/9!important;
+  aspect-ratio:1/1!important;
   flex:0 0 auto!important;
   overflow:hidden!important;
+  background:linear-gradient(135deg,#f4ebff,#fff1e8,#fff8d9)!important;
 }
 .wenikPartnerCard .wenikPartnerMedia>img,
 .wenikPartnerCard .wenikPartnerMedia img{
@@ -39,22 +42,48 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
   object-fit:cover!important;
   object-position:center!important;
 }
+.wenikPartnerCard .wenikPartnerPlaceholder{
+  width:100%!important;
+  height:100%!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:27px!important;
+}
 .wenikPartnerCard .wenikPartnerBody{
   flex:1 1 auto!important;
   display:flex!important;
   flex-direction:column!important;
-  min-height:96px!important;
+  min-height:98px!important;
+  padding:10px 12px 10px!important;
   box-sizing:border-box!important;
+  background:#fff!important;
 }
-.wenikPartnerCard .wenikPartnerName,
-.wenikPartnerCard .wenikPartnerMeta{
+.wenikPartnerCard .wenikPartnerName{
+  margin:0!important;
+  font-size:15px!important;
+  line-height:1.15!important;
   white-space:nowrap!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
 }
+.wenikPartnerCard .wenikPartnerMeta{
+  margin-top:4px!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.wenikPartnerCard .wenikPartnerFooter{
+  margin-top:auto!important;
+  padding-top:8px!important;
+}
 @media(max-width:390px){
-  .wenikPartnerCard .wenikPartnerMedia{aspect-ratio:16/9!important}
-  .wenikPartnerCard .wenikPartnerBody{min-height:90px!important}
+  .wenikPartnerCard{border-radius:19px!important}
+  .wenikPartnerCard .wenikPartnerMedia{aspect-ratio:1/1!important}
+  .wenikPartnerCard .wenikPartnerBody{min-height:92px!important;padding:9px 9px 8px!important}
+  .wenikPartnerCard .wenikPartnerName{font-size:13.5px!important}
+  .wenikPartnerCard .wenikPartnerMeta{font-size:10px!important}
 }
 </style>
 <script id="wenikPartnerCardsUniformRuntimeV1">
@@ -66,7 +95,6 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
     if(parts.length===2 && parts[0].localeCompare(parts[1],undefined,{sensitivity:'base'})===0)return parts[0];
     return raw;
   }
-  function norm(v){return String(v||'').trim().toLowerCase()}
   function dataFor(card){
     const id=card?.dataset?.wenikPartnerId;
     const list=window.partnerDirectory||[];
@@ -74,6 +102,16 @@ block = r'''<!-- WENIK PARTNER CARDS UNIFORM V1 START -->
   }
   function fix(card){
     if(!card)return;
+    const media=card.querySelector('.wenikPartnerMedia');
+    if(media){
+      media.style.setProperty('aspect-ratio','1 / 1','important');
+      media.querySelectorAll('img').forEach(img=>{
+        img.style.setProperty('width','100%','important');
+        img.style.setProperty('height','100%','important');
+        img.style.setProperty('object-fit','cover','important');
+        img.style.setProperty('object-position','center','important');
+      });
+    }
     const meta=card.querySelector('.wenikPartnerMeta');
     if(!meta)return;
     const partner=dataFor(card);
@@ -113,4 +151,4 @@ else:
     s = s[:pos] + block + '\n' + s[pos:]
 
 p.write_text(s, encoding='utf-8')
-print('Applied WENIK partner-card uniform fix')
+print('Applied WENIK large square partner-card photo fix')
