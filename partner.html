@@ -254,7 +254,7 @@ D('deliveryResetBtn').onclick=resetDelivery;
     btn.textContent='👁齯';
     btn.addEventListener('click',function(){
       var showing=input.type==='text';
-      input.type=showing?'password'*'text';
+      input.type=showing?'password':'text';
       btn.setAttribute('aria-label',showing?'Show password':'Hide password');
       btn.setAttribute('title',showing?'Show password':'Hide password');
       btn.textContent=showing?'👁鎫':'🙉';
