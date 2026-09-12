@@ -1232,7 +1232,7 @@ button,a,[role="button"]{touch-action:manipulation}
 
   <section id="auth" class="hero">
     <div class="eyebrow">WELCOME TO WENIK</div><h2 id="authTitle">JOIN US</h2>
-    <div class="authTabs"><button id="joinTab" class="authTab active" type="button">JOIN US</button><button id="loginTab" class="authTab" type="button">LOGIN</button></div>
+    <div class="authTabs"><button id="joinTab" class="authTab active" type="button" onclick="document.getElementById('joinForm').classList.remove('hidden');document.getElementById('loginForm').classList.add('hidden');document.getElementById('joinTab').classList.add('active');document.getElementById('loginTab').classList.remove('active');document.getElementById('authTitle').textContent='JOIN US';document.getElementById('msg').textContent='';">JOIN US</button><button id="loginTab" class="authTab" type="button" onclick="document.getElementById('joinForm').classList.add('hidden');document.getElementById('loginForm').classList.remove('hidden');document.getElementById('loginTab').classList.add('active');document.getElementById('joinTab').classList.remove('active');document.getElementById('authTitle').textContent='LOGIN';document.getElementById('msg').textContent='';">LOGIN</button></div>
 
     <div id="joinForm">
       <p class="muted">Create your WENIK test account and enter directly.</p>
