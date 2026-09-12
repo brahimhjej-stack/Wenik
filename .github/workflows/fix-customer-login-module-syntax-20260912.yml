@@ -1,0 +1,29 @@
+name: Fix customer login module syntax only
+on:
+  push:
+    paths:
+      - 'scripts/fix_customer_login_module_syntax_20260912.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Run isolated syntax repair
+        run: python3 scripts/fix_customer_login_module_syntax_20260912.py
+      - name: Verify only index changed
+        run: |
+          changed=$(git status --short | awk '{print $2}')
+          echo "$changed"
+          test "$changed" = "index.html"
+      - name: Commit repair
+        run: |
+          git config user.name "WENIK automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix customer login module syntax only"
+          git push origin main
