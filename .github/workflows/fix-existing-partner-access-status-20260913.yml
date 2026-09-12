@@ -1,0 +1,30 @@
+name: Fix Existing Partner Access Status
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fix_existing_partner_access_status_20260913.py'
+      - '.github/workflows/fix-existing-partner-access-status-20260913.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch only Partner Access status UI
+        run: python3 scripts/fix_existing_partner_access_status_20260913.py
+      - name: Verify only admin.html changed
+        run: |
+          changed="$(git diff --name-only)"
+          test "$changed" = "admin.html"
+          git diff --check
+      - name: Commit exact fix
+        run: |
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add admin.html
+          git commit -m 'Show 9 existing Partner access accounts correctly'
+          git push origin main
