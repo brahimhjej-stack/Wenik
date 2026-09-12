@@ -3,8 +3,9 @@ from pathlib import Path
 p = Path('admin.html')
 s = p.read_text(encoding='utf-8')
 
-marker = '<!-- WENIK MISSING PARTNER ACCESS BULK V1 -->'
-if marker in s:
+html_marker = '<!-- WENIK MISSING PARTNER ACCESS BULK V1 -->'
+js_marker = '// WENIK MISSING PARTNER ACCESS BULK V1'
+if html_marker in s and js_marker in s:
     print('Already patched; no changes needed.')
     raise SystemExit(0)
 
@@ -59,7 +60,7 @@ if s.count(js_anchor) != 1:
     raise SystemExit(f'Expected exactly one logout/start JS anchor, found {s.count(js_anchor)}')
 s = s.replace(js_anchor, js_block + js_anchor, 1)
 
-if s.count(marker) != 2:
-    raise SystemExit(f'Expected 2 feature markers after patch, found {s.count(marker)}')
+if s.count(html_marker) != 1 or s.count(js_marker) != 1:
+    raise SystemExit(f'Feature verification failed: html={s.count(html_marker)} js={s.count(js_marker)}')
 p.write_text(s, encoding='utf-8')
 print('Patched admin.html with Missing Partner Access only.')
