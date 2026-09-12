@@ -1,0 +1,29 @@
+name: Fix WENIK customer login tab only
+on:
+  push:
+    paths:
+      - 'scripts/fix_customer_login_tab_only_20260912.py'
+      - '.github/workflows/fix-customer-login-tab-only-20260912.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch customer login tab only
+        run: python scripts/fix_customer_login_tab_only_20260912.py
+      - name: Verify only index changed
+        run: |
+          changed=$(git status --short | awk '{print $2}' | grep -v '^$' || true)
+          test "$changed" = "index.html"
+      - name: Commit
+        run: |
+          git config user.name "WENIK automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix customer login tab click only"
+          git push origin main
