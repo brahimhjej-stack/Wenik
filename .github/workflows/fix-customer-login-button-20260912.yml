@@ -1,0 +1,42 @@
+name: Fix WENIK customer login button
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fix_customer_login_button_20260912.py'
+      - '.github/workflows/fix-customer-login-button-20260912.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch only customer login button behavior
+        run: python scripts/fix_customer_login_button_20260912.py
+      - name: Verify only index.html changed
+        run: |
+          changed="$(git status --short | awk '{print $2}')"
+          echo "$changed"
+          bad="$(echo "$changed" | grep -v '^index.html$' || true)"
+          if [ -n "$bad" ]; then
+            echo "Unexpected changed files: $bad"
+            exit 1
+          fi
+      - name: Commit fix
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "No index.html change needed"
+            exit 0
+          fi
+          git config user.name 'WENIK automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Fix customer mobile password login button only'
+          git push
