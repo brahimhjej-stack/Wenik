@@ -40,7 +40,7 @@
 <section id="login" class="hero"><h1>Admin Login</h1><input id="email" class="field" type="email" placeholder="Admin email" autocomplete="username"><input id="password" class="field" type="password" placeholder="Password" autocomplete="current-password"><button id="loginBtn" class="btn">LOGIN</button><div id="loginMsg" class="status"></div></section>
 <section id="app" class="hidden">
 <div class="hero"><div class="row"><div><div class="sub">WENIK MANAGEMENT</div><h1 id="who">Control Center</h1><div id="roleLine" class="muted"></div></div><span id="rolePill" class="pill">ADMIN</span></div></div>
-<div class="tabs"><button class="tab active" data-panel="reports">REPORTS</button><button class="tab" data-panel="approvals">APPROVALS</button><button class="tab" data-panel="giftsApproval">GIFTS</button><button class="tab" data-panel="messages">MESSAGES</button><button class="tab" data-panel="iza">IZA</button><button class="tab" data-panel="wins">WIN</button><button class="tab" data-panel="dashboard">DASHBOARD</button><button class="tab" data-panel="subscriptions">SUBSCRIPTIONS</button><button id="financeTab" class="tab hidden" data-panel="finance">FINANCE · P&L</button><button id="superTab" class="tab hidden" data-panel="super">SUPER ADMIN</button></div>
+<div class="tabs"><button class="tab active" data-panel="reports">REPORTS</button><button class="tab" data-panel="approvals">APPROVALS</button><button class="tab" data-panel="fraud">SECURITY</button><button class="tab" data-panel="giftsApproval">GIFTS</button><button class="tab" data-panel="messages">MESSAGES</button><button class="tab" data-panel="iza">IZA</button><button class="tab" data-panel="wins">WIN</button><button class="tab" data-panel="dashboard">DASHBOARD</button><button class="tab" data-panel="subscriptions">SUBSCRIPTIONS</button><button id="financeTab" class="tab hidden" data-panel="finance">FINANCE · P&L</button><button id="superTab" class="tab hidden" data-panel="super">SUPER ADMIN</button></div>
 
 <section id="reports" class="panel active"><div class="card"><div class="two"><select id="period" class="field"><option value="today">Today</option><option value="month">This month</option><option value="all">All time</option></select><button id="refreshReports" class="btn">REFRESH REPORTS</button></div></div>
 <!-- WENIK REPORTS FINAL V1 -->
@@ -52,6 +52,11 @@
 <h2>Partner Reports</h2><div id="partners"></div><h2>Top Customers</h2><div id="customers"></div></section>
 
 <div id="approvalImageViewer" class="imageViewer hidden" role="dialog" aria-modal="true" aria-label="Partner image preview"><div class="imageViewerBox"><div class="imageViewerTop"><div><b id="approvalViewerPartner">Partner image</b><div id="approvalViewerSlot" class="muted"></div></div><button id="approvalViewerClose" class="btn secondary imageViewerClose" type="button">CLOSE ✕</button></div><img id="approvalViewerImg" alt="Partner image preview"><div class="imageViewerActions"><button id="approvalViewerApprove" class="btn ok" type="button">APPROVE</button><button id="approvalViewerReject" class="btn danger" type="button">REJECT</button></div></div></div>
+<section id="fraud" class="panel">
+<div class="card"><div class="row"><div><div class="sub">TRANSACTION SECURITY</div><h2>Fraud Review Queue</h2><div class="muted">Only transactions flagged by WENIK security appear here. Normal transactions continue automatically.</div></div><button id="refreshFraud" class="btn secondary" style="width:auto">REFRESH</button></div><div id="fraudStatus" class="status"></div></div>
+<div id="fraudQueue"></div>
+</section>
+
 <section id="approvals" class="panel"><div class="card"><div class="row"><div><h2>Pending Partner Content</h2><div class="muted">Approve or reject partner ads and items.</div></div><button id="refreshApprovals" class="btn secondary" style="width:auto">REFRESH</button></div></div><div class="cols"><div><h3>Ads</h3><div id="pendingAds"></div></div><div><h3>Items</h3><div id="pendingItems"></div></div></div></section>
 
 <!-- WENIK ADMIN GIFTS APPROVAL UI -->
@@ -248,6 +253,171 @@ const WENIK_EXISTING_PARTNERS=[
   ['Farouj Chahine','faroujchahine'],['Kashmir Wears','kashmirwears'],["L'Atelier de Vera",'atelierdevera'],['Labneh w Jebneh','labnehwjebneh'],['Ghazi Issa Electrical','ghaziissaelectrical'],['Jaber Jewelry','jaberjewelry'],['Lilandi Coffee','lilandicoffee'],['Eat Vite','eatvite'],['Salon Mohammad Sabah','salonmohammadsabah']
 ];
 $('missingPartnerAccessResults').innerHTML=WENIK_EXISTING_PARTNERS.map(r=>'<div class="card" style="padding:14px"><b>'+esc(r[0])+'</b><div class="muted">Username: '+esc(r[1])+'</div><div class="good">Access active · Reset password above when needed.</div></div>').join('');
+async function loadFraudQueue(){
+ const box=$('fraudQueue'),status=$('fraudStatus'); if(!box)return;
+ box.innerHTML='<div class="card muted">Loading security review queue...</div>'; if(status)status.textContent='';
+ try{
+  const{data,error}=await sb.rpc('admin_fraud_review_queue'); if(error)throw error;
+  const rows=data||[];
+  box.innerHTML=rows.length?rows.map(r=>{
+   const reasons=Array.isArray(r.reasons)?r.reasons.join(' · '):String(r.reasons||'');
+   const level=String(r.risk_level||'watch').toUpperCase();
+   return '<div class="card"><div class="row"><div><b>'+esc(r.partner_name||'Partner')+'</b><div class="muted">'+esc(r.customer_wenik_id||'')+' · '+esc(new Date(r.transaction_at).toLocaleString())+'</div></div><span class="pill">'+esc(level)+' · '+esc(r.risk_score)+'/100</span></div><div style="font-size:24px;font-weight:900;margin:12px 0">
+</script><!-- WENIK GLOBAL PASSWORD VISIBILITY V1 -->
+<style>
+.wenik-password-wrap{position:relative;width:100%}
+.wenik-password-wrap>.field,.wenik-password-wrap>input[type="password"],.wenik-password-wrap>input[type="text"]{padding-right:58px!important}
+.wenik-password-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer;font-size:20px;line-height:1;z-index:3;opacity:.78}
+.wenik-password-eye:active{transform:translateY(-50%) scale(.96)}
+.wenik-password-eye:focus-visible{outline:2px solid #ef159d;outline-offset:2px}
+</style>
+<script>
+(function(){
+  function enhancePassword(input){
+    if(!input || input.dataset.wenikPasswordEye==='1') return;
+    input.dataset.wenikPasswordEye='1';
+    var parent=input.parentElement;
+    var wrap=document.createElement('div');
+    wrap.className='wenik-password-wrap';
+    parent.insertBefore(wrap,input);
+    wrap.appendChild(input);
+    var btn=document.createElement('button');
+    btn.type='button';
+    btn.className='wenik-password-eye';
+    btn.setAttribute('aria-label','Show password');
+    btn.setAttribute('title','Show password');
+    btn.textContent='👁齯';
+    btn.addEventListener('click',function(){
+      var showing=input.type==='text';
+      input.type=showing?'password'*'text';
+      btn.setAttribute('aria-label',showing?'Show password':'Hide password');
+      btn.setAttribute('title',showing?'Show password':'Hide password');
+      btn.textContent=showing?'👁鎫':'🙉';
+      input.focus({preventScroll:true});
+      try{input.setSelectionRange(input.value.length,input.value.length)}catch(e){}
+    });
+    wrap.appendChild(btn);
+  }
+  function scan(root){
+    (root||document).querySelectorAll('input[type="password"]').forEach(enhancePassword);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){scan(document)});
+  else scan(document);
+  new MutationObserver(function(mutations){
+    mutations.forEach(function(m){
+      m.addedNodes.forEach(function(n){if(n.nodeType===1){if(n.matches&&n.matches('input[type="password"]'))enhancePassword(n);scan(n)}})
+    });
+  }).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+
+<script type="module" src="/wenik-points.js"></script>
+<script type="module" src="/wenik-gift-points-admin.js"></script>
+
+<script id="wenikAdminDashboardUploadV1">
+(function(){
+ function el(id){return document.getElementById(id)}
+ function showPreview(url){const p=el('homeAdPreview');if(!p)return;if(url){p.src=url;p.classList.remove('hidden')}else{p.removeAttribute('src');p.classList.add('hidden')}}
+ function bind(){
+  const file=el('homeAdUpload'),btn=el('homeAdUploadBtn'),url=el('homeAdImage');if(!file||!btn||!url)return;
+  file.addEventListener('change',()=>{const f=file.files&&file.files[0];if(f)showPreview(URL.createObjectURL(f))});
+  url.addEventListener('input',()=>showPreview(url.value.trim()));
+  btn.addEventListener('click',async()=>{
+   const f=file.files&&file.files[0];if(!f){if(window.setStatus)setStatus('homeAdStatus','Choose an image first.');return}
+   if(!/^image\//.test(f.type)){if(window.setStatus)setStatus('homeAdStatus','Please choose an image file.');return}
+   if(f.size>8*1024*1024){if(window.setStatus)setStatus('homeAdStatus','Image is too large. Maximum 8 MB.');return}
+   const old=btn.textContent;btn.disabled=true;btn.textContent='UPLOADING...';
+   try{
+    const ext=(f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg';
+    const path='home-dashboard/'+Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+    const r=await sb.storage.from('partner-media').upload(path,f,{cacheControl:'3600',upsert:false,contentType:f.type});
+    if(r.error)throw r.error;
+    const pub=sb.storage.from('partner-media').getPublicUrl(path);
+    const publicUrl=pub&&pub.data&&pub.data.publicUrl;if(!publicUrl)throw Error('Could not create image URL.');
+    url.value=publicUrl;showPreview(publicUrl);if(window.setStatus)setStatus('homeAdStatus','Image uploaded. Now press SAVE BANNER.',true);
+   }catch(e){if(window.setStatus)setStatus('homeAdStatus',(e&&e.message)||'Image upload failed. You can still use Image URL.')}finally{btn.disabled=false;btn.textContent=old}
+  });
+  const clear=el('clearHomeAd');if(clear)clear.addEventListener('click',()=>{file.value='';showPreview('')});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+})();
+</script>
+
+<script id="wenikAdminDashboardUploadFixRuntimeV2">
+(function(){
+  function $(id){return document.getElementById(id)}
+  function setMsg(msg,ok){
+    const box=$('homeAdStatus');
+    if(!box)return;
+    box.textContent=msg||'';
+    box.classList.toggle('good',!!ok);
+    box.classList.toggle('error',!ok&&!!msg);
+  }
+  function preview(url){
+    const p=$('homeAdPreview');
+    if(!p)return;
+    if(url){p.src=url;p.classList.remove('hidden')}else{p.removeAttribute('src');p.classList.add('hidden')}
+  }
+  async function uploadSelected(){
+    const file=$('homeAdUpload'),btn=$('homeAdUploadBtn'),url=$('homeAdImage');
+    if(!file||!btn||!url)return;
+    const f=file.files&&file.files[0];
+    if(!f){file.click();return}
+    if(!/^image\//i.test(f.type)){setMsg('Please choose an image file.');return}
+    if(f.size>8*1024*1024){setMsg('Image is too large. Maximum 8 MB.');return}
+    if(btn.dataset.busy==='1')return;
+    btn.dataset.busy='1';btn.disabled=true;btn.textContent='UPLOADING...';setMsg('Uploading image...',true);
+    try{
+      const auth=await sb.auth.getUser();
+      const uid=auth&&auth.data&&auth.data.user&&auth.data.user.id;
+      if(!uid)throw Error('Admin session expired. Please login again.');
+      const ext=((f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg');
+      const name=Date.now()+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+      const candidates=[uid+'/home-dashboard/'+name,'home-dashboard/'+uid+'/'+name];
+      let uploaded=null,lastErr=null;
+      for(const path of candidates){
+        const r=await sb.storage.from('partner-media').upload(path,f,{cacheControl:'3600',upsert:false,contentType:f.type});
+        if(!r.error){uploaded=path;break}
+        lastErr=r.error;
+      }
+      if(!uploaded)throw lastErr||Error('Upload failed.');
+      const pub=sb.storage.from('partner-media').getPublicUrl(uploaded);
+      const publicUrl=pub&&pub.data&&pub.data.publicUrl;
+      if(!publicUrl)throw Error('Could not create image URL.');
+      url.value=publicUrl;preview(publicUrl);setMsg('Image uploaded ✓ Now press SAVE BANNER.',true);
+    }catch(e){
+      setMsg((e&&e.message)||'Image upload failed.');
+    }finally{
+      btn.dataset.busy='0';btn.disabled=false;btn.textContent='UPLOAD IMAGE';
+    }
+  }
+  function bind(){
+    const file=$('homeAdUpload'),btn=$('homeAdUploadBtn'),url=$('homeAdImage');
+    if(!file||!btn||!url)return;
+    btn.onclick=function(ev){ev.preventDefault();ev.stopPropagation();uploadSelected()};
+    file.onchange=function(){
+      const f=file.files&&file.files[0];
+      if(f){preview(URL.createObjectURL(f));setMsg('Image selected. Press UPLOAD IMAGE.',true)}
+    };
+    url.oninput=function(){preview(url.value.trim())};
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind,{once:true});else bind();
+  setTimeout(bind,700);
+})();
+</script>
+
+</body></html>
++Number(r.original_amount||0).toFixed(2)+'</div><div class="muted">'+esc(reasons||'Security review')+(r.requires_receipt?' · RECEIPT REQUIRED':'')+(r.random_audit?' · RANDOM AUDIT':'')+'</div><div class="actions"><button class="btn ok" onclick="reviewFraud(\''+r.transaction_id+'\',true)">APPROVE</button><button class="btn danger" onclick="reviewFraud(\''+r.transaction_id+'\',false)">REJECT</button></div></div>';
+  }).join(''):'<div class="card good">✓ No transactions waiting for security review.</div>';
+ }catch(e){box.innerHTML='<div class="card error">'+esc(e.message||'Could not load security queue.')+'</div>'}
+}
+window.reviewFraud=async function(id,approve){
+ const action=approve?'APPROVE':'REJECT'; if(!confirm(action+' this transaction?'))return;
+ const note=prompt('Review note (optional):','')||null;
+ try{const{error}=await sb.rpc('admin_review_points_transaction',{p_transaction_id:id,p_approve:approve,p_note:note});if(error)throw error;await loadFraudQueue()}catch(e){alert(e.message||'Review failed.')}
+};
+$('refreshFraud').onclick=loadFraudQueue;
+document.querySelector('[data-panel="fraud"]').addEventListener('click',loadFraudQueue);
 $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs();start();
 </script><!-- WENIK GLOBAL PASSWORD VISIBILITY V1 -->
 <style>
