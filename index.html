@@ -1677,7 +1677,11 @@ window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManage
 
 async function loadMe(){
   const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
-  $('activity').innerHTML=(a||[]).map(x=>{const st=String(x.transaction_status||'').toLowerCase(),pending=st==='pending',voided=st==='voided';return '<div class="card"><div class="row"><div><b>'+esc(x.partner_name)+'</b><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleString():'')+'</div></div><span class="pill">'+esc(st.toUpperCase()||'TRANSACTION')+'</span></div><div style="margin-top:12px"><div class="row"><span class="muted">Original bill</span><b>
+  $('activity').innerHTML=(a||[]).map(x=>{
+    const st=String(x.transaction_status||'').toLowerCase(),pending=st==='pending',voided=st==='voided';
+    const original=Number(x.original_amount||0),benefit=Number(x.benefit_amount||0),finalPaid=Number(x.final_amount||0),points=Number(x.points_earned||0);
+    return '<div class="card"><div class="row"><div><b>'+esc(x.partner_name)+'</b><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleString():'')+'</div></div><span class="pill">'+esc(st.toUpperCase()||'TRANSACTION')+'</span></div><div style="margin-top:12px"><div class="row"><span class="muted">Original bill</span><b>$'+original.toFixed(2)+'</b></div>'+(benefit>0?'<div class="row"><span class="muted">WENIK benefit</span><b>-$'+benefit.toFixed(2)+'</b></div>':'')+'<div class="row"><span class="muted">Final paid</span><b>$'+finalPaid.toFixed(2)+'</b></div><div class="row" style="margin-top:8px"><span class="muted">'+(pending?'Points pending security review':voided?'No points':'WENIK Points earned')+'</span><b>'+(pending?'PENDING':voided?'0':('+'+points))+'</b></div></div></div>';
+  }).join('')||'<div class="card muted">No purchases yet.</div>';
   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
   document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
