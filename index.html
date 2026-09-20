@@ -1319,7 +1319,7 @@ button,a,[role="button"]{touch-action:manipulation}
 
     <section id="partners" class="hidden"><div class="hero"><div class="eyebrow">DISCOVER</div><h2>WENIK Partners</h2><input id="partnerSearch" class="field" placeholder="Search partner name"><select id="partnerArea" class="field"><option value="">All Areas</option></select><select id="partnerCategory" class="field"><option value="">All Categories</option></select></div><div id="partnerList" class="wenikPartnerGrid"></div></section>
 
-    <section id="me" class="hidden"><div class="hero"><div class="eyebrow">YOUR WENIK</div><h2 id="meName"></h2><div id="meMobile" class="muted"></div></div><div class="sectionTitle"><h3>Activity</h3></div><div id="activity"></div><div class="sectionTitle"><h3>Notifications <span id="unread" class="badge">0</span></h3></div><div id="inbox"></div><button id="logout" class="btn secondary">LOG OUT</button></section>
+    <section id="me" class="hidden"><div class="hero"><div class="eyebrow">YOUR WENIK</div><h2 id="meName"></h2><div id="meMobile" class="muted"></div></div><div class="sectionTitle"><h3>My Purchases</h3></div><input id="activitySearch" class="field" type="search" placeholder="Search partner or purchase" autocomplete="off"><div id="activity"></div><div class="sectionTitle"><h3>Notifications <span id="unread" class="badge">0</span></h3></div><div id="inbox"></div><button id="logout" class="btn secondary">LOG OUT</button></section>
   </section>
 </main>
 
@@ -1675,14 +1675,21 @@ function b64u8(s){const pad='='.repeat((4-s.length%4)%4),b=(s+pad).replace(/-/g,
 async function pushStateCard(){if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return '<div class="card muted">Push notifications are not supported on this browser.</div>';if(Notification.permission==='denied')return '<div class="card muted">Phone notifications are blocked in browser settings.</div>';const reg=await navigator.serviceWorker.register('/sw.js');const sub=await reg.pushManager.getSubscription();return sub?'<div class="card"><div class="row"><b>Phone notifications</b><span class="badge">ON</span></div><div class="muted">WENIK can notify you even when the site is closed.</div></div>':'<div class="card"><div class="row"><b>Phone notifications</b><span class="badge">OFF</span></div><div class="muted">Turn on WIN, IZA and important WENIK alerts on this phone.</div><button class="btn" style="margin-top:12px" onclick="enablePush()">ENABLE PHONE NOTIFICATIONS</button></div>'}
 window.enablePush=async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw Error('Push notifications are not supported on this browser.');const permission=await Notification.requestPermission();if(permission!=='granted')throw Error('Notification permission was not granted.');const reg=await navigator.serviceWorker.register('/sw.js');await navigator.serviceWorker.ready;let sub=await reg.pushManager.getSubscription();if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u8(WENIK_VAPID_PUBLIC_KEY)});const prof=await rpc('customer_my_profile');const customer=prof?.[0];if(!customer?.customer_id)throw Error('Customer profile not found.');const j=sub.toJSON();const row={customer_id:customer.customer_id,endpoint:j.endpoint,p256dh:j.keys?.p256dh,auth:j.keys?.auth,user_agent:navigator.userAgent,is_active:true,updated_at:new Date().toISOString()};const{error}=await sb.from('push_subscriptions').upsert(row,{onConflict:'endpoint'});if(error)throw error;alert('Phone notifications are ON for WENIK.');await loadMe()}catch(e){alert(e.message||String(e))}};
 
+function renderCustomerPurchases(rows){
+  const q=($('activitySearch')?.value||'').trim().toLowerCase();
+  const list=(rows||[]).filter(x=>!q||String(x.partner_name||'').toLowerCase().includes(q)||String(x.original_amount||'').includes(q)||String(x.final_amount||'').includes(q));
+  $('activity').innerHTML=list.map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.original_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleString():'')+'</div><div class="row" style="margin-top:8px"><span class="muted">Final paid</span><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div></div>').join('')||'<div class="card muted">No purchases found.</div>';
+}
+let customerPurchaseRows=[];
 async function loadMe(){
-  const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:30}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
-  $('activity').innerHTML=(a||[]).map(x=>'<div class="card"><div class="row"><b>'+esc(x.partner_name)+'</b><b>$'+Number(x.final_amount||0).toFixed(2)+'</b></div><div class="muted">'+(x.transaction_at?new Date(x.transaction_at).toLocaleDateString():'')+'</div></div>').join('')||'<div class="card muted">No activity yet.</div>';
+  const[a,i]=await Promise.all([rpc('customer_my_activity',{p_limit:200}).catch(()=>[]),rpc('customer_my_inbox',{p_limit:50}).catch(()=>[])]);
+  customerPurchaseRows=a||[]; renderCustomerPurchases(customerPurchaseRows);
   const pushCard=await pushStateCard().catch(()=>'<div class="card muted">Phone notifications unavailable.</div>');
   $('inbox').innerHTML=pushCard+((i||[]).map(x=>'<div class="card '+(!x.seen_at?'unread':'')+'" data-message="'+x.message_id+'"><div class="row"><b>'+esc(x.title)+'</b>'+(!x.seen_at?'<span class="badge">NEW</span>':'')+'</div><div class="muted">'+esc(x.body)+'</div></div>').join('')||'<div class="card muted">No notifications.</div>');
   document.querySelectorAll('[data-message]').forEach(x=>x.onclick=()=>openNotification(x.dataset.message));
   refreshUnread()
 }
+$('activitySearch')?.addEventListener('input',()=>renderCustomerPurchases(customerPurchaseRows));
 
 async function openNotification(id){
   const r=await rpc('customer_open_message',{p_message_id:id}),x=Array.isArray(r)?r[0]:r;
