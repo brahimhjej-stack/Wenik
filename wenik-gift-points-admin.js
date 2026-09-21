@@ -30,6 +30,17 @@ async function installGifts(){
 }
 installGifts();
 
+async function installGiftQty(){
+  const gifts=await waitForAdmin(); if(!gifts||$('giftQtyBox'))return;
+  const card=document.createElement('div'); card.className='card'; card.id='giftQtyBox';
+  card.innerHTML='<h3>Add Quantity to Existing Gift</h3><select id="giftQtySelect" class="field"><option value="">Select Gift</option></select><input id="giftQtyNumber" class="field" type="number" min="1" step="1" value="1"><button id="giftQtyButton" class="btn secondary">+ ADD QUANTITY</button><div id="giftQtyMsg" class="status"></div>';
+  const entry=$('wenikAdminGiftEntry'); if(entry)entry.insertAdjacentElement('afterend',card); else gifts.prepend(card);
+  async function load(){const rows=await rpc('admin_gift_inventory');$('giftQtySelect').innerHTML='<option value="">Select Gift</option>'+((rows||[]).map(g=>'<option value="'+g.gift_id+'">'+esc(g.partner_name)+' · '+esc(g.gift_name)+' · Qty '+Number(g.quantity||0)+'</option>').join(''))}
+  $('giftQtyButton').onclick=async function(){const id=$('giftQtySelect').value,q=Number($('giftQtyNumber').value),box=$('giftQtyMsg');if(!id||!Number.isInteger(q)||q<1){box.className='status error';box.textContent='Select Gift and quantity.';return}this.disabled=true;try{const out=await rpc('admin_add_partner_gift_quantity',{p_gift_id:id,p_add_quantity:q});const row=Array.isArray(out)?out[0]:out;box.className='status good';box.textContent='Quantity updated. New total: '+Number(row&&row.new_quantity||0);$('giftQtyNumber').value='1';await load()}catch(e){box.className='status error';box.textContent=e.message}finally{this.disabled=false}};
+  for(let i=0;i<40;i++){const s=await sb.auth.getSession();if(s.data.session){try{await load()}catch(e){$('giftQtyMsg').textContent=e.message}return}await new Promise(r=>setTimeout(r,250))}
+}
+installGiftQty();
+
 /* ---------------- HOME BANNER UPLOAD ---------------- */
 function ensureUploadStatus(){let box=$('homeAdUploadLiveStatus');if(box)return box;const btn=$('homeAdUploadBtn');if(!btn)return null;box=document.createElement('div');box.id='homeAdUploadLiveStatus';box.className='status';box.style.margin='8px 2px 0';box.style.fontWeight='800';btn.insertAdjacentElement('afterend',box);return box}
 function uploadMsg(text,ok=false){const box=ensureUploadStatus();if(box){box.textContent=text||'';box.className='status '+(ok?'good':(text?'error':''))}const legacy=$('homeAdStatus');if(legacy){legacy.textContent=text||'';legacy.className='status '+(ok?'good':(text?'error':''))}}
