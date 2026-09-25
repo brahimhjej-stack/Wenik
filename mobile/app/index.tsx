@@ -9,7 +9,7 @@ const nav:[Screen,string,string][]=[['home','⌂','HOME'],['partners','⌕','PAR
 function BottomNav({screen,setScreen,unread}:{screen:Screen,setScreen:(x:Screen)=>void,unread:number}){return <View style={s.nav}>{nav.map(([id,icon,label])=><Pressable key={id} style={s.navItem} onPress={()=>setScreen(id)}><View><Text style={[s.navIcon,screen===id&&s.navOn]}>{icon}</Text>{id==='me'&&unread>0?<Text style={s.unread}>{unread>99?'99+':unread}</Text>:null}</View><Text style={[s.navLabel,screen===id&&s.navOn]}>{label}</Text></Pressable>)}</View>}
 function Home(){
  const [screen,setScreen]=useState<Screen>('home'),[profile,setProfile]=useState<any>(null),[unread,setUnread]=useState(0);
- async function refresh(){const [p,u]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_unread_message_count')]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);setUnread(Number(u.data||0))}
+ async function refresh(){const [p,u]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50})]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length)}
  useEffect(()=>{refresh()},[screen]);
  const points=profile?.points_balance??profile?.points??0,name=profile?.first_name||'';
  let body;
