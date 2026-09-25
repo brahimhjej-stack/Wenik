@@ -32,7 +32,7 @@ export default function Partners(){
 }
 const s=StyleSheet.create({
  safe:{flex:1,backgroundColor:'#09090d'},head:{paddingHorizontal:20,paddingTop:16},title:{color:'#fff',fontSize:28,fontWeight:'900'},sub:{color:'#aaaab5',marginTop:3},
- search:{height:52,margin:16,marginBottom:8,borderRadius:17,paddingHorizontal:16;backgroundColor:'#17131f',color:'#fff',borderWidth:1,borderColor:'#292331'},
+ search:{height:52,margin:16,marginBottom:8,borderRadius:17,paddingHorizontal:16,backgroundColor:'#17131f',color:'#fff',borderWidth:1,borderColor:'#292331'},
  chips:{paddingHorizontal:16,gap:8,paddingBottom:12},chip:{height:38,paddingHorizontal:14,borderRadius:19,backgroundColor:'#17131f',justifyContent:'center'},chipOn:{backgroundColor:'#ef159d'},chipText:{color:'#aaaab5',fontWeight:'800'},chipTextOn:{color:'#fff'},
  grid:{padding:16,paddingTop:0,flexDirection:'row',flexWrap:'wrap',gap:12},card:{width:'48%',backgroundColor:'#fff',borderRadius:22,overflow:'hidden'},media:{aspectRatio:1,backgroundColor:'#f4ebff',alignItems:'center',justifyContent:'center'},img:{width:'100%',height:'100%'},placeholder:{fontSize:20,fontWeight:'900',color:'#7c3cff'},off:{position:'absolute',top:9,left:9,backgroundColor:'#ff5a00',color:'#fff',fontSize:11,fontWeight:'900',paddingHorizontal:9,paddingVertical:6,borderRadius:20},
  body:{minHeight:112,padding:11},name:{color:'#16121b',fontSize:16,fontWeight:'900'},meta:{color:'#756e7b',fontSize:11,marginTop:4},promo:{color:'#ef159d',fontSize:10,fontWeight:'900',marginTop:7},
