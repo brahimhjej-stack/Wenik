@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "WENIK",
+    "slug": "wenik",
+    "scheme": "wenik",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {"package": "com.wenik.app"},
+    "ios": {"bundleIdentifier": "com.wenik.app"},
+    "plugins": ["expo-router"]
+  }
+}
