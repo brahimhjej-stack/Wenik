@@ -8,7 +8,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "check": "expo-doctor"
+    "check": "expo-doctor",
+    "build:android:apk": "npx eas-cli build --platform android --profile preview",
+    "build:android:production": "npx eas-cli build --platform android --profile production"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
@@ -29,6 +31,7 @@
     "react-native-screens": "~4.16.0"
   },
   "devDependencies": {
-    "expo-doctor": "^1.17.0"
+    "expo-doctor": "^1.17.0",
+    "eas-cli": "^16.17.4"
   }
 }
