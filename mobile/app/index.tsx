@@ -11,7 +11,10 @@ function Home(){
  const [screen,setScreen]=useState<Screen>('home'),[profile,setProfile]=useState<any>(null),[unread,setUnread]=useState(0);
  async function refresh(){const [p,u]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50})]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length)}
  useEffect(()=>{refresh()},[screen]);
- const points=profile?.points_balance??profile?.points??0,name=profile?.first_name||'';
+ const profilePoints=profile?.points_balance??profile?.points;
+ const [livePoints,setLivePoints]=useState<number|null>(null);
+ useEffect(()=>{let active=true;supabase.rpc('wenik_customer_points_balance').then(({data,error})=>{if(active&&!error)setLivePoints(Number(data??0))});return()=>{active=false}},[screen]);
+ const points=livePoints??profilePoints??0,name=profile?.first_name||'';
  let body;
  if(screen==='partners')body=<Partners/>;else if(screen==='rewards')body=<Rewards/>;else if(screen==='wins')body=<Wins/>;else if(screen==='iza')body=<Iza/>;else if(screen==='qr')body=<CustomerQr/>;else if(screen==='me')body=<Me/>;else body=<SafeAreaView style={s.safe}><ScrollView contentContainerStyle={s.page}>
   <View style={s.brand}><Text style={s.logo}>WENIK</Text><Text style={s.winwin}>WIN WIN</Text></View>
