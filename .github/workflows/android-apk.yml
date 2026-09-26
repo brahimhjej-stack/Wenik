@@ -1,0 +1,34 @@
+name: WENIK Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mobile app branch
+        uses: actions/checkout@v4
+        with:
+          ref: mobile-app
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install mobile dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: Verify Expo authentication
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas-cli whoami
+
+      - name: Build Android APK with EAS
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx eas-cli build --platform android --profile preview --non-interactive --no-wait
