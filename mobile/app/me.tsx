@@ -1,12 +1,12 @@
 import { useEffect,useMemo,useState } from 'react';
-import { Pressable,SafeAreaView,ScrollView,StyleSheet,Text,TextInput,View } from 'react-native';
+import { Alert,Linking,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,TextInput,View } from 'react-native';
 import { supabase } from '../lib/supabase';
 export default function Me(){
  const [profile,setProfile]=useState<any>(null),[points,setPoints]=useState<number|null>(null),[activity,setActivity]=useState<any[]>([]),[inbox,setInbox]=useState<any[]>([]),[q,setQ]=useState('');
  async function load(){const [p,b,a,i]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('wenik_customer_points_balance'),supabase.rpc('customer_my_activity',{p_limit:200}),supabase.rpc('customer_my_inbox',{p_limit:50})]);setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!b.error)setPoints(Number(b.data??0));setActivity(a.data||[]);setInbox(i.data||[])}
  useEffect(()=>{load()},[]);
  const filtered=useMemo(()=>activity.filter(x=>{const h=String([x.partner_name,x.original_amount,x.final_amount].join(' ')).toLowerCase();return !q||h.includes(q.toLowerCase())}),[activity,q]);
- async function openMessage(x:any){if(!x.seen_at){await supabase.rpc('customer_open_message',{p_message_id:x.message_id});load()}}
+ async function openMessage(x:any){if(!x.seen_at){await supabase.rpc('customer_open_message',{p_message_id:x.message_id});load()}const url=x.cta_url||x.deep_link||x.url;if(url&&/^https?:\/\//i.test(String(url)))Linking.openURL(String(url)).catch(()=>Alert.alert('WENIK','Could not open this link.'))}
  return <SafeAreaView style={s.safe}><ScrollView contentContainerStyle={s.page}>
   <Text style={s.title}>ME</Text><Text style={s.sub}>Your WENIK account and activity.</Text>
   <View style={s.profile}><Text style={s.name}>{[profile?.first_name,profile?.last_name].filter(Boolean).join(' ')||'WENIK Member'}</Text><Text style={s.meta}>{profile?.wenik_id||profile?.customer_wenik_id||''}</Text><Text style={s.points}>{Number(points??0).toLocaleString()} POINTS</Text></View>
