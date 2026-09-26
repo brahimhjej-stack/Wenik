@@ -6,8 +6,19 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "android": {"package": "com.wenik.app"},
-    "ios": {"bundleIdentifier": "com.wenik.app"},
-    "plugins": ["expo-router"]
+    "android": {
+      "package": "com.wenik.app",
+      "versionCode": 1
+    },
+    "ios": {
+      "bundleIdentifier": "com.wenik.app",
+      "buildNumber": "1"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    }
   }
 }
