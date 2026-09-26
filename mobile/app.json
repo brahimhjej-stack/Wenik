@@ -6,20 +6,11 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "android": {
-      "package": "com.wenik.app",
-      "versionCode": 1
-    },
-    "ios": {
-      "bundleIdentifier": "com.wenik.app",
-      "buildNumber": "1"
-    },
-    "plugins": [
-      "expo-router"
-    ],
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "owner": "brahimhjej-stack"
+    "android": {"package": "com.wenik.app", "versionCode": 1},
+    "ios": {"bundleIdentifier": "com.wenik.app", "buildNumber": "1"},
+    "plugins": ["expo-router"],
+    "updates": {"fallbackToCacheTimeout": 0},
+    "owner": "wenik",
+    "extra": {"eas": {"projectId": "0e651e5b-3660-43c0-8329-5fc0269ff725"}}
   }
 }
