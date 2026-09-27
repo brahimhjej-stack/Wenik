@@ -3,7 +3,7 @@
     "name": "WENIK",
     "slug": "wenik",
     "scheme": "wenik",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "android": {
