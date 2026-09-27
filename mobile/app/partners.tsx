@@ -8,9 +8,9 @@ const categories=['All','Restaurants','Cafés','Sweets','Fashion','Shoes & Bags'
 const norm=(v:any)=>String(v??'').trim().toLowerCase();
 function discount(x:Partner){const v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0&&v<=100)return Math.round(v)+'% OFF';return x.benefit_title?'WENIK OFFER':''}
 
-export default function Partners(){
+export default function Partners({initialPartnerId,onInitialPartnerOpened}:{initialPartnerId?:string|null,onInitialPartnerOpened?:()=>void}={}){
  const [rows,setRows]=useState<Partner[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[area,setArea]=useState('All'),[selected,setSelected]=useState<Partner|null>(null),[hero,setHero]=useState(''),[visibleCount,setVisibleCount]=useState(24);
- useEffect(()=>{supabase.rpc('public_partner_directory_v2').then(({data})=>{setRows(data||[]);setLoading(false)})},[]);
+ useEffect(()=>{supabase.rpc('public_partner_directory_v2').then(({data})=>{const next=data||[];setRows(next);setLoading(false);if(initialPartnerId){const target=next.find((x:Partner)=>x.partner_id===initialPartnerId);if(target){open(target);onInitialPartnerOpened?.()}}})},[initialPartnerId]);
  const areas=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>x.area).filter(Boolean))) as string[]],[rows]);
  const list=useMemo(()=>rows.filter(x=>{
    const hay=norm([x.business_name,x.area,x.category,x.address,x.benefit_title].join(' '));
