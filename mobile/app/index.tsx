@@ -1,5 +1,5 @@
 import { useEffect,useState } from 'react';
-import { ActivityIndicator,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View,Platform } from 'react-native';
+import { ActivityIndicator,Image,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View,Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Session } from '@supabase/supabase-js';
 import Partners from './partners'; import Rewards from './rewards'; import Wins from './wins'; import Iza from './iza'; import CustomerQr from './qr'; import Me from './me';
@@ -18,10 +18,7 @@ function BottomNav({screen,setScreen,unread}:{screen:Screen,setScreen:(x:Screen)
 }
 
 function Brand(){
- return <View style={s.brand}>
-  <LinearGradient colors={[C.purple,C.pink,C.orange,C.yellow]} start={{x:0,y:0}} end={{x:1,y:1}} style={s.brandMark}><Text style={s.brandW}>W.</Text></LinearGradient>
-  <View><Text style={s.logo}>WENIK</Text><Text style={s.winwin}>WIN WIN</Text></View>
- </View>
+ return <View style={s.brand}><Image source={require('../assets/wenik-logo.png')} style={s.brandImage} resizeMode="contain"/></View>
 }
 
 function Hero(){
@@ -70,9 +67,7 @@ export default function Index(){
 const s=StyleSheet.create({
  shell:{flex:1,backgroundColor:C.bg},safe:{flex:1,backgroundColor:C.bg},page:{paddingHorizontal:14,paddingTop:8,paddingBottom:120},
  loading:{flex:1,backgroundColor:C.bg,alignItems:'center',justifyContent:'center'},loadingText:{color:'#fff',fontWeight:'900',letterSpacing:3,marginTop:12},
- brand:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:11,marginTop:4,marginBottom:18},
- brandMark:{width:48,height:48,borderRadius:24,alignItems:'center',justifyContent:'center'},brandW:{fontSize:22,fontWeight:'900',color:'#fff',letterSpacing:-1},
- logo:{color:C.text,fontSize:27,fontWeight:'900',letterSpacing:2.8,lineHeight:30},winwin:{color:C.pink,fontSize:10,fontWeight:'900',letterSpacing:4,marginTop:1},
+ brand:{alignItems:'center',justifyContent:'center',marginTop:2,marginBottom:14},brandImage:{width:118,height:118,borderRadius:59},
  hero:{borderRadius:26,padding:22,overflow:'hidden',borderWidth:1,borderColor:'rgba(255,255,255,.08)'},heroLine:{position:'absolute',top:0,left:0,right:0,height:3},
  eyebrow:{fontSize:11,letterSpacing:2,color:'#c69cff',fontWeight:'800'},title:{color:'#fff',fontSize:30,fontWeight:'900',letterSpacing:-1,marginTop:6},copy:{color:C.muted,fontSize:13,lineHeight:20,marginTop:5},
  sectionHead:{marginTop:24,marginHorizontal:2,marginBottom:8},sectionTitle:{color:'#f7eaff',fontSize:18,fontWeight:'900',letterSpacing:.2},
