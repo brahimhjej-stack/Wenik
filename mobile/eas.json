@@ -4,6 +4,13 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "device-test": {
+      "distribution": "internal",
+      "android": {
+        "withoutCredentials": true,
+        "gradleCommand": ":app:assembleDebug"
+      }
+    },
     "preview": {
       "distribution": "internal",
       "android": {
