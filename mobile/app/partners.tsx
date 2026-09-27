@@ -4,7 +4,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 
 type Partner={partner_id:string;business_name:string;area?:string;category?:string;address?:string;logo_url?:string;benefit_title?:string;benefit_type?:string;benefit_value?:number;benefit_conditions?:string;phone?:string;phone_number?:string;location_url?:string;google_maps_url?:string;menu_url?:string;instagram_url?:string;facebook_url?:string;website_url?:string};
-const categories=['All','Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Fitness','Perfumes','Optics','Jewelry','Electronics','Furniture','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
 const norm=(v:any)=>String(v??'').trim().toLowerCase();
 function discount(x:Partner){const v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0&&v<=100)return Math.round(v)+'% OFF';return x.benefit_title?'WENIK OFFER':''}
 
@@ -12,6 +11,7 @@ export default function Partners({initialPartnerId,onInitialPartnerOpened}:{init
  const [rows,setRows]=useState<Partner[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[area,setArea]=useState('All'),[selected,setSelected]=useState<Partner|null>(null),[hero,setHero]=useState(''),[visibleCount,setVisibleCount]=useState(24);
  useEffect(()=>{supabase.rpc('public_partner_directory_v2').then(({data})=>{const next=data||[];setRows(next);setLoading(false);if(initialPartnerId){const target=next.find((x:Partner)=>x.partner_id===initialPartnerId);if(target){open(target);onInitialPartnerOpened?.()}}})},[initialPartnerId]);
  const areas=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>x.area).filter(Boolean))) as string[]],[rows]);
+ const categories=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>x.category).filter(Boolean))) as string[]],[rows]);
  const list=useMemo(()=>rows.filter(x=>{
    const hay=norm([x.business_name,x.area,x.category,x.address,x.benefit_title].join(' '));
    return (!q||hay.includes(norm(q)))&&(cat==='All'||norm(x.category).includes(norm(cat.replace(/s$/,''))))&&(area==='All'||norm(x.area)===norm(area));
