@@ -5,13 +5,13 @@
     "scheme": "wenik",
     "version": "1.0.1",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "android": {
       "package": "com.wenik.app",
       "versionCode": 1,
       "navigationBar": {
-        "backgroundColor": "#06050d",
-        "barStyle": "light-content"
+        "backgroundColor": "#f8f7fb",
+        "barStyle": "dark-content"
       }
     },
     "ios": {
