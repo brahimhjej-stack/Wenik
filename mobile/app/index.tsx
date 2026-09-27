@@ -52,13 +52,7 @@ function Home(){
    <Pressable onPress={()=>setScreen('rewards')} style={s.rewardWrap}><View style={s.rewardIcon}><Text style={{fontSize:24}}>🎁</Text></View><View style={{flex:1}}><Text style={s.rewardKicker}>MY REWARDS</Text><Text style={s.rewardTitle}>Rewards & gifts</Text><Text style={s.rewardSub}>See what you can redeem · ${Number(points||0).toLocaleString()} pts</Text></View><Text style={s.rewardAction}>REWARDS</Text></Pressable>
    <View style={s.featureHead}><Text style={s.featureTitle}>FEATURED</Text><Text style={s.featureSwipe}>Swipe</Text></View>
    <LinearGradient colors={['#2a123b','#54164f','#f47b55']} style={s.featureCard}><Text style={s.featureKicker}>WENIK</Text><Text style={s.featureBig}>COMING SOON</Text><Text style={s.featureSub}>New partners • rewards • wins</Text></LinearGradient>
-   <View style={s.sectionHead}><Text style={s.sectionTitle}>DISCOVER</Text></View>
-   <View style={s.grid}>
-    <Pressable style={s.tile} onPress={()=>setScreen('partners')}><Text style={s.tileKicker}>WENIK</Text><Text style={s.tileTitle}>PARTNERS</Text><Text style={s.tileSub}>Discover benefits</Text></Pressable>
-    <Pressable style={s.tile} onPress={()=>setScreen('wins')}><Text style={[s.tileKicker,{color:C.yellow}]}>YOUR</Text><Text style={s.tileTitle}>WIN</Text><Text style={s.tileSub}>Wins & winners</Text></Pressable>
-    <Pressable style={s.tile} onPress={()=>setScreen('iza')}><Text style={[s.tileKicker,{color:C.orange}]}>IZA | إذا</Text><Text style={s.tileTitle}>I'M IN?</Text><Text style={s.tileSub}>Vote & participate</Text></Pressable>
-    <Pressable style={s.tile} onPress={()=>setScreen('qr')}><Text style={[s.tileKicker,{color:C.pink}]}>YOUR ACCESS</Text><Text style={s.tileTitle}>MY QR</Text><Text style={s.tileSub}>Scan at a partner</Text></Pressable>
-   </View>
+
  </ScrollView></SafeAreaView>;
  return <View style={s.shell}>{body}<BottomNav screen={screen} setScreen={setScreen} unread={unread}/></View>
 }
