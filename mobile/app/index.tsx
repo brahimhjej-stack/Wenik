@@ -21,12 +21,14 @@ function Brand(){
  return <View style={s.brand}><LinearGradient colors={[C.purple,C.pink,C.orange,C.yellow]} start={{x:0,y:0}} end={{x:1,y:1}} style={s.brandMark}><Text style={s.brandW}>W.</Text></LinearGradient><View><Text style={s.logo}>WENIK</Text><Text style={s.winwin}>WIN WIN</Text></View></View>
 }
 
+function Promo(){return <LinearGradient colors={['#a96bf1','#ef8ec8','#ffd77a']} start={{x:0,y:0}} end={{x:1,y:0}} style={s.promo}><Text style={s.promoDot}>●</Text><Text numberOfLines={1} style={s.promoText}>NEW PARTNERS. NEW BENEFITS. EVERY DAY.</Text></LinearGradient>}
+
 function Hero(){
  return <LinearGradient colors={['#b978f3','#f58bc5','#ffad86']} start={{x:0,y:0}} end={{x:1,y:1}} style={s.hero}>
   <LinearGradient colors={[C.purple,C.pink,C.orange,C.yellow]} start={{x:0,y:0}} end={{x:1,y:0}} style={s.heroLine}/>
   <Text style={s.eyebrow}>YOUR WENIK</Text>
   <Text style={s.title}>Everything starts here.</Text>
-  <Text style={s.copy}>Discover partners, unlock benefits and keep your next win close.</Text>
+  <Text style={s.copy}>Discover partners, unlock benefits and keep your next win close.</Text><View style={s.heroPill}><Text style={s.heroPillText}>WIN • DISCOVER • SAVE</Text></View>
  </LinearGradient>
 }
 
@@ -40,12 +42,16 @@ function Home(){
  const points=livePoints??profilePoints??0;
  let body;
  if(screen==='partners')body=<Partners/>;else if(screen==='rewards')body=<Rewards/>;else if(screen==='wins')body=<Wins/>;else if(screen==='iza')body=<Iza/>;else if(screen==='qr')body=<CustomerQr/>;else if(screen==='me')body=<Me/>;else body=<SafeAreaView style={s.safe}><ScrollView contentContainerStyle={s.page} showsVerticalScrollIndicator={false}>
-   <Brand/><Hero/>
-   <View style={s.sectionHead}><Text style={s.sectionTitle}>MY WENIK</Text></View>
-   <LinearGradient colors={['#ffffff','#fffafd']} style={s.pointsCard}>
-    <View><Text style={s.pointsLabel}>MY POINTS</Text><Text style={s.pointsValue}>{Number(points||0).toLocaleString()}</Text></View>
-    <Pressable onPress={()=>setScreen('rewards')}><LinearGradient colors={[C.purple,C.pink,C.orange]} start={{x:0,y:0}} end={{x:1,y:0}} style={s.action}><Text style={s.actionText}>REWARDS</Text></LinearGradient></Pressable>
-   </LinearGradient>
+   <Brand/><Promo/><Hero/>
+   <View style={s.quickRow}>
+    <Pressable style={s.quick} onPress={()=>setScreen('partners')}><Text style={s.quickIcon}>📍</Text><Text style={s.quickText}>NEAR ME</Text></Pressable>
+    <Pressable style={s.quick} onPress={()=>setScreen('partners')}><Text style={s.quickIcon}>🍴</Text><Text style={s.quickText}>RESTAURANTS</Text></Pressable>
+    <Pressable style={s.quick} onPress={()=>setScreen('partners')}><Text style={s.quickIcon}>🛍️</Text><Text style={s.quickText}>SHOPPING</Text></Pressable>
+    <Pressable style={s.quick} onPress={()=>setScreen('wins')}><Text style={s.quickIcon}>🎁</Text><Text style={s.quickText}>PRIZES</Text></Pressable>
+   </View>
+   <Pressable onPress={()=>setScreen('rewards')} style={s.rewardWrap}><View style={s.rewardIcon}><Text style={{fontSize:24}}>🎁</Text></View><View style={{flex:1}}><Text style={s.rewardKicker}>MY REWARDS</Text><Text style={s.rewardTitle}>Rewards & gifts</Text><Text style={s.rewardSub}>See what you can redeem · ${Number(points||0).toLocaleString()} pts</Text></View><Text style={s.rewardAction}>REWARDS</Text></Pressable>
+   <View style={s.featureHead}><Text style={s.featureTitle}>FEATURED</Text><Text style={s.featureSwipe}>Swipe</Text></View>
+   <LinearGradient colors={['#2a123b','#54164f','#f47b55']} style={s.featureCard}><Text style={s.featureKicker}>WENIK</Text><Text style={s.featureBig}>COMING SOON</Text><Text style={s.featureSub}>New partners • rewards • wins</Text></LinearGradient>
    <View style={s.sectionHead}><Text style={s.sectionTitle}>DISCOVER</Text></View>
    <View style={s.grid}>
     <Pressable style={s.tile} onPress={()=>setScreen('partners')}><Text style={s.tileKicker}>WENIK</Text><Text style={s.tileTitle}>PARTNERS</Text><Text style={s.tileSub}>Discover benefits</Text></Pressable>
@@ -68,8 +74,8 @@ const s=StyleSheet.create({
  shell:{flex:1,backgroundColor:C.bg},safe:{flex:1,backgroundColor:C.bg},page:{paddingHorizontal:14,paddingTop:8,paddingBottom:120},
  loading:{flex:1,backgroundColor:C.bg,alignItems:'center',justifyContent:'center'},loadingText:{color:'#fff',fontWeight:'900',letterSpacing:3,marginTop:12},
  brand:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:11,marginTop:4,marginBottom:18},brandMark:{width:48,height:48,borderRadius:24,alignItems:'center',justifyContent:'center'},brandW:{fontSize:22,fontWeight:'900',color:'#fff',letterSpacing:-1},logo:{color:'#18141d',fontSize:27,fontWeight:'900',letterSpacing:2.8,lineHeight:30},winwin:{color:C.pink,fontSize:10,fontWeight:'900',letterSpacing:4,marginTop:1},
- hero:{borderRadius:26,padding:22,overflow:'hidden',borderWidth:1,borderColor:'rgba(255,255,255,.08)'},heroLine:{position:'absolute',top:0,left:0,right:0,height:3},
- eyebrow:{fontSize:11,letterSpacing:2,color:'#fff',fontWeight:'800'},title:{color:'#fff',fontSize:30,fontWeight:'900',letterSpacing:-1,marginTop:6},copy:{color:'rgba(255,255,255,.92)',fontSize:13,lineHeight:20,marginTop:5},
+ promo:{height:48,borderRadius:18,marginBottom:12,paddingHorizontal:16,flexDirection:'row',alignItems:'center',gap:10},promoDot:{color:'#ffd21c',fontSize:18},promoText:{flex:1,color:'#fff',fontSize:12,fontWeight:'900',letterSpacing:.8},hero:{borderRadius:26,padding:22,overflow:'hidden',borderWidth:1,borderColor:'rgba(255,255,255,.08)'},heroLine:{position:'absolute',top:0,left:0,right:0,height:3},
+ eyebrow:{fontSize:11,letterSpacing:2,color:'#fff',fontWeight:'800'},title:{color:'#fff',fontSize:30,fontWeight:'900',letterSpacing:-1,marginTop:6},copy:{color:'rgba(255,255,255,.92)',fontSize:13,lineHeight:20,marginTop:5},heroPill:{alignSelf:'flex-start',marginTop:14,borderWidth:1,borderColor:'rgba(255,255,255,.35)',borderRadius:16,paddingVertical:7,paddingHorizontal:12},heroPillText:{color:'#fff',fontSize:9,fontWeight:'900',letterSpacing:1.4},quickRow:{flexDirection:'row',gap:7,marginTop:12},quick:{flex:1,minHeight:82,backgroundColor:'#fff',borderRadius:19,alignItems:'center',justifyContent:'center',paddingHorizontal:3},quickIcon:{fontSize:21,marginBottom:7},quickText:{color:'#211b25',fontSize:8,fontWeight:'900',textAlign:'center'},rewardWrap:{marginTop:12,backgroundColor:'#fff',borderRadius:24,padding:15,flexDirection:'row',alignItems:'center',gap:12},rewardIcon:{width:48,height:48,borderRadius:15,backgroundColor:'#fff1f7',alignItems:'center',justifyContent:'center'},rewardKicker:{color:'#8d8490',fontSize:9,fontWeight:'900',letterSpacing:1.2},rewardTitle:{color:'#211b25',fontSize:17,fontWeight:'900',marginTop:1},rewardSub:{color:'#8d8490',fontSize:9,fontWeight:'700',marginTop:2},rewardAction:{color:'#8f24ff',fontSize:15,fontWeight:'900'},featureHead:{marginTop:22,marginBottom:8,flexDirection:'row',justifyContent:'space-between',alignItems:'center'},featureTitle:{color:'#18141d',fontSize:21,fontWeight:'900'},featureSwipe:{color:'#8d8490',fontSize:12,fontWeight:'800'},featureCard:{height:170,borderRadius:24,padding:20,justifyContent:'center',alignItems:'center'},featureKicker:{color:'#fff',fontSize:11,fontWeight:'900',letterSpacing:3},featureBig:{color:'#ff66d0',fontSize:25,fontWeight:'900',marginTop:8},featureSub:{color:'rgba(255,255,255,.8)',fontSize:11,marginTop:6},
  sectionHead:{marginTop:24,marginHorizontal:2,marginBottom:8},sectionTitle:{color:'#18141d',fontSize:18,fontWeight:'900',letterSpacing:.2},
  pointsCard:{borderRadius:22,padding:18,borderWidth:1,borderColor:C.line,flexDirection:'row',alignItems:'center',justifyContent:'space-between'},
  pointsLabel:{color:'#8d8490',fontSize:11,fontWeight:'900',letterSpacing:1.7},pointsValue:{color:'#18141d',fontSize:34,fontWeight:'900',marginTop:2},
