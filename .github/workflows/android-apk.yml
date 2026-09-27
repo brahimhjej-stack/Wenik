@@ -20,17 +20,15 @@ jobs:
     steps:
       - name: Checkout mobile branch
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
+      - name: Prepare official WENIK app icon
+        run: mkdir -p assets && cp ../wenik-logo-final.png assets/app-icon.png
       - name: Install dependencies
         run: npm install
-
       - name: Verify Expo authentication
         run: npx eas-cli whoami
-
       - name: Build Android test APK without release credentials
         run: npx eas-cli build --platform android --profile device-test --non-interactive
