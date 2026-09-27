@@ -8,7 +8,7 @@ export default function Me(){
  useEffect(()=>{load()},[]);
  const filtered=useMemo(()=>activity.filter(x=>{const h=String([x.partner_name,x.original_amount,x.final_amount].join(' ')).toLowerCase();return !q||h.includes(q.toLowerCase())}),[activity,q]);
  useEffect(()=>{setPurchaseVisible(20)},[q]);
- async function openMessage(x:any){if(!x.seen_at){await supabase.rpc('customer_open_message',{p_message_id:x.message_id});load()}const url=x.cta_url||x.deep_link||x.url;if(url&&/^https?:\/\//i.test(String(url)))Linking.openURL(String(url)).catch(()=>Alert.alert('WENIK','Could not open this link.'))}
+ async function openMessage(x:any){if(!x.seen_at){await supabase.rpc('customer_open_message',{p_message_id:x.message_id});load()}const url=x.cta_url||x.deep_link||x.url;if(url){const target=String(url).trim();try{const ok=await Linking.canOpenURL(target);if(ok)await Linking.openURL(target);else Alert.alert('WENIK','This link is not available on this device.')}catch{Alert.alert('WENIK','Could not open this link.')}}}
  return <SafeAreaView style={s.safe}><ScrollView contentContainerStyle={s.page}>
   <LinearGradient colors={['#b978f3','#f58bc5','#ffad86']} style={s.hero}><View style={s.heroLine}/><Text style={s.eye}>YOUR WENIK</Text><Text style={s.title}>{[profile?.first_name,profile?.last_name].filter(Boolean).join(' ')||'Me'}</Text><Text style={s.sub}>{profile?.mobile||profile?.phone||'Your account, activity and notifications.'}</Text></LinearGradient>
   <View style={s.profile}><Text style={s.name}>{[profile?.first_name,profile?.last_name].filter(Boolean).join(' ')||'WENIK Member'}</Text><Text style={s.meta}>{profile?.wenik_id||profile?.customer_wenik_id||''}</Text><Text style={s.points}>{Number(points??0).toLocaleString()} POINTS</Text></View>
