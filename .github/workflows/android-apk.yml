@@ -2,6 +2,11 @@ name: WENIK Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - mobile-app
+    paths:
+      - '.github/workflows/android-apk.yml'
 
 jobs:
   build-apk:
