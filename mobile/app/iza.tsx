@@ -1,5 +1,6 @@
 import { useEffect,useState } from 'react';
-import { Alert,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View } from 'react-native';
+import { Alert,Pressable,ScrollView,StyleSheet,Text,View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
 export default function Iza(){
