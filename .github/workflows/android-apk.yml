@@ -26,5 +26,5 @@ jobs:
       - name: Verify Expo authentication
         run: npx eas-cli whoami
 
-      - name: Link Expo project and build Android APK
-        run: npx eas-cli build --platform android --profile preview --non-interactive --no-wait
+      - name: Build Android test APK without release credentials
+        run: npx eas-cli build --platform android --profile device-test --non-interactive --no-wait
