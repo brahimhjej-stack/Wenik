@@ -8,7 +8,7 @@
       "distribution": "internal",
       "android": {
         "withoutCredentials": true,
-        "gradleCommand": ":app:assembleDebug"
+        "gradleCommand": ":app:assembleRelease"
       }
     },
     "preview": {
