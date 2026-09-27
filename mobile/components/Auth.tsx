@@ -61,17 +61,17 @@ export default function Auth() {
   </ScrollView>
 }
 const s=StyleSheet.create({
-  scroll:{flex:1,backgroundColor:'#09090d'},
-  wrap:{flexGrow:1,justifyContent:'center',padding:24,backgroundColor:'#09090d'},
+  scroll:{flex:1,backgroundColor:'#06050d'},
+  wrap:{flexGrow:1,justifyContent:'center',padding:24,backgroundColor:'#06050d'},
   logo:{textAlign:'center',color:'#fff',fontSize:34,fontWeight:'900',letterSpacing:3},
   win:{textAlign:'center',color:'#ef159d',fontSize:12,fontWeight:'900',letterSpacing:4,marginBottom:34},
   tabs:{flexDirection:'row',backgroundColor:'#14141b',borderRadius:18,padding:4,marginBottom:24},
-  tab:{flex:1,padding:12,borderRadius:14,alignItems:'center'},tabOn:{backgroundColor:'#24242d'},
+  tab:{flex:1,padding:12,borderRadius:14,alignItems:'center'},tabOn:{backgroundColor:'#2b1d3b'},
   tabText:{color:'#777783',fontWeight:'900'},tabTextOn:{color:'#fff'},
   title:{color:'#fff',fontSize:27,fontWeight:'900',marginBottom:18},
   nameRow:{flexDirection:'row',gap:10},half:{flex:1},
-  input:{backgroundColor:'#14141b',color:'#fff',borderRadius:18,paddingHorizontal:18,height:56,marginBottom:12,borderWidth:1,borderColor:'#24242d'},
+  input:{backgroundColor:'#14141b',color:'#fff',borderRadius:18,paddingHorizontal:18,height:56,marginBottom:12,borderWidth:1,borderColor:'#2b1d3b'},
   btn:{height:56,borderRadius:18,backgroundColor:'#ef159d',alignItems:'center',justifyContent:'center',marginTop:8},
   btnText:{color:'#fff',fontWeight:'900',letterSpacing:1},
-  checks:{gap:10,marginVertical:6},checkText:{color:'#aaaab5',fontWeight:'700'},secondary:{height:48,alignItems:'center',justifyContent:'center',marginTop:8},secondaryText:{color:'#aaaab5',fontWeight:'900'},help:{color:'#aaaab5',marginBottom:16,lineHeight:20}
+  checks:{gap:10,marginVertical:6},checkText:{color:'#b9b4c8',fontWeight:'700'},secondary:{height:48,alignItems:'center',justifyContent:'center',marginTop:8},secondaryText:{color:'#b9b4c8',fontWeight:'900'},help:{color:'#b9b4c8',marginBottom:16,lineHeight:20}
 });
