@@ -33,4 +33,4 @@ jobs:
         run: npx eas-cli whoami
 
       - name: Build Android test APK without release credentials
-        run: npx eas-cli build --platform android --profile preview --non-interactive --no-wait
+        run: npx eas-cli build --platform android --profile preview --non-interactive
