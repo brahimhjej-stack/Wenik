@@ -26,16 +26,14 @@ async function waitSession(){for(let i=0;i<40;i++){const{data:{session}}=await s
 
 async function installCustomer(){
   const win=$('win'); if(!win)return;
+  if($('wenikPointsCustomer'))return;
   const host=document.createElement('div');host.id='wenikPointsCustomer';
   const hero=win.querySelector('.hero'); hero?.insertAdjacentElement('afterend',host);
   async function render(){
     try{
       const balance=Number(await rpc('wenik_customer_points_balance')||0);
-      const [catalog,my]=await Promise.all([loadRewardCatalog(),rpc('customer_my_points_redemptions')]);
-      host.innerHTML=`<div class="wenikPointsHero"><div class="eyebrow">WENIK POINTS</div><div class="wenikPointsBalance">${balance.toLocaleString()} PTS</div><div class="wenikPointsRule">$5 = 10 Points</div><div class="muted">Use your WENIK Points to choose gifts. Points are not cash.</div></div><div class="sectionTitle"><h3>POINTS GIFTS</h3><span class="muted">Choose your gift</span></div><div class="wenikRewardGrid" id="wenikRewardGrid"></div><div class="sectionTitle"><h3>MY POINTS REQUESTS</h3></div><div id="wenikMyRedemptions"></div>`;
-      const grid=$('wenikRewardGrid');
-      grid.innerHTML=(catalog||[]).map(g=>{const images=(Array.isArray(g.gift_image_urls)?g.gift_image_urls:[]).filter(Boolean);if(!images.length&&g.gift_image_url)images.push(g.gift_image_url);if(!images.length&&g.partner_logo_url)images.push(g.partner_logo_url);const isOffer=!!g.special_offer_active&&Number(g.regular_points_cost)>Number(g.points_cost);return `<div class="wenikReward">${images.length?`<div class="wenikRewardImages">${images.map(url=>`<img loading="lazy" src="${esc(url)}" alt="${esc(g.gift_title)}">`).join('')}</div>`:''}<b>${esc(g.gift_title)}</b><div class="wenikMini">${esc(g.partner_name)}</div>${isOffer?`<div class="wenikRewardOldCost">${Number(g.regular_points_cost).toLocaleString()} PTS</div>`:''}<div class="wenikRewardCost">${Number(g.points_cost).toLocaleString()} PTS</div>${g.special_offer_active?'<div class="wenikRewardOffer">SPECIAL OFFER</div>':''}<div class="wenikMini">${Number(g.remaining_quantity)} available</div><button class="btn" data-points-prize="${g.prize_id}" ${balance<Number(g.points_cost)?'disabled':''}>${balance<Number(g.points_cost)?'NOT ENOUGH POINTS':'GET THIS GIFT'}</button></div>`}).join('')||'<div class="card muted">No Points gifts available right now.</div>';
-      grid.querySelectorAll('[data-points-prize]').forEach(b=>b.onclick=async()=>{if(!confirm('Use your WENIK Points for this gift?'))return;try{b.disabled=true;await rpc('customer_request_points_redemption',{p_prize_id:b.dataset.pointsPrize});alert('Request sent to WENIK for approval.');await render()}catch(e){alert(e.message);b.disabled=false}});
+      const my=await rpc('customer_my_points_redemptions');
+      host.innerHTML=`<div class="wenikPointsHero"><div class="eyebrow">WENIK POINTS</div><div class="wenikPointsBalance">${balance.toLocaleString()} PTS</div><div class="wenikPointsRule">$5 = 10 Points</div><div class="muted">Tap any gift below to reserve it with your Points.</div></div><div class="sectionTitle"><h3>MY POINTS REQUESTS</h3></div><div id="wenikMyRedemptions"></div>`;
       const box=$('wenikMyRedemptions');box.innerHTML='';
       for(const r of (my||[])){
         const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="row"><b>${esc(r.gift_title)}</b><span class="badge">${esc(String(r.status).toUpperCase())}</span></div><div class="muted">${esc(r.partner_name)} · ${Number(r.points_cost).toLocaleString()} PTS</div>${r.gift_provider==='wenik'&&r.status==='approved'?`<div class="wenikMini" style="margin-top:10px"><b>How to receive:</b> ${esc(r.fulfillment_instructions||'Contact WENIK to arrange receiving your gift.')}${r.fulfillment_phone?`<br><b>Contact:</b> ${esc(r.fulfillment_phone)}`:''}</div>`:''}${r.redeem_token?`<div class="wenikRedeemCode">${esc(r.redeem_token)}</div><img class="wenikQr" alt="Redeem QR">`:''}`;box.appendChild(d);if(r.redeem_token){const img=d.querySelector('.wenikQr');try{img.src=await makeQrDataUrl(r.redeem_token)}catch(qrError){img.remove();console.warn('Redeem QR unavailable',qrError)}}
@@ -44,6 +42,7 @@ async function installCustomer(){
     }catch(e){host.innerHTML='<div class="card error">Points are temporarily unavailable.</div>';console.error(e)}
   }
   const oldTab=window.tab;if(typeof oldTab==='function'&&!oldTab.__wenikPoints){window.tab=function(id,b){const r=oldTab(id,b);if(id==='win')render();return r};window.tab.__wenikPoints=true}
+  window.wenikRefreshPointsCustomer=render;
   await render();
 }
 
