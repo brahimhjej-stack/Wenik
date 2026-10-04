@@ -6,6 +6,10 @@ const sb=createClient(U,K,isAdminPage?{auth:{storageKey:'wenik-admin-auth'}}:und
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+async function loadRewardCatalog(){
+  try{const rows=await rpc('customer_points_reward_catalog_v2');if(rows?.length)return rows}catch(e){console.warn('Rewards v2 unavailable',e)}
+  return rpc('customer_points_reward_catalog');
+}
 async function makeQrDataUrl(value){
   const mod=await import('https://esm.sh/qrcode@1.5.4');
   return mod.default.toDataURL(String(value),{width:300,margin:1});
@@ -27,7 +31,7 @@ async function installCustomer(){
   async function render(){
     try{
       const balance=Number(await rpc('wenik_customer_points_balance')||0);
-      const [catalog,my]=await Promise.all([rpc('customer_points_reward_catalog_v2'),rpc('customer_my_points_redemptions')]);
+      const [catalog,my]=await Promise.all([loadRewardCatalog(),rpc('customer_my_points_redemptions')]);
       host.innerHTML=`<div class="wenikPointsHero"><div class="eyebrow">WENIK POINTS</div><div class="wenikPointsBalance">${balance.toLocaleString()} PTS</div><div class="wenikPointsRule">$5 = 10 Points</div><div class="muted">Use your WENIK Points to choose gifts. Points are not cash.</div></div><div class="sectionTitle"><h3>POINTS GIFTS</h3><span class="muted">Choose your gift</span></div><div class="wenikRewardGrid" id="wenikRewardGrid"></div><div class="sectionTitle"><h3>MY POINTS REQUESTS</h3></div><div id="wenikMyRedemptions"></div>`;
       const grid=$('wenikRewardGrid');
       grid.innerHTML=(catalog||[]).map(g=>{const images=(Array.isArray(g.gift_image_urls)?g.gift_image_urls:[]).filter(Boolean);if(!images.length&&g.gift_image_url)images.push(g.gift_image_url);if(!images.length&&g.partner_logo_url)images.push(g.partner_logo_url);const isOffer=!!g.special_offer_active&&Number(g.regular_points_cost)>Number(g.points_cost);return `<div class="wenikReward">${images.length?`<div class="wenikRewardImages">${images.map(url=>`<img loading="lazy" src="${esc(url)}" alt="${esc(g.gift_title)}">`).join('')}</div>`:''}<b>${esc(g.gift_title)}</b><div class="wenikMini">${esc(g.partner_name)}</div>${isOffer?`<div class="wenikRewardOldCost">${Number(g.regular_points_cost).toLocaleString()} PTS</div>`:''}<div class="wenikRewardCost">${Number(g.points_cost).toLocaleString()} PTS</div>${g.special_offer_active?'<div class="wenikRewardOffer">SPECIAL OFFER</div>':''}<div class="wenikMini">${Number(g.remaining_quantity)} available</div><button class="btn" data-points-prize="${g.prize_id}" ${balance<Number(g.points_cost)?'disabled':''}>${balance<Number(g.points_cost)?'NOT ENOUGH POINTS':'GET THIS GIFT'}</button></div>`}).join('')||'<div class="card muted">No Points gifts available right now.</div>';
