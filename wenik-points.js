@@ -1,6 +1,4 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import QRCode from 'https://esm.sh/qrcode@1.5.4';
-
 const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
 const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
 const isAdminPage=document.title.includes('Management');
@@ -8,6 +6,10 @@ const sb=createClient(U,K,isAdminPage?{auth:{storageKey:'wenik-admin-auth'}}:und
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
+async function makeQrDataUrl(value){
+  const mod=await import('https://esm.sh/qrcode@1.5.4');
+  return mod.default.toDataURL(String(value),{width:300,margin:1});
+}
 const style=document.createElement('style');
 style.textContent=`
 .wenikPointsHero{position:relative;overflow:hidden;border:1px solid rgba(178,92,255,.28);border-radius:26px;padding:22px;margin:14px 0;background:radial-gradient(circle at 0 0,rgba(143,36,255,.32),transparent 42%),radial-gradient(circle at 100% 100%,rgba(255,111,33,.22),transparent 45%),linear-gradient(145deg,rgba(30,14,60,.97),rgba(17,11,31,.96));box-shadow:0 18px 50px rgba(0,0,0,.28)}
@@ -32,7 +34,7 @@ async function installCustomer(){
       grid.querySelectorAll('[data-points-prize]').forEach(b=>b.onclick=async()=>{if(!confirm('Use your WENIK Points for this gift?'))return;try{b.disabled=true;await rpc('customer_request_points_redemption',{p_prize_id:b.dataset.pointsPrize});alert('Request sent to WENIK for approval.');await render()}catch(e){alert(e.message);b.disabled=false}});
       const box=$('wenikMyRedemptions');box.innerHTML='';
       for(const r of (my||[])){
-        const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="row"><b>${esc(r.gift_title)}</b><span class="badge">${esc(String(r.status).toUpperCase())}</span></div><div class="muted">${esc(r.partner_name)} · ${Number(r.points_cost).toLocaleString()} PTS</div>${r.gift_provider==='wenik'&&r.status==='approved'?`<div class="wenikMini" style="margin-top:10px"><b>How to receive:</b> ${esc(r.fulfillment_instructions||'Contact WENIK to arrange receiving your gift.')}${r.fulfillment_phone?`<br><b>Contact:</b> ${esc(r.fulfillment_phone)}`:''}</div>`:''}${r.redeem_token?`<div class="wenikRedeemCode">${esc(r.redeem_token)}</div><img class="wenikQr" alt="Redeem QR">`:''}`;box.appendChild(d);if(r.redeem_token){const img=d.querySelector('.wenikQr');img.src=await QRCode.toDataURL(String(r.redeem_token),{width:300,margin:1})}
+        const d=document.createElement('div');d.className='card';d.innerHTML=`<div class="row"><b>${esc(r.gift_title)}</b><span class="badge">${esc(String(r.status).toUpperCase())}</span></div><div class="muted">${esc(r.partner_name)} · ${Number(r.points_cost).toLocaleString()} PTS</div>${r.gift_provider==='wenik'&&r.status==='approved'?`<div class="wenikMini" style="margin-top:10px"><b>How to receive:</b> ${esc(r.fulfillment_instructions||'Contact WENIK to arrange receiving your gift.')}${r.fulfillment_phone?`<br><b>Contact:</b> ${esc(r.fulfillment_phone)}`:''}</div>`:''}${r.redeem_token?`<div class="wenikRedeemCode">${esc(r.redeem_token)}</div><img class="wenikQr" alt="Redeem QR">`:''}`;box.appendChild(d);if(r.redeem_token){const img=d.querySelector('.wenikQr');try{img.src=await makeQrDataUrl(r.redeem_token)}catch(qrError){img.remove();console.warn('Redeem QR unavailable',qrError)}}
       }
       if(!(my||[]).length)box.innerHTML='<div class="card muted">No Points gift requests yet.</div>';
     }catch(e){host.innerHTML='<div class="card error">Points are temporarily unavailable.</div>';console.error(e)}
