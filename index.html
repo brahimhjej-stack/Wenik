@@ -1733,7 +1733,7 @@ function __winGiftRender(reset=false){
   __winGiftShown=end;more.classList.toggle('hidden',__winGiftShown>=__winGiftFiltered.length);
 }
 async function loadWinGiftGallery(){
-  const box=$('winGiftGallery');if(!box)return;try{if(!__winGiftRows.length){box.innerHTML='<div class="winGiftEmpty">Loading gifts…</div>';const [winRows,pointsRows]=await Promise.all([rpc('public_active_win_gifts',{p_limit:500}).catch(()=>[]),rpc('customer_points_reward_catalog_v2').catch(()=>[])]);const seen=new Set();__winGiftRows=[...(winRows||[]),...(pointsRows||[])].map(__winGiftNormalize).filter(g=>g.remain===null||g.remain>0).filter(g=>{const key=g.id||((g.title+'|'+g.partner).toLowerCase());if(seen.has(key))return false;seen.add(key);return true})}const q=($('winGiftSearch')?.value||'').trim().toLowerCase();__winGiftFiltered=!q?__winGiftRows:__winGiftRows.filter(g=>(g.title+' '+g.partner).toLowerCase().includes(q));__winGiftRender(true)}catch(e){box.innerHTML='<div class="winGiftEmpty">Gifts are temporarily unavailable.</div>';console.error('WIN gifts gallery',e)}
+  const box=$('winGiftGallery');if(!box)return;try{if(!__winGiftRows.length){box.innerHTML='<div class="winGiftEmpty">Loading gifts…</div>';const [winRows,pointsRows]=await Promise.all([rpc('public_active_win_gifts',{p_limit:500}).catch(()=>[]),rpc('customer_points_reward_catalog').catch(()=>[])]);const seen=new Set();__winGiftRows=[...(winRows||[]),...(pointsRows||[])].map(__winGiftNormalize).filter(g=>g.remain===null||g.remain>0).filter(g=>{const key=g.id||((g.title+'|'+g.partner).toLowerCase());if(seen.has(key))return false;seen.add(key);return true})}const q=($('winGiftSearch')?.value||'').trim().toLowerCase();__winGiftFiltered=!q?__winGiftRows:__winGiftRows.filter(g=>(g.title+' '+g.partner).toLowerCase().includes(q));__winGiftRender(true)}catch(e){box.innerHTML='<div class="winGiftEmpty">Gifts are temporarily unavailable.</div>';console.error('WIN gifts gallery',e)}
 }
 $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore')?.addEventListener('click',()=>__winGiftRender(false));
 </script>
@@ -1881,7 +1881,7 @@ $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore'
 })();
 </script>
 
-<script type="module" src="/wenik-points.js?v=20261004-mobile-gifts-1"></script>
+<script type="module" src="/wenik-points.js?v=20261004-mobile-gifts-2"></script>
 <!-- WENIK PARTNER CARDS UNIFORM V1 START -->
 <style id="wenikPartnerCardsUniformV1">
 /* FINAL V5: one self-contained card = square image + body. */
