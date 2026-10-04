@@ -1961,5 +1961,27 @@ $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore'
 })();
 </script>
 <!-- WENIK PARTNER CARDS UNIFORM V1 END -->
+<!-- WENIK PWA NAV RELIABILITY V1 -->
+<style>
+#nav{pointer-events:auto!important;z-index:2147483000!important}
+#nav button{pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer}
+</style>
+<script>
+(()=>{
+  const nav=document.getElementById('nav');
+  if(!nav||nav.dataset.reliableNav==='1')return;
+  nav.dataset.reliableNav='1';
+  nav.addEventListener('click',e=>{
+    const button=e.target.closest('button');
+    if(!button||!nav.contains(button))return;
+    const match=(button.getAttribute('onclick')||'').match(/tab\(['"]([^'"]+)['"]/);
+    const view=match&&match[1];
+    if(!view||typeof window.tab!=='function')return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    window.tab(view,button);
+  },true);
+})();
+</script>
 </body>
 </html>
