@@ -60,19 +60,70 @@ async function installGiftQty(){
 installGiftQty();
 
 async function installGiftPricingEditor(){
-  const gifts=await waitForAdmin();if(!gifts||$('giftPricingEditor'))return;
-  const card=document.createElement('div');card.className='card';card.id='giftPricingEditor';
-  card.innerHTML=`<h3>Edit Gift Price / Special Offer</h3><div class="muted">Changes update the shared catalog used by both Web and Mobile.</div><select id="giftPriceSelect" class="field"><option value="">Select Gift</option></select><div class="two"><input id="giftEditValue" class="field" type="number" min="0.01" step="0.01" placeholder="Gift value USD"><input id="giftEditRegular" class="field" readonly placeholder="Regular Points"></div><div class="field" style="display:flex;align-items:center;gap:9px"><input id="giftEditSpecial" type="checkbox" style="width:20px;height:20px"><label for="giftEditSpecial">Special offer</label></div><input id="giftEditOffer" class="field" type="number" min="1" step="1" placeholder="Special offer Points" disabled><button id="giftEditSave" class="btn secondary">SAVE GIFT PRICING</button><div id="giftEditMsg" class="status"></div>`;
-  const qty=$('giftQtyBox');if(qty)qty.insertAdjacentElement('afterend',card);else gifts.prepend(card);
-  let rows=[],multiplier=150;
-  function selected(){return rows.find(x=>x.gift_id===$('giftPriceSelect').value)}
-  function preview(){const value=Number($('giftEditValue').value||0),points=value>0?Math.ceil(value*multiplier):0;$('giftEditRegular').value=points?points.toLocaleString()+' Points':'';return points}
-  async function load(){const [list,settings]=await Promise.all([rpc('admin_gift_pricing_inventory'),rpc('admin_gift_pricing_settings')]);rows=list||[];multiplier=Number(settings?.[0]?.gift_points_per_usd||150);$('giftPriceSelect').innerHTML='<option value="">Select Gift</option>'+rows.map(g=>`<option value="${g.gift_id}">${esc(g.partner_name)} · ${esc(g.gift_name)}</option>`).join('')}
-  $('giftPriceSelect').onchange=()=>{const g=selected();if(!g)return;$('giftEditValue').value=g.gift_value_usd??'';$('giftEditRegular').value=Number(g.regular_points_cost||0)?Number(g.regular_points_cost).toLocaleString()+' Points':'';$('giftEditSpecial').checked=!!g.special_offer_active;$('giftEditOffer').disabled=!g.special_offer_active;$('giftEditOffer').value=g.special_offer_points??''};
-  $('giftEditValue').oninput=preview;
-  $('giftEditSpecial').onchange=()=>{$('giftEditOffer').disabled=!$('giftEditSpecial').checked;if($('giftEditSpecial').checked&&!$('giftEditOffer').value)$('giftEditOffer').value=String(preview())};
-  $('giftEditSave').onclick=async function(){const id=$('giftPriceSelect').value,value=Number($('giftEditValue').value),special=$('giftEditSpecial').checked,offer=special?Number($('giftEditOffer').value):null,box=$('giftEditMsg');if(!id||!(value>0)||(special&&(!Number.isInteger(offer)||offer<1))){box.className='status error';box.textContent='Select a gift and enter valid pricing.';return}this.disabled=true;try{const out=await rpc('admin_update_gift_pricing',{p_gift_id:id,p_gift_value_usd:value,p_points_override:offer,p_special_offer:special}),r=out?.[0]||{};box.className='status good';box.textContent=`Saved ✓ Regular ${Number(r.regular_points||0).toLocaleString()} · Current ${Number(r.effective_points||0).toLocaleString()} Points`;await load();$('giftPriceSelect').value=id;$('giftPriceSelect').onchange()}catch(e){box.className='status error';box.textContent=e.message}finally{this.disabled=false}};
-  for(let i=0;i<40;i++){const s=await sb.auth.getSession();if(s.data.session){try{await load()}catch(e){$('giftEditMsg').textContent=e.message}return}await new Promise(r=>setTimeout(r,250))}
+ const gifts=await waitForAdmin();if(!gifts||$('giftPricingEditor'))return;
+ const card=document.createElement('div');card.className='card';card.id='giftPricingEditor';
+ card.innerHTML='<div class="row"><h3>Edit Gifts</h3><button id="giftEditRefresh" class="btn secondary" style="width:auto">REFRESH</button></div><div id="giftEditList"></div><select id="giftPriceSelect" class="field"><option value="">Select Gift</option></select><div id="giftEditFields" class="hidden"><label>Partner<select id="giftEditPartner" class="field"></select></label><label>Gift name<input id="giftEditName" class="field"></label><label>Description<textarea id="giftEditDescription" class="field" rows="3"></textarea></label><label>Total quantity<input id="giftEditQty" class="field" type="number" min="1" step="1"></label><label>Gift value USD<input id="giftEditValue" class="field" type="number" min="0.01" step="0.01"></label><label>Regular Points<input id="giftEditRegular" class="field" type="number" min="1" step="1"></label><div class="muted">Changing USD value calculates Points using the current rule. You can also edit Points directly.</div><label class="field" style="display:flex;gap:9px"><input id="giftEditSpecial" type="checkbox">Special offer</label><label>Special offer Points<input id="giftEditOffer" class="field" type="number" min="1" step="1"></label><h4>Gift photos · up to 5</h4><div id="giftEditImages" class="grid"></div><input id="giftEditFiles" class="field" type="file" accept="image/*" multiple><button id="giftEditSave" class="btn">SAVE GIFT CHANGES</button><button id="giftEditCancel" class="btn secondary">CANCEL</button></div><div id="giftEditMsg" class="status"></div>';
+ const qty=$('giftQtyBox');if(qty)qty.insertAdjacentElement('afterend',card);else gifts.prepend(card);
+ let rows=[],partners=[],multiplier=150,editing=null,images=[],dirty=false,busy=false;
+ function regular(){const value=Number($('giftEditValue').value);if(value>0)$('giftEditRegular').value=String(Math.ceil(value*multiplier));}
+ function renderImages(){
+  $('giftEditImages').innerHTML='';
+  images.forEach((x,i)=>{const box=document.createElement('div'),img=document.createElement('img'),remove=document.createElement('button');
+   img.src=x.preview||x.url;img.alt='Gift photo '+(i+1);img.style.cssText='width:100%;aspect-ratio:1;object-fit:contain;border-radius:12px';
+   remove.type='button';remove.className='btn secondary';remove.textContent='REMOVE';
+   remove.onclick=()=>{if(busy)return;if(x.preview)URL.revokeObjectURL(x.preview);images.splice(i,1);dirty=true;renderImages()};
+   box.append(img,remove);$('giftEditImages').append(box);
+  });
+ }
+ function clear(){images.forEach(x=>{if(x.preview)URL.revokeObjectURL(x.preview)});images=[];editing=null;dirty=false;$('giftEditFields').classList.add('hidden');$('giftPriceSelect').value='';$('giftEditFiles').value='';renderImages();}
+ function open(id){
+  if(busy)return;
+  if(dirty&&!confirm('Discard unsaved gift changes?')){$('giftPriceSelect').value=editing?.gift_id||'';return;}
+  const g=rows.find(x=>x.gift_id===id);if(!g){clear();return;}
+  clear();editing=g;$('giftPriceSelect').value=id;$('giftEditFields').classList.remove('hidden');
+  $('giftEditPartner').innerHTML=partners.map(p=>'<option value="'+p.partner_id+'">'+esc(p.business_name)+'</option>').join('');
+  if(!partners.some(p=>p.partner_id===g.partner_id))$('giftEditPartner').insertAdjacentHTML('beforeend','<option value="'+g.partner_id+'">'+esc(g.partner_name)+'</option>');
+  $('giftEditPartner').value=g.partner_id;$('giftEditName').value=g.name||g.gift_name||'';$('giftEditDescription').value=g.description||'';
+  $('giftEditQty').value=g.quantity;$('giftEditValue').value=g.gift_value_usd??'';$('giftEditRegular').value=g.regular_points_cost??g.points_cost??'';
+  $('giftEditSpecial').checked=!!g.special_offer_active;$('giftEditOffer').value=g.special_offer_points??'';$('giftEditOffer').disabled=!g.special_offer_active;
+  const urls=Array.isArray(g.images)&&g.images.length?g.images:(g.image_url?[g.image_url]:[]);images=urls.map(url=>({url}));renderImages();msg('giftEditMsg','');
+ }
+ async function load(){
+  const [list,settings,ps]=await Promise.all([rpc('admin_gift_edit_inventory'),rpc('admin_gift_pricing_settings'),rpc('admin_partner_subscriptions')]);
+  rows=list||[];partners=ps||[];multiplier=Number(settings?.[0]?.gift_points_per_usd||150);
+  $('giftPriceSelect').innerHTML='<option value="">Select Gift</option>'+rows.map(g=>'<option value="'+g.gift_id+'">'+esc(g.partner_name)+' · '+esc(g.gift_name)+'</option>').join('');
+  $('giftEditList').innerHTML=rows.map(g=>'<div class="card" style="padding:12px"><div class="row"><div><b>'+esc(g.gift_name)+'</b><div class="muted">'+esc(g.partner_name)+' · Qty '+Number(g.quantity)+' · '+Number(g.points_cost||0).toLocaleString()+' Points</div></div><button class="btn secondary" style="width:auto;margin:0" data-gift-edit="'+g.gift_id+'">EDIT</button></div></div>').join('')||'<div class="muted">No gifts yet.</div>';
+  $('giftEditList').querySelectorAll('[data-gift-edit]').forEach(b=>b.onclick=()=>{open(b.dataset.giftEdit);$('giftPriceSelect').scrollIntoView({behavior:'smooth',block:'start'})});
+ }
+ $('giftPriceSelect').onchange=()=>open($('giftPriceSelect').value);
+ $('giftEditFields').addEventListener('input',()=>{dirty=true});
+ $('giftEditValue').oninput=regular;
+ $('giftEditSpecial').onchange=()=>{dirty=true;$('giftEditOffer').disabled=!$('giftEditSpecial').checked;if($('giftEditSpecial').checked&&!$('giftEditOffer').value)$('giftEditOffer').value=$('giftEditRegular').value};
+ $('giftEditFiles').onchange=()=>{
+  const files=[...($('giftEditFiles').files||[])];
+  if(files.length+images.length>5){msg('giftEditMsg','Maximum 5 photos. Remove an existing photo first.');$('giftEditFiles').value='';return;}
+  if(files.some(f=>!/^image\//i.test(f.type)||f.size>8*1024*1024)){msg('giftEditMsg','Choose image files up to 8 MB each.');$('giftEditFiles').value='';return;}
+  images.push(...files.map(file=>({file,preview:URL.createObjectURL(file)})));dirty=true;renderImages();$('giftEditFiles').value='';
+ };
+ $('giftEditCancel').onclick=()=>{if(!busy&&(!dirty||confirm('Discard unsaved gift changes?')))clear()};
+ $('giftEditRefresh').onclick=async()=>{if(busy||dirty&&!confirm('Discard unsaved gift changes?'))return;clear();try{await load()}catch(e){msg('giftEditMsg',e.message)}};
+ $('giftEditSave').onclick=async()=>{
+  if(!editing||busy)return;
+  const name=$('giftEditName').value.trim(),partner=$('giftEditPartner').value,quantity=Number($('giftEditQty').value),value=$('giftEditValue').value?Number($('giftEditValue').value):null,points=Number($('giftEditRegular').value),special=$('giftEditSpecial').checked,offer=special?Number($('giftEditOffer').value):null;
+  if(!name||!partner||!Number.isInteger(quantity)||quantity<1||!Number.isInteger(points)||points<1||(value!==null&&(!Number.isFinite(value)||value<=0))||(special&&(!Number.isInteger(offer)||offer<1))){msg('giftEditMsg','Enter a name, Partner, valid quantity and Points.');return;}
+  busy=true;$('giftEditFields').querySelectorAll('input,textarea,select,button').forEach(e=>e.disabled=true);msg('giftEditMsg','Saving gift…',true);
+  try{
+   const {data:{user},error}=await sb.auth.getUser();if(error)throw error;if(!user?.id)throw Error('Admin session expired.');
+   for(const x of images){if(x.url)continue;const f=x.file,ext=(f.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg',path=user.id+'/gift-images/'+Date.now()+'-'+Math.random().toString(36).slice(2)+'.'+ext;
+    const up=await sb.storage.from('partner-media').upload(path,f,{cacheControl:'3600',upsert:false,contentType:f.type});if(up.error)throw up.error;x.url=sb.storage.from('partner-media').getPublicUrl(path).data.publicUrl;
+   }
+   const id=editing.gift_id;
+   await rpc('admin_update_gift_details',{p_gift_id:id,p_expected_updated_at:editing.updated_at,p_partner_id:partner,p_name:name,p_description:$('giftEditDescription').value.trim()||null,p_quantity:quantity,p_gift_value_usd:value,p_regular_points:points,p_special_offer:special,p_offer_points:offer,p_images:images.map(x=>x.url)});
+   dirty=false;await load();busy=false;open(id);msg('giftEditMsg','Gift saved ✓',true);$('refreshGifts')?.click();
+  }catch(e){const messages={GIFT_CHANGED_RELOAD:'This gift changed elsewhere. Refresh before editing again.',QUANTITY_BELOW_RESERVED:'Quantity cannot be lower than existing reservations.',PARTNER_HAS_EXISTING_RESERVATIONS:'This gift has reservations. Its Partner cannot be changed.'};msg('giftEditMsg',messages[e.message]||e.message)}
+  finally{busy=false;$('giftEditFields').querySelectorAll('input,textarea,select,button').forEach(e=>e.disabled=false);$('giftEditOffer').disabled=!$('giftEditSpecial').checked;}
+ };
+ for(let i=0;i<40;i++){const s=await sb.auth.getSession();if(s.data.session){try{await load()}catch(e){msg('giftEditMsg',e.message)}return;}await new Promise(r=>setTimeout(r,250));}
 }
 installGiftPricingEditor();
 
