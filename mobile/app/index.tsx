@@ -1,3 +1,4 @@
+import { loadPartnerDirectory } from '../lib/partners';
 import { useEffect,useRef,useState } from 'react';
 import { ActivityIndicator,Image,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View,Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -40,8 +41,8 @@ function Home(){
  function setScreen(next:Screen){setScreenState(next);}
  async function refresh(){const [p,u]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50})]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length)}
  useEffect(()=>{refresh()},[screen]);
- async function refreshHome(){if(refreshing)return;setRefreshing(true);setHomePartnersLoading(true);const [p,u,partners,gifts,pts]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50}),supabase.rpc('public_partner_directory_v2'),supabase.rpc('public_active_win_gifts',{p_limit:6}),supabase.rpc('wenik_customer_points_balance')]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length);if(!partners.error)setHomePartners(partners.data||[]);if(!gifts.error)setFeatured((gifts.data||[]).filter((x:any)=>x.gift_image_url||x.image_url));if(!pts.error)setLivePoints(Number(pts.data??0));setHomePartnersLoading(false);setRefreshing(false)}
- useEffect(()=>{supabase.rpc('public_partner_directory_v2').then(({data,error})=>{if(!error)setHomePartners(data||[]);setHomePartnersLoading(false)});supabase.rpc('public_active_win_gifts',{p_limit:6}).then(({data,error})=>{if(!error)setFeatured((data||[]).filter((x:any)=>x.gift_image_url||x.image_url))})},[]);
+ async function refreshHome(){if(refreshing)return;setRefreshing(true);setHomePartnersLoading(true);const [p,u,partners,gifts,pts]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50}),loadPartnerDirectory(),supabase.rpc('public_active_win_gifts',{p_limit:6}),supabase.rpc('wenik_customer_points_balance')]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length);if(!partners.error)setHomePartners(partners.data||[]);if(!gifts.error)setFeatured((gifts.data||[]).filter((x:any)=>x.gift_image_url||x.image_url));if(!pts.error)setLivePoints(Number(pts.data??0));setHomePartnersLoading(false);setRefreshing(false)}
+ useEffect(()=>{loadPartnerDirectory().then(({data,error})=>{if(!error)setHomePartners(data||[]);setHomePartnersLoading(false)});supabase.rpc('public_active_win_gifts',{p_limit:6}).then(({data,error})=>{if(!error)setFeatured((data||[]).filter((x:any)=>x.gift_image_url||x.image_url))})},[]);
  const clean=(v:any)=>String(v??'').trim();
  const partnerAreas=Array.from(new Set(homePartners.map((p:any)=>clean(p.area)).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).slice(0,12) as string[];
  const partnerCategories=['ALL',...Array.from(new Set(homePartners.map((p:any)=>clean(p.category)).filter(Boolean))).sort((a,b)=>a.localeCompare(b))] as string[];

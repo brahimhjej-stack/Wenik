@@ -1,3 +1,4 @@
+import { loadPartnerDirectory } from '../lib/partners';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,7 +12,7 @@ function discount(x:Partner){const v=Number(x.benefit_value);if(Number.isFinite(
 
 export default function Partners({initialPartnerId,onInitialPartnerOpened}:{initialPartnerId?:string|null,onInitialPartnerOpened?:()=>void}={}){
  const [rows,setRows]=useState<Partner[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[area,setArea]=useState('All'),[selected,setSelected]=useState<Partner|null>(null),[hero,setHero]=useState(''),[ads,setAds]=useState<Ad[]>([]),[visibleCount,setVisibleCount]=useState(24);
- useEffect(()=>{supabase.rpc('public_partner_directory_v2').then(({data})=>{const next=data||[];setRows(next);setLoading(false);if(initialPartnerId){const target=next.find((x:Partner)=>x.partner_id===initialPartnerId);if(target){open(target);onInitialPartnerOpened?.()}}})},[initialPartnerId]);
+ useEffect(()=>{loadPartnerDirectory().then(({data})=>{const next=data||[];setRows(next);setLoading(false);if(initialPartnerId){const target=next.find((x:Partner)=>x.partner_id===initialPartnerId);if(target){open(target);onInitialPartnerOpened?.()}}})},[initialPartnerId]);
  const areas=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>String(x.area||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b))],[rows]);
  const categories=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>String(x.category||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b))],[rows]);
  const list=useMemo(()=>rows.filter(x=>{
