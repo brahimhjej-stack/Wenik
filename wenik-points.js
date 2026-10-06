@@ -72,7 +72,21 @@ async function installAdmin(){
   $('pointsRefresh').onclick=load;
 }
 
-(async()=>{await waitSession();if($('win')&&$('shell'))return installCustomer();if(document.title.includes('Partner'))return installPartner();if(document.title.includes('Management'))return installAdmin()})();
+(async()=>{
+  if($('win')&&$('shell')){
+    async function refreshCustomerSession(){
+      const{data:{session}}=await sb.auth.getSession();
+      if(!session){const host=$('wenikPointsCustomer');if(host)host.innerHTML='';return;}
+      if($('wenikPointsCustomer'))return window.wenikRefreshPointsCustomer?.();
+      return installCustomer();
+    }
+    sb.auth.onAuthStateChange((event)=>{if(['SIGNED_IN','SIGNED_OUT','TOKEN_REFRESHED'].includes(event))setTimeout(refreshCustomerSession,0)});
+    return refreshCustomerSession();
+  }
+  await waitSession();
+  if(document.title.includes('Partner'))return installPartner();
+  if(document.title.includes('Management'))return installAdmin();
+})();
 
 /* WENIK CUSTOMER HOME PREMIUM MOBILE V3 */
 (function installWenikHomePremiumV3(){
