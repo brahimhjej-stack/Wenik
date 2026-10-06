@@ -29,7 +29,7 @@ Status: partial readiness. No certification of thousands of concurrent users, re
 - Fixed native PNG icon path, Expo Android navigation configuration, RN version compatibility and removed local eas-cli dependency. Added package lock.
 - Expo Doctor: 18/18 passed. Final web, iOS and Android JavaScript/Hermes bundle exports passed, including pagination changes.
 - GitHub Mobile Check passed for initial mobile fixes; pagination Mobile Check also passed: https://github.com/brahimhjej-stack/Wenik/actions/runs/37517587666
-- Android AAB EAS build is asynchronous and was still running at report time. JavaScript export does not prove APK/AAB or IPA installation success.
+- Android production AAB build workflow for initial mobile hardening completed successfully: https://github.com/brahimhjej-stack/Wenik/actions/runs/37516600140. Build including pagination remains in progress: https://github.com/brahimhjej-stack/Wenik/actions/runs/37517587694. Neither workflow success nor JavaScript export proves physical-device installation or IPA success.
 - Physical iPhone/Android camera, QR scanning, background/resume, notification permissions and full login/redemption journeys remain unverified. Native system push notifications are not currently implemented in this branch; inbox messages are separate.
 
 ## 4. Monitoring and recovery
