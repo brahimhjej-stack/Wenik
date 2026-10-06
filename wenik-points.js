@@ -2,7 +2,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const U='https://zkrnzwnbdoaqanqzznlw.supabase.co';
 const K='sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k';
 const isAdminPage=document.title.includes('Management');
-const sb=createClient(U,K,isAdminPage?{auth:{storageKey:'wenik-admin-auth'}}:undefined);
+const sb=(!isAdminPage&&!document.title.includes('Partner'))
+  ? (window.__wenikCustomerClient ||= createClient(U,K))
+  : createClient(U,K,isAdminPage?{auth:{storageKey:'wenik-admin-auth'}}:undefined);
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 async function rpc(n,a={}){const{data,error}=await sb.rpc(n,a);if(error)throw error;return data}
