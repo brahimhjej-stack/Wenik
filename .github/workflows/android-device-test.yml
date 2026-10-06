@@ -1,0 +1,29 @@
+name: WENIK Android Device Test APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [mobile-app]
+    paths: ['.github/workflows/android-device-test.yml']
+permissions:
+  contents: read
+concurrency:
+  group: wenik-android-device-test
+  cancel-in-progress: false
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build signed APK for physical device testing
+        run: npx eas-cli build --platform android --profile preview --non-interactive
