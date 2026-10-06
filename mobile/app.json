@@ -4,28 +4,36 @@
     "slug": "wenik",
     "scheme": "wenik",
     "version": "1.0.1",
-    "icon": "./assets/app-icon.png",
+    "icon": "../wenik-logo-final.png",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "android": {
       "package": "com.wenik.app",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/app-icon.png",
+        "foregroundImage": "../wenik-logo-final.png",
         "backgroundColor": "#ffffff"
-      },
-      "navigationBar": {
-        "backgroundColor": "#f8f7fb",
-        "barStyle": "dark-content"
       }
     },
     "ios": {
       "bundleIdentifier": "com.wenik.app",
       "buildNumber": "1"
     },
-    "plugins": ["expo-router"],
-    "updates": {"fallbackToCacheTimeout": 0},
+    "plugins": [
+      "expo-router"
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
     "owner": "wenik",
-    "extra": {"eas": {"projectId": "0e651e5b-3660-43c0-8329-5fc0269ff725"}}
+    "extra": {
+      "eas": {
+        "projectId": "0e651e5b-3660-43c0-8329-5fc0269ff725"
+      }
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#f8f7fb",
+      "barStyle": "dark-content"
+    }
   }
 }
