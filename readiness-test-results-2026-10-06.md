@@ -16,5 +16,11 @@
 - Logged-in browser customer/partner/admin full journey not verified.
 - Actual simultaneous redemption race test not yet executed.
 - Native iOS/Android build not tested in this session.
-- Separate Supabase clients still produce a multi-client warning; consolidate clients in a follow-up.
+- Customer Supabase client consolidated; fresh-browser logs show no multi-client warning.
 - Large realistic dataset, mixed read/write load, p95 targets, connection pool and monitoring need validation before broad rollout.
+
+## Follow-up verification
+- Public website burst: 20 requests / concurrency 5; all successful. p50 7520 ms, p95 10165 ms (network included).
+- Gift rollback flow passed: insufficient points rejected, inactive customer rejected, exact debit verified, sold-out gift rejected, refund restores exact balance, repeat refund blocked, approved gift collection succeeds and second collection blocked.
+- Customer RLS isolation passed: no other customers or other balances readable; admin approval forbidden to non-admin customer.
+- No fixture changes persisted: all database functional tests use BEGIN / ROLLBACK.
