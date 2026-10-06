@@ -1,0 +1,45 @@
+begin;
+do $test$
+declare
+ cu uuid; cid uuid; au uuid; pu uuid; pid uuid; camp uuid; gift uuid;
+ rid uuid; tok uuid; bal int; got int;
+begin
+ select c.auth_user_id,c.id into cu,cid from public.customers c where c.auth_user_id is not null and c.status='active' limit 1;
+ select auth_user_id into au from public.admin_users where is_active limit 1;
+ select auth_user_id,partner_id into pu,pid from public.partner_users where is_active limit 1;
+ select id into camp from public.campaigns limit 1;
+ if cu is null or au is null or pu is null or camp is null then raise exception 'TEST_FIXTURE_MISSING'; end if;
+ insert into public.prizes(campaign_id,partner_id,title,quantity,gift_provider) values(camp,pid,'ROLLBACK readiness fixture',1,'partner') returning id into gift;
+ insert into public.points_reward_catalog(prize_id,points_cost,is_active) values(gift,10,true);
+ select coalesce(sum(points),0)::int into bal from public.points_ledger where customer_id=cid;
+ insert into public.points_ledger(customer_id,entry_type,points) values(cid,'adjustment',5-bal);
+ perform set_config('request.jwt.claim.sub',cu::text,true);
+ begin perform public.customer_request_points_redemption(gift); raise exception 'INSUFFICIENT_POINTS_ALLOWED';
+ exception when others then if sqlerrm<>'NOT_ENOUGH_POINTS' then raise; end if; end;
+ insert into public.points_ledger(customer_id,entry_type,points) values(cid,'adjustment',15);
+ update public.customers set status='inactive' where id=cid;
+ begin perform public.customer_request_points_redemption(gift); raise exception 'INACTIVE_ALLOWED';
+ exception when others then if sqlerrm<>'CUSTOMER_NOT_FOUND' then raise; end if; end;
+ update public.customers set status='active' where id=cid;
+ rid:=public.customer_request_points_redemption(gift);
+ select coalesce(sum(points),0)::int into got from public.points_ledger where customer_id=cid;
+ if got<>10 then raise exception 'WRONG_HOLD_BALANCE %',got; end if;
+ begin perform public.customer_request_points_redemption(gift); raise exception 'SOLD_OUT_ALLOWED';
+ exception when others then if sqlerrm<>'REWARD_SOLD_OUT' then raise; end if; end;
+ perform set_config('request.jwt.claim.sub',au::text,true);
+ perform public.admin_review_points_redemption(rid,false,'rollback test');
+ select coalesce(sum(points),0)::int into got from public.points_ledger where customer_id=cid;
+ if got<>20 then raise exception 'REFUND_BALANCE_WRONG %',got; end if;
+ begin perform public.admin_review_points_redemption(rid,false,null); raise exception 'DOUBLE_REFUND_ALLOWED';
+ exception when others then if sqlerrm<>'REDEMPTION_NOT_PENDING' then raise; end if; end;
+ perform set_config('request.jwt.claim.sub',cu::text,true);
+ rid:=public.customer_request_points_redemption(gift);
+ perform set_config('request.jwt.claim.sub',au::text,true);
+ perform public.admin_review_points_redemption(rid,true,null);
+ select redeem_token into tok from public.points_redemptions where id=rid;
+ perform set_config('request.jwt.claim.sub',pu::text,true);
+ perform public.partner_redeem_points_gift(tok);
+ begin perform public.partner_redeem_points_gift(tok); raise exception 'DOUBLE_COLLECTION_ALLOWED';
+ exception when others then if sqlerrm<>'ALREADY_COLLECTED' then raise; end if; end;
+end $test$;
+rollback;
