@@ -1630,18 +1630,26 @@ async function loadPartnerDiscovery(){await loadPartners();fillHomePartnerAreas(
 window.openWenikPartner=async id=>{const x=(partnerDirectory||[]).find(v=>String(v.partner_id)===String(id));if(!x)return;hideWenikAreaSearchForDetail(true);const a=await rpc('public_partner_ads',{p_partner_id:id}).catch(()=>[]),socials=x.social_links||{},hero=a?.find(v=>v?.image_url)?.image_url||WENIK_PARTNER_IMAGE_CACHE.get(String(id))||x.logo_url||'',d=partnerDiscount(x),links=[];if(x.phone)links.push('<a href="tel:'+esc(String(x.phone).replace(/[^+\d]/g,''))+'">📞 CALL</a>');if(safeUrl(x.location_url))links.push('<a href="'+esc(x.location_url)+'" target="_blank">📍 LOCATION</a>');if(safeUrl(x.menu_url))links.push('<a href="'+esc(x.menu_url)+'" target="_blank">🍽️ MENU</a>');for(const [k,label] of [['instagram','INSTAGRAM'],['facebook','FACEBOOK'],['website','WEBSITE']])if(safeUrl(socials[k]))links.push('<a href="'+esc(socials[k])+'" target="_blank">'+label+'</a>');$('wenikPartnerDetail').innerHTML='<div class="wenikDetailHero">'+(hero?'<img src="'+esc(hero)+'">':'<div class="wenikPartnerPlaceholder">WENIK</div>')+'</div><div class="wenikDetailName">'+esc(x.business_name)+'</div><div class="wenikDetailMeta">'+esc([displayPartnerCategory(x.category),x.area,x.address].filter(Boolean).join(' • '))+'</div>'+((x.benefit_title||d)?'<div class="wenikDetailPromo"><strong>'+esc(d||'WENIK OFFER')+'</strong><div>'+esc(x.benefit_title||'')+'</div>'+(x.benefit_conditions?'<div class="wenikDetailMeta">'+esc(x.benefit_conditions)+'</div>':'')+'</div>':'')+(a?.length?'<div class="wenikDetailGallery">'+a.map(v=>'<img src="'+esc(v.image_url)+'" loading="lazy">').join('')+'</div>':'')+(links.length?'<div class="wenikDetailActions">'+links.join('')+'</div>':'');$('wenikPartnerModal').classList.remove('hidden');document.body.style.overflow='hidden';for(const v of a||[])rpc('track_partner_ad_impression',{p_ad_id:v.id}).catch(()=>{})};
 window.closeWenikPartner=()=>{$('wenikPartnerModal').classList.add('hidden');document.body.style.overflow='';hideWenikAreaSearchForDetail(false)};
 
-let partnerDirectory=[];
+let partnerDirectory=[],partnerVisibleCount=24,partnerDirectoryPromise=null,partnerDirectoryLoadedAt=0;
+async function fetchPartnerDirectory(){
+ if(partnerDirectoryPromise&&Date.now()-partnerDirectoryLoadedAt<60000)return partnerDirectoryPromise;
+ partnerDirectoryLoadedAt=Date.now();
+ partnerDirectoryPromise=(async()=>{const rows=[];for(let start=0;;start+=500){const{data,error}=await sb.rpc('public_partner_directory_v2').order('business_name').order('partner_id').range(start,start+499);if(error)throw error;rows.push(...(data||[]));if((data||[]).length<500)return rows;}})().catch(error=>{partnerDirectoryPromise=null;throw error;});
+ return partnerDirectoryPromise;
+}
 
-function renderPartners(){
+function renderPartners(reset=true){
+  if(reset)partnerVisibleCount=24;
   const q=($('partnerSearch').value||'').trim(),area=$('partnerArea').value,category=$('partnerCategory').value;
   const list=(partnerDirectory||[]).filter(x=>partnerMatches(x,q,area,category));
   $('partnerList').classList.add('wenikPartnerGrid');
-  $('partnerList').innerHTML=list.length?list.map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners match your search.</div>';
+  $('partnerList').innerHTML=list.length?list.slice(0,partnerVisibleCount).map(wenikPartnerCard).join(''):'<div class="wenikEmpty">No partners match your search.</div>';
+  if(list.length>partnerVisibleCount){const more=document.createElement('button');more.className='btn';more.textContent='SHOW MORE PARTNERS';more.onclick=()=>{partnerVisibleCount+=24;renderPartners(false)};$('partnerList').appendChild(more)}
   observeWenikPartnerCardImages()
 }
 
 async function loadPartners(){
-  partnerDirectory=await rpc('public_partner_directory_v2').catch(()=>[]);
+  partnerDirectory=await fetchPartnerDirectory().catch(()=>[]);
   $('partnerArea').innerHTML=buildAreaOptions($('partnerArea').value||'');
   $('partnerCategory').innerHTML='<option value="">All Categories</option>'+WENIK_HOME_CATEGORIES.map(x=>'<option value="'+esc(x)+'">'+esc(x)+'</option>').join('');
   mountAreaSearch('partnerArea','partnerAreaSearch','partnerAreaMenu',area=>{ $('partnerArea').value=area; renderPartners(); },$('partnerArea').value||'');
