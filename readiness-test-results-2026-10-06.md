@@ -29,7 +29,7 @@ Status: partial readiness. No certification of thousands of concurrent users, re
 - Fixed native PNG icon path, Expo Android navigation configuration, RN version compatibility and removed local eas-cli dependency. Added package lock.
 - Expo Doctor: 18/18 passed. Final web, iOS and Android JavaScript/Hermes bundle exports passed, including pagination changes.
 - GitHub Mobile Check passed for initial mobile fixes; pagination Mobile Check also passed: https://github.com/brahimhjej-stack/Wenik/actions/runs/37517587666
-- Android production AAB build workflow for initial mobile hardening completed successfully: https://github.com/brahimhjej-stack/Wenik/actions/runs/37516600140. Build including pagination remains in progress: https://github.com/brahimhjej-stack/Wenik/actions/runs/37517587694. Neither workflow success nor JavaScript export proves physical-device installation or IPA success.
+- Android production AAB build workflow for initial mobile hardening completed successfully: https://github.com/brahimhjej-stack/Wenik/actions/runs/37516600140. Build including pagination also completed successfully: https://github.com/brahimhjej-stack/Wenik/actions/runs/37517587694. Neither workflow success nor JavaScript export proves physical-device installation or IPA success.
 - Physical iPhone/Android camera, QR scanning, background/resume, notification permissions and full login/redemption journeys remain unverified. Native system push notifications are not currently implemented in this branch; inbox messages are separate.
 
 ## 4. Monitoring and recovery
@@ -54,3 +54,11 @@ Status: partial readiness. No certification of thousands of concurrent users, re
 5. Mixed read/write soak, incremental higher concurrency, resource/connection metrics and agreed response targets.
 
 Repository commits: native hardening `0863ef02951b828d6bb373f2e88e4eaa863dcb9d`; availability `5765839df858aca3c45c84fb995a13b6074939a1`; web directory `af07cd6909796a8a412269d44b5b701e03f3c055`; native directory `5c51aa6d4927c8b0f3e009a79dc0f6ad9fc438ca`.
+
+## Additional verification — 22:40 Beirut
+- Final Android AAB build succeeded: https://expo.dev/accounts/wenik/projects/wenik/builds/c5256ee6-7ac0-4e9d-bd2b-1d6ae7cfae68
+- Provider-mocked SMS tests passed: normalization/invalid inputs, acceptance/rejection parsing, valid signed callback, invalid signature prevents provider call, provider rejection returns failure, unsupported method rejected. No SMS sent. Run `node --test tests/sms-hook.test.mjs`.
+- Finance RPCs now deny anonymous execution while authenticated super-admin report still works. All public trigger functions deny direct client execution; authenticated invoice RPC still runs triggers, verified in isolated rollback test.
+- Security advisor anonymous definer notices fell from 26 to 16; remaining entries require contextual review, including intentionally public catalog/ad endpoints. Authenticated notices do not imply missing authorization; role checks remain necessary. Leaked-password protection remains disabled.
+- Production response sample: 63 directory requests, zero errors, origin p50 133 ms/p95 621.7 ms. Latest remote health sample: website 10,472 ms, directory 17,951 ms; separate curl request total 6.318 s, TLS 5.967 s. These different requests demonstrate substantial remote connection overhead and are not actual-device measurements.
+- Backup status, retention and restore still unverified; no paid upgrades or PITR enabled.
