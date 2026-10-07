@@ -1,6 +1,8 @@
+import AreaPicker from '../components/AreaPicker';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadPartnerDirectory } from '../lib/partners';
 import { useEffect,useRef,useState } from 'react';
-import { Alert,Linking,ActivityIndicator,Image,Pressable,SafeAreaView,ScrollView,StyleSheet,Text,View,Platform,useWindowDimensions } from 'react-native';
+import { Alert,Linking,ActivityIndicator,Image,Pressable,ScrollView,StyleSheet,Text,View,Platform,useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Session } from '@supabase/supabase-js';
 import Partners from './partners'; import Rewards from './rewards'; import Wins from './wins'; import Iza from './iza'; import CustomerQr from './qr'; import Me from './me';
@@ -11,11 +13,12 @@ type Screen='home'|'partners'|'rewards'|'wins'|'iza'|'qr'|'me';
 const nav:[Screen,string][]=[['home','HOME'],['wins','WIN'],['iza','IZA'],['qr','QR'],['partners','PARTNERS'],['me','ME']];
 
 function BottomNav({screen,setScreen,unread}:{screen:Screen,setScreen:(x:Screen)=>void,unread:number}){
- return <SafeAreaView style={s.navSafe}><View style={s.nav}>{nav.map(([id,label])=>{
+ const insets=useSafeAreaInsets();
+ return <View style={[s.navSafe,{paddingBottom:Math.max(insets.bottom,12)+8}]}> <View style={s.nav}>{nav.map(([id,label])=>{
   const on=screen===id;
   return <Pressable key={id} style={[s.navItem,on&&s.navActive]} onPress={()=>setScreen(id)}>
    <View><Text style={[s.navLabel,on&&s.navOn]}>{label}</Text>{id==='me'&&unread>0?<Text style={s.unread}>{unread>99?'99+':unread}</Text>:null}</View>
-  </Pressable>})}</View></SafeAreaView>
+  </Pressable>})}</View></View>
 }
 
 function NotificationBell({unread,onPress}:{unread:number,onPress:()=>void}){return <Pressable accessibilityLabel="Notifications" onPress={onPress} style={s.bell}><Text style={s.bellIcon}>🔔</Text>{unread>0?<Text style={s.bellBadge}>{unread>99?'99+':unread}</Text>:null}</Pressable>}
@@ -77,7 +80,7 @@ function Home(){
    </ScrollView>
    <View style={s.partnerHead}><Text style={s.featureTitle}>PARTNERS</Text><Text style={s.featureSwipe}>Near you</Text></View>
    <View style={s.partnerBox}>
-    <Text style={s.partnerBoxTitle}>DISCOVER WENIK PARTNERS</Text><Text style={s.partnerBoxSub}>Choose any area or use your location</Text>
+    <Text style={s.partnerBoxTitle}>DISCOVER WENIK PARTNERS</Text><Text style={s.partnerBoxSub}>Choose any area or use your location</Text><AreaPicker value={partnerArea} areas={partnerAreas} onChange={area=>setPartnerArea(area==='All'?'':area)}/>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.homeFilterRow}><Pressable onPress={()=>setPartnerArea('')} style={[s.homeFilter,!partnerArea&&s.homeFilterOn]}><Text style={[s.homeFilterText,!partnerArea&&s.homeFilterTextOn]}>ALL AREAS</Text></Pressable>{partnerAreas.map(a=><Pressable key={a} onPress={()=>setPartnerArea(a)} style={[s.homeFilter,partnerArea===a&&s.homeFilterOn]}><Text style={[s.homeFilterText,partnerArea===a&&s.homeFilterTextOn]}>{String(a).toUpperCase()}</Text></Pressable>)}</ScrollView>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.homeFilterRow}>{partnerCategories.map(cat=><Pressable key={cat} onPress={()=>setPartnerCategory(cat)} style={[s.homeFilter,partnerCategory===cat&&s.homeFilterOn]}><Text style={[s.homeFilterText,partnerCategory===cat&&s.homeFilterTextOn]}>{String(cat).toUpperCase()}</Text></Pressable>)}</ScrollView>
     <View style={s.homePartnerGrid}>{homePartnersLoading?[0,1,2,3].map(i=><View key={i} style={[s.homePartnerCard,s.skeleton]}><View style={[s.homePartnerImage,s.skeletonBlock]}/><View style={s.skeletonLine}/><View style={s.skeletonLineSmall}/></View>):visibleHomePartners.map((p:any)=><Pressable key={p.partner_id} style={s.homePartnerCard} onPress={()=>{setDirectPartnerId(p.partner_id);setScreen('partners')}}><View style={s.homePartnerVisual}>{p.logo_url?<Image source={{uri:p.logo_url}} style={s.homePartnerImage}/>:<View style={s.homeLogoWrap}><Text style={s.homeLogoText}>W</Text></View>}<LinearGradient colors={['transparent','rgba(22,14,27,.32)']} style={s.homePartnerShade}/><View style={s.partnerMiniBadge}><Text style={s.partnerMiniBadgeText}>WENIK</Text></View></View><View style={s.homePartnerBody}><Text numberOfLines={2} style={s.homePartnerName}>{clean(p.business_name)||'WENIK Partner'}</Text><View style={s.partnerMetaRow}><Text numberOfLines={1} style={s.homePartnerMeta}>{clean(p.category)||'Partner'}</Text>{clean(p.area)?<><Text style={s.metaDot}>•</Text><Text numberOfLines={1} style={s.homePartnerArea}>{clean(p.area)}</Text></>:null}</View><Text style={s.partnerExplore}>VIEW PARTNER →</Text></View></Pressable>)}{!homePartnersLoading&&!visibleHomePartners.length?<View style={s.homeEmpty}><Text style={s.homeEmptyText}>No partners match these filters.</Text></View>:null}</View>
@@ -108,7 +111,7 @@ const s=StyleSheet.create({
  action:{borderRadius:14,paddingVertical:11,paddingHorizontal:15},actionText:{color:'#fff',fontSize:11,fontWeight:'900',letterSpacing:.7},
  grid:{flexDirection:'row',flexWrap:'wrap',gap:10},tile:{width:'48.5%',minHeight:128,backgroundColor:'#fff',borderWidth:1,borderColor:C.line,borderRadius:22,padding:17,justifyContent:'flex-end'},
  tileKicker:{color:C.purple,fontSize:10,fontWeight:'900',letterSpacing:1.6,marginBottom:8},tileTitle:{color:'#18141d',fontSize:18,fontWeight:'900'},tileSub:{color:C.muted,fontSize:12,marginTop:5,lineHeight:17},
- navSafe:{backgroundColor:'transparent',paddingBottom:4},nav:{marginHorizontal:9,marginBottom:4,backgroundColor:'rgba(255,255,255,.96)',borderWidth:1,borderColor:'rgba(90,65,100,.10)',borderRadius:22,padding:7,flexDirection:'row',minHeight:62},
- navItem:{flex:1,alignItems:'center',justifyContent:'center',borderRadius:14,paddingVertical:9,paddingHorizontal:1},navActive:{backgroundColor:'rgba(239,21,157,.10)',borderWidth:1,borderColor:'rgba(143,36,255,.08)'},navLabel:{color:'#746d79',fontSize:8,fontWeight:'900'},navOn:{color:'#6f35e8'},
+ navSafe:{backgroundColor:'#f8f7fb',paddingBottom:20},nav:{marginHorizontal:9,marginBottom:4,backgroundColor:'rgba(255,255,255,.96)',borderWidth:1,borderColor:'rgba(90,65,100,.10)',borderRadius:22,padding:7,flexDirection:'row',minHeight:62},
+ navItem:{flex:1,alignItems:'center',justifyContent:'center',borderRadius:14,paddingVertical:9,paddingHorizontal:1},navActive:{backgroundColor:'rgba(239,21,157,.10)',borderWidth:1,borderColor:'rgba(143,36,255,.08)'},navLabel:{color:'#41364b',fontSize:10,fontWeight:'900'},navOn:{color:'#6f35e8'},
  unread:{position:'absolute',right:-9,top:-10,backgroundColor:C.pink,color:'#fff',fontSize:7,fontWeight:'900',minWidth:16,height:16,borderRadius:8,textAlign:'center',lineHeight:16,paddingHorizontal:2}
 });
