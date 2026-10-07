@@ -2,7 +2,7 @@ import AreaPicker from '../components/AreaPicker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadPartnerDirectory } from '../lib/partners';
 import { useEffect,useRef,useState } from 'react';
-import { Alert,Linking,ActivityIndicator,Image,Pressable,ScrollView,StyleSheet,Text,View,Platform,useWindowDimensions } from 'react-native';
+import { AppState,Alert,Linking,ActivityIndicator,Image,Pressable,ScrollView,StyleSheet,Text,View,Platform,useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Session } from '@supabase/supabase-js';
 import Partners from './partners'; import Rewards from './rewards'; import Wins from './wins'; import Iza from './iza'; import CustomerQr from './qr'; import Me from './me';
@@ -48,20 +48,36 @@ function Home(){
  useEffect(()=>{if(featured[adIndex]?.id)supabase.rpc('track_customer_home_ad_impression',{p_ad_id:featured[adIndex].id}).then(()=>{})},[featured,adIndex]);
  async function openAd(ad:any){if(!ad.cta_url)return;const target=String(ad.cta_url).trim();if(!/^https?:\/\//i.test(target))return;supabase.rpc('track_customer_home_ad_click',{p_ad_id:ad.id}).then(()=>{});Linking.openURL(target).catch(()=>Alert.alert('WENIK','Could not open this link.'));}
  async function refresh(){const [p,u]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50})]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length)}
- useEffect(()=>{refresh()},[screen]);
- async function refreshHome(){if(refreshing)return;setRefreshing(true);setHomePartnersLoading(true);const [p,u,partners,gifts,pts]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50}),loadPartnerDirectory(),supabase.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30),supabase.rpc('wenik_customer_points_balance')]);if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length);if(!partners.error)setHomePartners(partners.data||[]);if(!gifts.error)setFeatured((gifts.data||[]).filter((x:any)=>x.image_url));if(!pts.error)setLivePoints(Number(pts.data??0));setHomePartnersLoading(false);setRefreshing(false)}
- useEffect(()=>{loadPartnerDirectory().then(({data,error})=>{if(!error)setHomePartners(data||[]);setHomePartnersLoading(false)});supabase.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30).then(({data,error})=>{if(!error)setFeatured((data||[]).filter((x:any)=>x.image_url))})},[]);
+ useEffect(()=>{if(screen!=='home')refresh()},[screen]);
+ const homeRefreshBusy=useRef(false);
+ async function refreshHome(force=false){
+  if(homeRefreshBusy.current)return;
+  homeRefreshBusy.current=true;setRefreshing(true);
+  try{
+   const [p,u,partners,ads,pts]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_inbox',{p_limit:50}),loadPartnerDirectory({force}),supabase.from('customer_home_ads').select('*').eq('is_active',true).order('sort_order').limit(30),supabase.rpc('wenik_customer_points_balance')]);
+   if(!p.error)setProfile(Array.isArray(p.data)?p.data[0]:p.data);
+   if(!u.error)setUnread((u.data||[]).filter((x:any)=>!x.seen_at).length);
+   if(!partners.error)setHomePartners(partners.data||[]);
+   if(!ads.error)setFeatured((ads.data||[]).filter((x:any)=>x.image_url));
+   if(!pts.error)setLivePoints(Number(pts.data??0));
+  }finally{homeRefreshBusy.current=false;setHomePartnersLoading(false);setRefreshing(false)}
+ }
+ useEffect(()=>{
+  if(screen==='home')refreshHome();
+  const sub=AppState.addEventListener('change',state=>{if(state==='active'&&screen==='home')refreshHome(true)});
+  return()=>sub.remove();
+ },[screen]);
  const clean=(v:any)=>String(v??'').trim();
  const partnerAreas=Array.from(new Set(homePartners.map((p:any)=>clean(p.area)).filter(Boolean))).sort((a,b)=>a.localeCompare(b)).slice(0,12) as string[];
  const partnerCategories=['ALL',...Array.from(new Set(homePartners.map((p:any)=>clean(p.category)).filter(Boolean))).sort((a,b)=>a.localeCompare(b))] as string[];
  const visibleHomePartners=homePartners.filter((p:any)=>(!partnerArea||clean(p.area)===partnerArea)&&(partnerCategory==='ALL'||clean(p.category)===partnerCategory)).slice(0,4);
  const profilePoints=profile?.points_balance??profile?.points;
  const [livePoints,setLivePoints]=useState<number|null>(null);
- useEffect(()=>{let active=true;supabase.rpc('wenik_customer_points_balance').then(({data,error})=>{if(active&&!error)setLivePoints(Number(data??0))});return()=>{active=false}},[screen]);
+ useEffect(()=>{let active=true;if(screen==='home')return;supabase.rpc('wenik_customer_points_balance').then(({data,error})=>{if(active&&!error)setLivePoints(Number(data??0))});return()=>{active=false}},[screen]);
  const points=livePoints??profilePoints??0;
  let body;
  if(screen==='partners')body=<Partners initialCategory={directCategory} initialPartnerId={directPartnerId} onInitialPartnerOpened={()=>setDirectPartnerId(null)}/>;else if(screen==='rewards')body=<Rewards/>;else if(screen==='wins')body=<Wins/>;else if(screen==='iza')body=<Iza/>;else if(screen==='qr')body=<CustomerQr/>;else if(screen==='me')body=<Me/>;else body=<SafeAreaView style={s.safe}><ScrollView ref={scrollRef} contentContainerStyle={s.page} showsVerticalScrollIndicator={false}>
-   <View style={s.homeTop}><Pressable accessibilityLabel="Refresh Home" disabled={refreshing} onPress={refreshHome} style={[s.refreshBtn,refreshing&&{opacity:.5}]}><Text style={s.refreshIcon}>{refreshing?'…':'↻'}</Text></Pressable><Brand/><NotificationBell unread={unread} onPress={()=>setScreen('me')}/></View><Promo/><Hero/>
+   <View style={s.homeTop}><Pressable accessibilityLabel="Refresh Home" disabled={refreshing} onPress={()=>refreshHome(true)} style={[s.refreshBtn,refreshing&&{opacity:.5}]}><Text style={s.refreshIcon}>{refreshing?'…':'↻'}</Text></Pressable><Brand/><NotificationBell unread={unread} onPress={()=>setScreen('me')}/></View><Promo/><Hero/>
    <View style={s.quickRow}>
     <Pressable style={s.quick} onPress={()=>setScreen('partners')}><Text style={s.quickIcon}>📍</Text><Text style={s.quickText}>NEAR ME</Text></Pressable>
     <Pressable style={s.quick} onPress={()=>{setDirectCategory('Restaurants');setScreen('partners')}}><Text style={s.quickIcon}>🍴</Text><Text style={s.quickText}>RESTAURANTS</Text></Pressable>

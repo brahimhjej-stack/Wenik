@@ -1,7 +1,7 @@
 import AreaPicker from '../components/AreaPicker';
 import { loadPartnerDirectory } from '../lib/partners';
-import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, AppState, Image, RefreshControl, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from '../lib/supabase';
@@ -13,7 +13,31 @@ function discount(x:Partner){const v=Number(x.benefit_value);if(Number.isFinite(
 
 export default function Partners({initialPartnerId,initialCategory,onInitialPartnerOpened}:{initialPartnerId?:string|null,initialCategory?:string,onInitialPartnerOpened?:()=>void}={}){
  const [rows,setRows]=useState<Partner[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(''),[cat,setCat]=useState(initialCategory||'All'),[area,setArea]=useState('All'),[selected,setSelected]=useState<Partner|null>(null),[hero,setHero]=useState(''),[ads,setAds]=useState<Ad[]>([]),[visibleCount,setVisibleCount]=useState(24);
- useEffect(()=>{loadPartnerDirectory().then(({data})=>{const next=data||[];setRows(next);setLoading(false);if(initialPartnerId){const target=next.find((x:Partner)=>x.partner_id===initialPartnerId);if(target){open(target);onInitialPartnerOpened?.()}}})},[initialPartnerId]);
+ const [refreshing,setRefreshing]=useState(false),[loadError,setLoadError]=useState(false);
+ const requestBusy=useRef(false);
+ useEffect(()=>{
+  let active=true;
+  async function reload(force=false){
+   if(requestBusy.current)return;
+   requestBusy.current=true;setRefreshing(true);
+   try{
+    const {data,error}=await loadPartnerDirectory({force});
+    if(!active)return;
+    setLoadError(!!error);
+    if(!error)setRows(data||[]);
+   }finally{requestBusy.current=false;if(active){setLoading(false);setRefreshing(false)}}
+  }
+  reload();
+  const sub=AppState.addEventListener('change',state=>{if(state==='active')reload(true)});
+  return()=>{active=false;sub.remove()};
+ },[]);
+ useEffect(()=>{if(initialPartnerId){const target=rows.find(x=>x.partner_id===initialPartnerId);if(target){open(target);onInitialPartnerOpened?.()}}},[rows,initialPartnerId]);
+ async function manualRefresh(){
+  if(requestBusy.current)return;
+  requestBusy.current=true;setRefreshing(true);
+  try{const {data,error}=await loadPartnerDirectory({force:true});setLoadError(!!error);if(!error)setRows(data||[])}
+  finally{requestBusy.current=false;setRefreshing(false)}
+ }
  useEffect(()=>setCat(initialCategory||'All'),[initialCategory]);
  const areas=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>String(x.area||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b))],[rows]);
  const categories=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>String(x.category||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b))],[rows]);
@@ -27,10 +51,10 @@ export default function Partners({initialPartnerId,initialCategory,onInitialPart
  return <SafeAreaView style={s.safe}><LinearGradient colors={['#b978f3','#f58bc5','#ffad86']} style={s.heroHead}><View style={s.heroLine}/><Text style={s.eye}>DISCOVER</Text><Text style={s.title}>WENIK Partners</Text><Text style={s.sub}>Discover benefits around you.</Text></LinearGradient>
   <TextInput style={s.search} placeholder="Search partners, area or category" placeholderTextColor="#777783" value={q} onChangeText={setQ}/>
   <View style={{paddingHorizontal:16}}><AreaPicker value={area} areas={areas} onChange={setArea}/></View><View style={s.areaLabelRow}><Text style={s.filterLabel}>AREA</Text><Text style={s.resultCount}>{list.length} PARTNERS</Text></View><View style={s.chipBar}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>{areas.map(x=><Pressable key={x} onPress={()=>setArea(x)} style={[s.chip,area===x&&s.areaChipOn]}><Text style={[s.chipText,area===x&&s.chipTextOn]}>{x}</Text></Pressable>)}</ScrollView></View><Text style={s.filterLabelStandalone}>CATEGORY</Text><View style={s.chipBar}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>{categories.map(x=><Pressable key={x} onPress={()=>setCat(x)} style={[s.chip,cat===x&&s.chipOn]}><Text style={[s.chipText,cat===x&&s.chipTextOn]}>{x}</Text></Pressable>)}</ScrollView></View>
-  {loading?<ActivityIndicator style={{marginTop:40}}/>:<ScrollView style={s.list} contentContainerStyle={s.grid}>{visibleList.map(x=><Pressable key={x.partner_id} style={s.card} onPress={()=>open(x)}>
+  {loading?<ActivityIndicator style={{marginTop:40}}/>:<ScrollView style={s.list} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={manualRefresh}/>} contentContainerStyle={s.grid}>{loadError?<Pressable style={s.loadMore} onPress={manualRefresh}><Text style={s.loadMoreText}>Could not refresh partners. Tap to retry.</Text></Pressable>:null}{visibleList.map(x=><Pressable key={x.partner_id} style={s.card} onPress={()=>open(x)}>
     <View style={s.media}>{x.logo_url?<Image source={{uri:x.logo_url}} style={s.img}/>:<Text style={s.placeholder}>WENIK</Text>}{discount(x)?<Text style={s.off}>{discount(x)}</Text>:null}</View>
     <View style={s.body}><Text style={s.name} numberOfLines={2}>{x.business_name}</Text><Text style={s.meta} numberOfLines={1}>{[x.category,x.area].filter(Boolean).join(' · ')}</Text><Text style={s.promo} numberOfLines={2}>{x.benefit_title||'WENIK PARTNER'}</Text><Text style={s.viewPartner}>VIEW PARTNER →</Text></View>
-  </Pressable>)}{visibleCount<list.length?<Pressable style={s.loadMore} onPress={()=>setVisibleCount(v=>Math.min(v+24,list.length))}><Text style={s.loadMoreText}>SHOW MORE PARTNERS</Text><Text style={s.loadMoreMeta}>{visibleCount} OF {list.length}</Text></Pressable>:null}{!list.length?<View style={s.empty}><Text style={s.meta}>No partners match your search.</Text></View>:null}</ScrollView>}
+  </Pressable>)}{visibleCount<list.length?<Pressable style={s.loadMore} onPress={()=>setVisibleCount(v=>Math.min(v+24,list.length))}><Text style={s.loadMoreText}>SHOW MORE PARTNERS</Text><Text style={s.loadMoreMeta}>{visibleCount} OF {list.length}</Text></Pressable>:null}{!loadError&&!list.length?<View style={s.empty}><Text style={s.meta}>No partners match your search.</Text></View>:null}</ScrollView>}
   <Modal visible={!!selected} transparent animationType="slide" onRequestClose={()=>setSelected(null)}><View style={s.modalBack}><ScrollView style={s.modal} contentContainerStyle={{paddingBottom:24}}>
     <Pressable onPress={()=>setSelected(null)}><Text style={s.close}>CLOSE ×</Text></Pressable>
     {hero?<Image source={{uri:hero}} style={s.hero}/>:<View style={[s.hero,s.heroFallback]}><Text style={s.placeholder}>WENIK</Text></View>}{ads.length>1?<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.gallery}>{ads.map((a,i)=><Pressable key={i} onPress={()=>setHero(String(a.image_url))}><Image source={{uri:String(a.image_url)}} style={[s.thumb,hero===a.image_url&&s.thumbOn]}/></Pressable>)}</ScrollView>:null}
