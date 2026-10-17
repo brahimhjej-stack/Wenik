@@ -11,12 +11,19 @@ declare s public.partner_monthly_statements; o public.whish_checkout_orders; rem
 begin
  if p_user is null or p_statement is null or p_environment not in ('sandbox','production') then raise exception 'INVALID_REQUEST'; end if;
  if not (select enabled from public.whish_checkout_settings where id=true) then raise exception 'CHECKOUT_DISABLED'; end if;
+ if not exists(select 1 from public.billing_settings where id=true) then raise exception 'BILLING_SETTINGS_MISSING'; end if;
  if (select currency from public.billing_settings where id=true)<>'USD' then raise exception 'UNSUPPORTED_CURRENCY'; end if;
  select * into s from public.partner_monthly_statements where id=p_statement;
  if s.id is null or s.status='void' then raise exception 'STATEMENT_NOT_PAYABLE'; end if;
  if not exists(select 1 from public.partner_users u join public.partners p on p.id=u.partner_id where u.partner_id=s.partner_id and u.auth_user_id=p_user and u.is_active and u.role::text='partner_manager' and p.status='active') then raise exception 'NOT_AUTHORIZED'; end if;
  perform pg_advisory_xact_lock(hashtextextended('statement'||p_statement::text||p_environment,0));
  select * into s from public.partner_monthly_statements where id=p_statement for update;
+ -- Sandbox confirmations do not touch the real ledger, but still must not
+ -- issue another test charge for an already confirmed statement.
+ if p_environment='sandbox' then
+  select * into o from public.whish_checkout_orders where statement_id=p_statement and environment=p_environment and state='success' and fulfilled_at is not null order by created_at desc limit 1;
+  if o.id is not null then return to_jsonb(o); end if;
+ end if;
  remaining:=greatest(s.total_due-s.paid_amount,0);
  if remaining<1 then raise exception 'NO_PAYABLE_BALANCE'; end if;
  select * into o from public.whish_checkout_orders where statement_id=p_statement and environment=p_environment and state in ('pending','unknown') order by created_at desc limit 1;
