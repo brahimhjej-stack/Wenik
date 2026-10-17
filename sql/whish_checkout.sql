@@ -64,8 +64,9 @@ declare s public.whish_checkout_settings; b public.billing_settings; subject uui
 begin
  if p_environment not in ('sandbox','production') or p_kind not in ('customer','partner') or p_user is null then raise exception 'INVALID_REQUEST'; end if;
  select * into s from public.whish_checkout_settings where id=true;
- if not s.enabled then raise exception 'CHECKOUT_DISABLED'; end if;
+ if not found or not s.enabled then raise exception 'CHECKOUT_DISABLED'; end if;
  select * into b from public.billing_settings where id=true;
+ if not found then raise exception 'BILLING_SETTINGS_MISSING'; end if;
  if b.currency<>'USD' then raise exception 'UNSUPPORTED_CURRENCY'; end if;
  if p_kind='customer' then
   select id into subject from public.customers where auth_user_id=p_user and status='active';
