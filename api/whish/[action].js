@@ -23,6 +23,7 @@ export default async function handler(req,res){
   }
   const rpc=(name,body)=>rest('rpc/'+name,{body});
   const store={
+   prepareStatement:(user,statement,environment)=>rpc('whish_prepare_statement_order',{p_user:user,p_statement:statement,p_environment:environment}),
    prepare:(user,kind,environment)=>rpc('whish_prepare_order',{p_user:user,p_kind:kind,p_environment:environment}),
    get:async id=>(await rest('whish_checkout_orders?id=eq.'+encodeURIComponent(id)+'&select=*'))?.[0],
    setCollectUrl:(id,url)=>rest('whish_checkout_orders?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{collect_url:url}}),
@@ -45,7 +46,7 @@ export default async function handler(req,res){
    if(req.method!=='POST')return send(405,{error:'Method not allowed'});
    if(req.headers.origin&&req.headers.origin!==origin)return send(403,{error:'Origin not allowed'});
    const body=typeof req.body==='string'?JSON.parse(req.body):req.body;
-   return send(200,await app.create(user.id,body?.kind));
+   return send(200,await app.create(user.id,body?.kind,body?.statementId));
   }
   if(action==='status'){
    if(req.method!=='GET')return send(405,{error:'Method not allowed'});
