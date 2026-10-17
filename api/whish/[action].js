@@ -8,6 +8,11 @@ export default async function handler(req,res){
  const send=(status,data)=>res.status(status).json(data);
  try{
   const env=process.env;
+  if(req.query.action==='config'){
+   if(req.method!=='GET')return send(405,{error:'Method not allowed'});
+   if(!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)return send(503,{error:'Payment page is not configured yet'});
+   return send(200,{supabaseUrl:env.SUPABASE_URL,publishableKey:env.SUPABASE_PUBLISHABLE_KEY,environment:env.WHISH_ENVIRONMENT||'sandbox'});
+  }
   if(env.WHISH_CHECKOUT_ENABLED!=='true')return send(503,{error:'Checkout is not enabled yet'});
   const environment=env.WHISH_ENVIRONMENT||'sandbox';
   // Production remains gated until paid checkout, refund policy, and entitlement
@@ -15,7 +20,7 @@ export default async function handler(req,res){
   if(environment!=='sandbox')return send(503,{error:'Live checkout is not enabled yet'});
   const supabase=env.SUPABASE_URL,serviceKey=env.SUPABASE_SERVICE_ROLE_KEY;
   if(!supabase||!serviceKey)throw Error('Missing server configuration');
-  const origin=new URL(env.WHISH_SITE_URL).origin;
+  const origin=new URL(env.VERCEL_ENV==='preview'&&env.VERCEL_URL?'https://'+env.VERCEL_URL:env.WHISH_SITE_URL).origin;
   async function rest(path,{body,token=serviceKey,method=body?'POST':'GET'}={}){
    const r=await fetch(supabase+'/rest/v1/'+path,{method,redirect:'error',signal:AbortSignal.timeout(10000),headers:{apikey:serviceKey,Authorization:'Bearer '+token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
    if(!r.ok)throw Error('Database operation failed');
