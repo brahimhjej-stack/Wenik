@@ -116,4 +116,38 @@ await check('transaction confirmation checks expiry on the server',async()=>{
  await role('authenticated',superid);await db.query('select public.whish_set_membership_enforcement(false)');await db.exec('reset role');
  await db.query("insert into public.transactions(customer_id,partner_id,status) values($1,$2,'confirmed')",args);
 });
+
+await db.exec('reset role');
+await db.exec(readFileSync(new URL('../sql/whish_refund_review.sql',import.meta.url),'utf8'));
+await check('verified refund creates one review and cannot regress to success',async()=>{
+ await role('service_role');const o=(await db.query("select id from public.whish_checkout_orders where statement_id=$1 and environment='production'",[statement])).rows[0];
+ await db.query("select public.whish_reconcile_order($1,'production','refunded')",[o.id]);
+ const r=(await db.query("select public.whish_reconcile_order($1,'production','success') r",[o.id])).rows[0].r;assert.equal(r.state,'refunded');assert.equal(r.reviewRequired,true);
+ assert.equal((await db.query('select count(*) n from public.whish_refund_reviews')).rows[0].n,1);
+});
+await check('only super admin resolves refund reviews and changes expiry',async()=>{
+ await role('service_role');const o=(await db.query("select id from public.whish_checkout_orders where statement_id=$1 and environment='production'",[statement])).rows[0];
+ await role('authenticated',customer);await assert.rejects(db.query('select public.whish_admin_refund_reviews()'),/NOT_AUTHORIZED/);
+ await assert.rejects(db.query("select public.whish_resolve_refund_review($1,'keep_access','Reviewed and kept')",[o.id]),/NOT_AUTHORIZED/);
+ await role('authenticated',superid);await db.query("select public.whish_resolve_refund_review($1,'set_paid_until','Refund reviewed with later payments retained',now()+interval '5 days')",[o.id]);
+ await assert.rejects(db.query("select public.whish_resolve_refund_review($1,'keep_access','Review repeated')",[o.id]),/REVIEW_NOT_OPEN/);
+ await role('service_role');const r=(await db.query("select public.whish_reconcile_order($1,'production','refunded') r",[o.id])).rows[0].r;assert.equal(r.reviewRequired,false);
+});
+await db.exec('reset role; create table public.points_redemptions(id uuid primary key default gen_random_uuid(),customer_id uuid,status text)');
+await db.exec(readFileSync(new URL('../sql/whish_redemption_access.sql',import.meta.url),'utf8'));
+await check('expired memberships block new gift requests but preserve approved gifts',async()=>{
+ await db.query("insert into public.points_redemptions(customer_id,status) values('44444444-4444-4444-8444-444444444444','approved')");
+ await role('authenticated',superid);await db.query('select public.whish_set_membership_enforcement(true)');await db.exec('reset role');
+ await db.exec("update public.whish_customer_memberships set paid_until=now()-interval '1 day'");
+ await assert.rejects(db.query("insert into public.points_redemptions(customer_id,status) values('44444444-4444-4444-8444-444444444444','pending')"),/CUSTOMER_MEMBERSHIP_REQUIRED/);
+ await db.exec("update public.points_redemptions set status='collected' where status='approved'");
+ assert.equal((await db.query('select status from public.points_redemptions')).rows[0].status,'collected');
+});
+
+await check('sandbox refund review cannot change membership expiry',async()=>{
+ await role('service_role');await db.query("select public.whish_reconcile_order($1,'sandbox','refunded')",[order.id]);
+ await role('authenticated',superid);await assert.rejects(db.query("select public.whish_resolve_refund_review($1,'set_paid_until','Sandbox must stay isolated',now())",[order.id]),/INVALID_EXPIRY_CHANGE/);
+ await db.query("select public.whish_resolve_refund_review($1,'keep_access','Verified sandbox refund test')",[order.id]);
+ await role('anon');await assert.rejects(db.query('select public.whish_admin_refund_reviews()'),/permission denied/);
+});
 console.log(checks+' SQL tests passed (local isolated PostgreSQL)');await db.close();
