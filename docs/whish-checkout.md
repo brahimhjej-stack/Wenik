@@ -1,40 +1,37 @@
-# Whish checkout — sandbox implementation
+# Whish checkout readiness — 17 October 2026
 
-Prepared against Whish Pay v1.4.4 documentation supplied by Whish, and the current production database schema (read-only inspection). Defaults use billing_settings: customer $3/month, partner $10/month; existing partner trial dates are retained. New partner trial end is based on partner creation plus 3 calendar months, so checkout does not restart a trial.
+## Verified
 
-## Required before deployment
+The deployed authenticated sandbox flow returned confirmed provider status and persisted WENIK orders for customer USD 3, partner standard statement USD 20 (USD 10 subscription + USD 10 commission on synthetic USD 1,000 sales), and partner trial statement USD 10 (commission only). The user completed each checkout on their phone. These are sandbox payments, not real revenue or membership activation. Independent callback delivery has not been separately established; authenticated return-page status checks work.
 
-Apply sql/whish_checkout.sql to an isolated test database and validate it there. Set server-only variables SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, WHISH_CHANNEL, WHISH_SECRET, WHISH_WEBSITE_URL (exact issued value), WHISH_SITE_URL (public HTTPS origin), WHISH_CALLBACK_SECRET (random 32+ characters), WHISH_ENVIRONMENT=sandbox, WHISH_CHECKOUT_ENABLED=true. Enable the database checkout switch using whish_update_settings from a signed-in active super admin.
+Customer success reference: cca6cf0e-269a-4403-866c-79c62ec40219. The three successful orders are in Readiness Test only. Test fixtures are labeled WHISH-TEST and E2E-WHISH. No production schema migration or production deployment was performed.
 
-Never commit credentials. The test credentials were checked against the sandbox balance endpoint successfully on October 17, 2026. No real payments were taken. Validation completed: 13 JS tests plus 11 local SQL scenario checks passed. Vercel project `wenik` has SMS secrets but no SUPABASE_SERVICE_ROLE_KEY configured; a secure server-side database credential is still required for deployment. Never paste it in chat.
+## Current implementation
 
-The new page /whish-payment.html is sandbox-only. No link is added to production navigation. API handlers explicitly reject production mode until review.
+- Provider credentials remain server-only. Preview credentials and database configuration are restricted to feature/whish-sandbox.
+- Prices and statement balances are quoted on the server. Partner payments must target an owned issued statement. Ordinary customers and partner staff cannot change billing settings.
+- Each callback/status check verifies Whish's provider status. A browser redirect alone does not authorize fulfillment.
+- Repeated pending creates reuse a link after checking its current status. Verified expired links get a new persisted order. An already confirmed sandbox statement returns its successful order instead of charging again.
+- Production customer fulfillment adds one month once per successful order; production partner statement settlement inserts one ledger entry per order. Both branches were tested in isolated PostgreSQL, including duplicate callbacks. Sandbox does neither.
+- The payment result now includes its actual kind, amount, currency and invoice reference. Switching away from a result cancels polling and restores the payment button.
+- Web customers have a My Membership page; partners can open payment for a specific statement. The mobile ME screen has an account-scoped membership status card.
+- customer_my_billing_status checks auth.uid and returns only the caller's fee, expiry and active status. It cannot be called anonymously. Apply sql/whish_customer_billing_status.sql after the base migration.
+- Public configuration contains no provider/service secrets. Native checkout is explicitly disabled. The server still rejects live checkout even if an environment flag is accidentally enabled.
 
-## Verification
+## Release blockers
 
-Run `node --test tests/whish*.test.js tests/whish-sql.test.mjs`. The local isolated PostgreSQL tests use the pinned PGlite dev dependency and mocked copies of the inspected WENIK tables; they do not mutate the hosted database. Then test wrong OTP, pending, correct OTP, duplicate callback, concurrent callbacks, missing callback/status polling, changed prices mid-payment, customer/partner isolation and trial exemption with Whish's documented sandbox values. A checkout redirect is not proof of payment. Unknown/500 outcomes must be reconciled using the same persisted externalId.
+1. Institution paperwork and Whish production credentials/merchant activation are still outstanding.
+2. Review and apply the final migrations to production, provision its public configuration, and deploy only after release approval. Production checkout remains disabled.
+3. Partner invoice settlement and partner access renewal currently use separate legacy models. Define and implement how a fully settled calendar-month invoice advances access; do not grant a month again for a duplicate or commission-only trial invoice.
+4. Customer membership expiry is recorded separately; existing app entitlement/access checks need to consume it before a paid launch. No existing customer status has been changed.
+5. Refund/credit handling records provider refund status but does not automatically reverse or credit access. It needs an explicit business policy and reconciliation workflow.
+6. Resolve native store payment classification before adding a Whish purchase button to a distributed app. Google/Apple distinguish digital app subscriptions from physical goods/services. Institution registration alone does not resolve that classification. Native membership display is ready in source; no new app binary was generated.
+7. Automatic renewal is not implemented. The user confirms a follow-up email has been sent to Whish; await recurring mandate/debit API documentation and explicit customer consent requirements. No scheduled debit exists.
 
-## Remaining production work
+## Validation
 
-- Apply and verify SQL in a test database, then explicitly review the production migration.
-- Deploy server secrets and callback routes; verify an actual successful sandbox checkout.
-- Verify entitlements are respected by current app access checks; customer membership expiry is stored separately and does not overwrite customer status.
-- Verify partner payment ledger integration and refund entitlement handling; refunded orders are recorded but require manual review for access reversal.
-- Test the added super-admin guards on the existing billing settings, partner payment and statement payment tables with the live-schema test environment before production.
-- Obtain Whish recurring-payment mandate API documentation before adding automatic debit. No automatic debit or mandate is claimed or scheduled.
+JavaScript provider, checkout and public-configuration checks; 18 isolated PostgreSQL checks including authenticated membership privacy and duplicate statement prevention; mobile TypeScript noEmit; syntax checks for the API and changed HTML modules. Hosted Readiness Test verified the new account-scoped status and statement behavior. No production data was used for these tests.
 
-This draft is not a production-ready payment launch.
-
-## Partner statement checkout (October 17 update)
-
-Partner payment now requires a selected issued monthly statement. The server quotes its remaining balance (subscription + sales fee + authorized adjustments minus payments), rather than collecting a separate $10 subscription. The existing statement generator charges the sales fee from the start; only the subscription is waived during the first three months. Existing statement rounding/fractional waivers and complimentary dates are retained.
-
-Apply `sql/whish_statement_checkout.sql` after the base script. Both migrations were applied to WENIK Readiness Test only; production SQL is unchanged. Statement payments get a unique Whish order reference, preventing duplicate ledger settlement. Sandbox confirmation never pays a real invoice. Super-admin guards also cover statement adjustments. Customer checkout remains $3 monthly.
-
-Vercel production configuration now contains the server credentials, with checkout explicitly disabled. Secret values were not inspected. No redeploy, live payment, automatic debit, or production migration was performed. Validation: 14 JavaScript tests and 16 isolated SQL checks passed; hosted test metadata verified service-only RPC permissions. A hosted transactional fixture attempt returned an expired connector request, so hosted financial settlement is not yet verified. Remaining work includes real sandbox checkout/callback verification, partner access renewal policy for settled invoices, and refund/credit reconciliation.
-
-## Verified payment and database results (October 17, 2026)
-
-Whish sandbox status API confirmed `success` after the user completed both the $3 customer checkout and the $20 partner example ($10 subscription + $10 fee). These were provider-only requests; their callbacks were not linked to persisted WENIK orders, and neither proof constitutes a deployed browser-to-API-to-database test.
-
-Separate rollback-only tests on hosted WENIK Readiness Test verified: combined $20 statement preparation, sandbox isolation under duplicate success, exactly one ledger payment and paid invoice under the production reconciliation branch, and exactly one month customer renewal for a $3 order under duplicate success. No production database or real financial account was modified. The isolated schema had no billing_settings row; the customer fixture supplies $3/$10/1%, and prepare_order now explicitly rejects missing billing configuration. Checkout remains disabled. Public callback delivery, authenticated checkout from the deployed test page, partner access enforcement, and refunds still need verification.
+Official policy references reviewed:
+- https://support.google.com/googleplay/android-developer/answer/9858738?hl=en
+- https://developer.apple.com/app-store/review/guidelines/
