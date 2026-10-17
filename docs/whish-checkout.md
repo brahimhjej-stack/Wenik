@@ -22,16 +22,23 @@ Customer success reference: cca6cf0e-269a-4403-866c-79c62ec40219. The three succ
 
 1. Institution paperwork and Whish production credentials/merchant activation are still outstanding.
 2. Review and apply the final migrations to production, provision its public configuration, and deploy only after release approval. Production checkout remains disabled.
-3. Partner invoice settlement and partner access renewal currently use separate legacy models. Define and implement how a fully settled calendar-month invoice advances access; do not grant a month again for a duplicate or commission-only trial invoice.
-4. Customer membership expiry is recorded separately; existing app entitlement/access checks need to consume it before a paid launch. No existing customer status has been changed.
+3. Apply sql/whish_partner_membership.sql after statement checkout. Fully settled subscription-bearing statements now renew once from the later of payment time, existing expiry, and trial end. Commission-only statements never renew. Administrative suspension is preserved. This has passed isolated and hosted rollback tests; production remains untouched.
+4. Apply sql/whish_membership_access.sql after membership status. An opt-in private server trigger checks active customer and partner memberships for new confirmed transactions across API versions. It is OFF by default and only the active Super Admin may enable it, with an audit record. Existing confirmed transactions are not retroactively blocked. Gift/redemption access rules and treatment of historical/manual payments need separate rollout review. No production customer status has changed.
 5. Refund/credit handling records provider refund status but does not automatically reverse or credit access. It needs an explicit business policy and reconciliation workflow.
 6. Resolve native store payment classification before adding a Whish purchase button to a distributed app. Google/Apple distinguish digital app subscriptions from physical goods/services. Institution registration alone does not resolve that classification. Native membership display is ready in source; no new app binary was generated.
 7. Automatic renewal is not implemented. The user confirms a follow-up email has been sent to Whish; await recurring mandate/debit API documentation and explicit customer consent requirements. No scheduled debit exists.
 
 ## Validation
 
-JavaScript provider, checkout and public-configuration checks; 18 isolated PostgreSQL checks including authenticated membership privacy and duplicate statement prevention; mobile TypeScript noEmit; syntax checks for the API and changed HTML modules. Hosted Readiness Test verified the new account-scoped status and statement behavior. No production data was used for these tests.
+JavaScript provider, checkout and public-configuration checks; 26 isolated PostgreSQL checks including authenticated membership privacy and duplicate statement prevention; mobile TypeScript noEmit; syntax checks for the API and changed HTML modules. Hosted Readiness Test verified the new account-scoped status and statement behavior. No production data was used for these tests.
 
 Official policy references reviewed:
 - https://support.google.com/googleplay/android-developer/answer/9858738?hl=en
 - https://developer.apple.com/app-store/review/guidelines/
+
+
+## Membership reconciliation update
+
+New service-only whish_statement_memberships ledger grants exactly one month for each fully paid subscription-bearing statement. Partial payment, trial commission and sandbox success do not grant a month. Duplicate provider confirmations cannot extend again. A suspended partner remains suspended even if the paid expiry advances. Test data and production-branch SQL were exercised only in the isolated database, with hosted changes rolled back. The new enforcement switch is false in Readiness Test.
+
+Security advisor reports RLS-without-policy for service-only billing tables (intentional: ordinary clients have no table grants) and authenticated SECURITY DEFINER notices for super-admin settings RPCs. These RPCs explicitly check active super-admin authorization, reject anonymous callers, use a fixed empty search_path, and are covered by negative authorization tests. Review guidance: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable .
