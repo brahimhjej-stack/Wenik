@@ -1,0 +1,36 @@
+import{PGlite}from'@electric-sql/pglite';import{readFileSync}from'node:fs';import assert from'node:assert/strict';
+const db=new PGlite();
+await db.exec(`create role anon;create role authenticated;create role service_role bypassrls;create schema auth;
+create function auth.role()returns text language sql as $$select current_user::text$$; create table public.partner_payments(id uuid);create table public.partner_statement_payments(id uuid);create table auth.users(id uuid primary key);
+create function auth.uid()returns uuid language sql as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+create table public.customers(id uuid primary key,auth_user_id uuid,status text);
+create table public.partners(id uuid primary key,status text,created_at timestamptz);
+create table public.partner_users(auth_user_id uuid,partner_id uuid,is_active boolean,role text);
+create table public.partner_subscriptions(id uuid primary key default gen_random_uuid(),partner_id uuid unique,trial_started_at timestamptz default now(),trial_ends_at timestamptz,paid_until timestamptz,updated_at timestamptz default now());
+create table public.billing_settings(id boolean primary key,customer_monthly_fee numeric,partner_monthly_fee numeric,currency text,updated_at timestamptz,updated_by uuid);
+insert into public.billing_settings values(true,3,10,'USD',now(),null);
+create table public.audit_logs(actor_auth_user_id uuid,actor_role text,action text,entity_type text,entity_id text,payload jsonb);
+create function public.is_wenik_super_admin()returns boolean language sql security definer as $$ select auth.uid()='11111111-1111-4111-8111-111111111111'::uuid $$;
+grant usage on schema public,auth to authenticated,service_role;grant execute on function auth.uid() to authenticated,service_role;
+grant all on all tables in schema public to service_role;
+insert into auth.users values('11111111-1111-4111-8111-111111111111'),('22222222-2222-4222-8222-222222222222'),('33333333-3333-4333-8333-333333333333');
+insert into public.customers values('44444444-4444-4444-8444-444444444444','22222222-2222-4222-8222-222222222222','active');
+insert into public.partners values('55555555-5555-4555-8555-555555555555','active',now());
+insert into public.partner_users values('33333333-3333-4333-8333-333333333333','55555555-5555-4555-8555-555555555555',true,'partner_manager');`);
+await db.exec(readFileSync(new URL('../sql/whish_checkout.sql',import.meta.url),'utf8'));
+let checks=0;async function check(name,f){await f();console.log('PASS '+name);checks++;}
+async function role(r,sub){await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[sub||'']);await db.exec('set role '+r);}
+const superid='11111111-1111-4111-8111-111111111111',customer='22222222-2222-4222-8222-222222222222',partner='33333333-3333-4333-8333-333333333333';
+await check('customer cannot modify fees',async()=>{await role('authenticated',customer);await assert.rejects(db.query('select public.whish_update_settings(1,1,true,0)'),/NOT_AUTHORIZED/)});
+await check('super admin can modify fees and trial setting',async()=>{await role('authenticated',superid);await db.query('select public.whish_update_settings(3,10,true,3)')});
+await check('authenticated cannot call service RPC or read orders',async()=>{await role('authenticated',customer);await assert.rejects(db.query('select * from public.whish_checkout_orders'),/permission denied/);await assert.rejects(db.query("select public.whish_prepare_order($1,'customer','sandbox')",[customer]),/permission denied/)});
+await role('service_role');let order;
+await check('customer order snapshots $3 server price',async()=>{order=(await db.query("select public.whish_prepare_order($1,'customer','sandbox') o",[customer])).rows[0].o;assert.equal(Number(order.amount),3)});
+await check('pending order reused',async()=>{const o=(await db.query("select public.whish_prepare_order($1,'customer','sandbox') o",[customer])).rows[0].o;assert.equal(o.id,order.id)});
+await check('partner gets free 3-month trial, no payment order',async()=>{const o=(await db.query("select public.whish_prepare_order($1,'partner','sandbox') o",[partner])).rows[0].o;assert.equal(o.trial,true);assert.equal((await db.query("select count(*) n from public.whish_checkout_orders where kind='partner'")).rows[0].n,0)});
+await check('sandbox success never activates real membership; duplicates do not fulfil twice',async()=>{await db.query("select public.whish_reconcile_order($1,'sandbox','success')",[order.id]);const stamp=(await db.query('select fulfilled_at from public.whish_checkout_orders where id=$1',[order.id])).rows[0].fulfilled_at;await db.query("select public.whish_reconcile_order($1,'sandbox','success')",[order.id]);assert.equal((await db.query('select count(*) n from public.whish_customer_memberships')).rows[0].n,0);assert.deepEqual((await db.query('select fulfilled_at from public.whish_checkout_orders where id=$1',[order.id])).rows[0].fulfilled_at,stamp)});
+await check('delayed failure cannot regress confirmed success',async()=>{await db.query("select public.whish_reconcile_order($1,'sandbox','pending')",[order.id]);assert.equal((await db.query('select state from public.whish_checkout_orders where id=$1',[order.id])).rows[0].state,'success')});
+await check('production fulfilment is idempotent at database boundary',async()=>{const o=(await db.query("select public.whish_prepare_order($1,'customer','production') o",[customer])).rows[0].o;await db.query("select public.whish_reconcile_order($1,'production','success')",[o.id]);const expiry=(await db.query('select paid_until from public.whish_customer_memberships')).rows[0].paid_until;await db.query("select public.whish_reconcile_order($1,'production','success')",[o.id]);assert.deepEqual((await db.query('select paid_until from public.whish_customer_memberships')).rows[0].paid_until,expiry)});
+await check('trial end is not reset by repeat checkout',async()=>{const before=(await db.query('select trial_ends_at from public.partner_subscriptions')).rows[0].trial_ends_at;await db.query("select public.whish_prepare_order($1,'partner','sandbox')",[partner]);assert.deepEqual((await db.query('select trial_ends_at from public.partner_subscriptions')).rows[0].trial_ends_at,before)});
+await check('legacy payment writes restricted to super admin',async()=>{await db.exec('reset role');await db.exec('grant all on public.partner_payments to authenticated');await role('authenticated',customer);await assert.rejects(db.query('insert into public.partner_payments values(gen_random_uuid())'),/NOT_AUTHORIZED/);await role('authenticated',superid);await db.query('insert into public.partner_payments values(gen_random_uuid())');});
+console.log(checks+' SQL tests passed (local isolated PostgreSQL)');await db.close();
