@@ -24,3 +24,11 @@ Run `node --test tests/whish*.test.js tests/whish-sql.test.mjs`. The local isola
 - Obtain Whish recurring-payment mandate API documentation before adding automatic debit. No automatic debit or mandate is claimed or scheduled.
 
 This draft is not a production-ready payment launch.
+
+## Partner statement checkout (October 17 update)
+
+Partner payment now requires a selected issued monthly statement. The server quotes its remaining balance (subscription + sales fee + authorized adjustments minus payments), rather than collecting a separate $10 subscription. The existing statement generator charges the sales fee from the start; only the subscription is waived during the first three months. Existing statement rounding/fractional waivers and complimentary dates are retained.
+
+Apply `sql/whish_statement_checkout.sql` after the base script. Both migrations were applied to WENIK Readiness Test only; production SQL is unchanged. Statement payments get a unique Whish order reference, preventing duplicate ledger settlement. Sandbox confirmation never pays a real invoice. Super-admin guards also cover statement adjustments. Customer checkout remains $3 monthly.
+
+Vercel production configuration now contains the server credentials, with checkout explicitly disabled. Secret values were not inspected. No redeploy, live payment, automatic debit, or production migration was performed. Validation: 14 JavaScript tests and 16 isolated SQL checks passed; hosted test metadata verified service-only RPC permissions. A hosted transactional fixture attempt returned an expired connector request, so hosted financial settlement is not yet verified. Remaining work includes real sandbox checkout/callback verification, partner access renewal policy for settled invoices, and refund/credit reconciliation.
