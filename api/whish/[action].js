@@ -11,7 +11,7 @@ export default async function handler(req,res){
   if(req.query.action==='config'){
    if(req.method!=='GET')return send(405,{error:'Method not allowed'});
    if(!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)return send(503,{error:'Payment page is not configured yet'});
-   return send(200,{supabaseUrl:env.SUPABASE_URL,publishableKey:env.SUPABASE_PUBLISHABLE_KEY,environment:env.WHISH_ENVIRONMENT||'sandbox'});
+   return send(200,{supabaseUrl:env.SUPABASE_URL,publishableKey:env.SUPABASE_PUBLISHABLE_KEY,environment:env.WHISH_ENVIRONMENT||'sandbox',checkoutEnabled:env.WHISH_CHECKOUT_ENABLED==='true',nativeCheckoutEnabled:false});
   }
   if(env.WHISH_CHECKOUT_ENABLED!=='true')return send(503,{error:'Checkout is not enabled yet'});
   const environment=env.WHISH_ENVIRONMENT||'sandbox';
@@ -55,7 +55,7 @@ export default async function handler(req,res){
   }
   if(action==='status'){
    if(req.method!=='GET')return send(405,{error:'Method not allowed'});
-   return send(200,await app.status(user.id,req.query.externalId));
+   const result=await app.status(user.id,req.query.externalId);const order=await store.get(req.query.externalId);return send(200,{...result,kind:order.kind,amount:order.amount,currency:order.currency,invoiceNo:order.invoice_no,environment:order.environment});
   }
   return send(404,{error:'Not found'});
  }catch(e){
