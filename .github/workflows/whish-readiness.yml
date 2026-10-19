@@ -1,0 +1,43 @@
+name: Whish readiness checks
+on:
+  pull_request:
+    paths:
+      - 'api/whish/**'
+      - 'lib/whish-*.js'
+      - 'sql/whish_*.sql'
+      - 'tests/whish-*'
+      - 'mobile/**'
+      - '*billing.html'
+      - 'whish-*.html'
+      - 'package*.json'
+      - '.github/workflows/whish-readiness.yml'
+  push:
+    branches: [feature/whish-sandbox]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  payment-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Provider and checkout safety
+        run: node --test tests/whish-pay.test.js tests/whish-checkout.test.js tests/whish-api.test.js
+      - name: Isolated membership and billing database checks
+        run: node tests/whish-sql.test.mjs
+      - run: npm ci --ignore-scripts
+        working-directory: mobile
+      - name: Mobile TypeScript
+        run: npx --no-install tsc --noEmit
+        working-directory: mobile
