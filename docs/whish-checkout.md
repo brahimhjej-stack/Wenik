@@ -57,3 +57,15 @@ Android and iOS JavaScript/Hermes exports both compiled successfully with isolat
 Customer web billing distinguishes activation from renewal and shows an in-page expiry reminder during the last seven days of an active membership when live checkout is enabled. Sandbox never displays a real renewal reminder. Partner billing explicitly requires confirmation for each statement. These are in-page notices, not push notifications, email, SMS or a scheduled reminder service. Native checkout remains disabled pending store classification. No production release or configuration change is included.
 
 Native membership now refreshes when the ME card gains focus and when the app returns from background, so an external payment can be reflected without restarting. A seven-day in-app expiry notice is shown only for active memberships with billing enabled. No native purchase link or background push service was added.
+
+## Phone retry verification — 19 October 2026
+
+At 16:02 Beirut time, a Customer sandbox checkout for USD 3 completed successfully after retrying an unpaid order. Readiness Test records confirm the previous order b5460aa2-0336-4a20-b7a3-dccef1911ff8 is failed with no fulfillment, and replacement order 4af2bb14-f58a-46e2-ba59-a2d457a4409f is success. Its sandbox fulfillment marker was written at 13:02:49 UTC. No real membership was activated and no live funds were collected.
+
+The old checkout page was observed expired while the stored state was still pending; later provider reconciliation returned failed and displayed Try again. This proves recovery from an unpaid/expired checkout, not independent evidence that the provider's Simulate Failure button immediately reports failed. Keep that distinction in acceptance testing.
+
+The status response now includes normalized providerState separately from persisted state. An unknown provider answer cannot overwrite a previously confirmed order. The result page distinguishes provider pending from inconclusive verification and offers Check payment status after its bounded polling period. That control checks the same order only; it never calls create. A replacement is still allowed only after verified failed status and another server-side reconciliation.
+
+Validation: checkout service 11/11 tests passed, local UI behavior checks covered pending, unknown, successful recheck blocking and failed-order retry; GitHub Whish readiness run 39256263797 passed on commit 73c849ba9eea67e97872407fd31fdf78de3ebd2b. The deployed preview returned HTTP 200 with the new status control. No production release was made.
+
+Partner records were rechecked: the USD 20 standard and USD 10 trial statement sandbox successes from 17 October remain present. The updated partner billing page reads environment-specific public configuration and preserves statement-specific checkout links. A new partner retry on this latest preview has not yet been exercised on a phone. Independent callback delivery, financial refund processing, native store classification and all production gates remain open.
