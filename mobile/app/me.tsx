@@ -1,6 +1,7 @@
 import { useEffect,useMemo,useState } from 'react';
 import { Pressable,SafeAreaView,ScrollView,StyleSheet,Text,TextInput,View } from 'react-native';
 import { supabase } from '../lib/supabase';
+import Membership from '../components/Membership';
 export default function Me(){
  const [profile,setProfile]=useState<any>(null),[activity,setActivity]=useState<any[]>([]),[inbox,setInbox]=useState<any[]>([]),[q,setQ]=useState('');
  async function load(){const [p,a,i]=await Promise.all([supabase.rpc('customer_my_profile'),supabase.rpc('customer_my_activity',{p_limit:200}),supabase.rpc('customer_my_inbox',{p_limit:50})]);setProfile(Array.isArray(p.data)?p.data[0]:p.data);setActivity(a.data||[]);setInbox(i.data||[])}
@@ -10,6 +11,7 @@ export default function Me(){
  return <SafeAreaView style={s.safe}><ScrollView contentContainerStyle={s.page}>
   <Text style={s.title}>ME</Text><Text style={s.sub}>Your WENIK account and activity.</Text>
   <View style={s.profile}><Text style={s.name}>{[profile?.first_name,profile?.last_name].filter(Boolean).join(' ')||'WENIK Member'}</Text><Text style={s.meta}>{profile?.wenik_id||profile?.customer_wenik_id||''}</Text><Text style={s.points}>{Number(profile?.points_balance??profile?.points??0).toLocaleString()} POINTS</Text></View>
+  <Membership/>
   <Text style={s.section}>PURCHASES</Text><TextInput style={s.search} placeholder="Search partner or amount" placeholderTextColor="#777783" value={q} onChangeText={setQ}/>
   {filtered.map((x,i)=><View key={x.transaction_id||i} style={s.card}><View style={s.row}><Text style={s.cardTitle}>{x.partner_name||'WENIK Partner'}</Text><Text style={s.amount}>${Number(x.original_amount||0).toFixed(2)}</Text></View><Text style={s.meta}>{x.transaction_at?new Date(x.transaction_at).toLocaleString():''}</Text><View style={[s.row,{marginTop:8}]}><Text style={s.meta}>Final paid</Text><Text style={s.cardTitle}>${Number(x.final_amount||0).toFixed(2)}</Text></View></View>)}
   {!filtered.length?<View style={s.card}><Text style={s.meta}>No purchases found.</Text></View>:null}
