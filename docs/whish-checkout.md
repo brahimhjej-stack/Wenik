@@ -1,4 +1,4 @@
-# Whish checkout readiness — 17 October 2026
+# Whish checkout readiness — updated 19 October 2026
 
 ## Verified
 
@@ -26,7 +26,7 @@ Customer success reference: cca6cf0e-269a-4403-866c-79c62ec40219. The three succ
 4. Apply sql/whish_membership_access.sql after membership status. An opt-in private server trigger checks active customer and partner memberships for new confirmed transactions across API versions. It is OFF by default and only the active Super Admin may enable it, with an audit record. Existing confirmed transactions are not retroactively blocked. New points-redemption requests now use the same opt-in membership gate via sql/whish_redemption_access.sql. Previously approved gifts remain collectible even after membership expires. Historical/manual payment treatment still needs rollout review. No production customer status has changed.
 5. Apply sql/whish_refund_review.sql after partner membership. Verified refunds now create one review, remain refunded under delayed success, and require an audited Super Admin decision to retain access or set a reviewed expiry. whish-refunds.html supplies that workflow. This does not request refunds from Whish or automatically reverse/credit invoice accounting; an operator must reconcile financial ledger adjustments separately.
 6. Resolve native store payment classification before adding a Whish purchase button to a distributed app. Google/Apple distinguish digital app subscriptions from physical goods/services. Institution registration alone does not resolve that classification. Native membership display is ready in source; no new app binary was generated.
-7. Automatic renewal is not implemented. The user confirms a follow-up email has been sent to Whish; await recurring mandate/debit API documentation and explicit customer consent requirements. No scheduled debit exists.
+7. Whish confirmed by email on 19 October 2026, in response to the recurring debit request, that only Direct Credit and refund functionality are supported. Treat recurring collection as unavailable for this integration. Direct Credit transfers merchant funds to customer wallets and must not be used as subscription collection. Continue with customer-confirmed payments; no scheduled debit exists. Refund API documentation, eligibility and activation requirements are still needed before implementation.
 
 ## Validation
 
@@ -51,3 +51,9 @@ The refund wrapper locks the payment before its review (matching the admin resol
 New gift requests require a valid customer membership only when enforcement is enabled. Existing approved redemptions may still be collected after expiry. Hosted rollback verification confirmed refund monotonicity and a single review; all seeded tests were rolled back.
 
 Android and iOS JavaScript/Hermes exports both compiled successfully with isolated public test configuration. These are intermediate bundles, not signed APK/AAB/IPA binaries and not store submissions.
+
+## Manual renewal messaging — 19 October 2026
+
+Customer web billing distinguishes activation from renewal and shows an in-page expiry reminder during the last seven days of an active membership when live checkout is enabled. Sandbox never displays a real renewal reminder. Partner billing explicitly requires confirmation for each statement. These are in-page notices, not push notifications, email, SMS or a scheduled reminder service. Native checkout remains disabled pending store classification. No production release or configuration change is included.
+
+Native membership now refreshes when the ME card gains focus and when the app returns from background, so an external payment can be reflected without restarting. A seven-day in-app expiry notice is shown only for active memberships with billing enabled. No native purchase link or background push service was added.
