@@ -33,7 +33,7 @@ jobs:
             mobile/package-lock.json
       - run: npm ci --ignore-scripts
       - name: Provider and checkout safety
-        run: node --test tests/whish-pay.test.js tests/whish-checkout.test.js tests/whish-api.test.js
+        run: node --test tests/whish-pay.test.js tests/whish-checkout.test.js tests/whish-api.test.js tests/whish-membership-ui.test.js
       - name: Isolated membership and billing database checks
         run: node tests/whish-sql.test.mjs
       - run: npm ci --ignore-scripts
