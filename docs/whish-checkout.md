@@ -90,3 +90,10 @@ The seven reviewed SQL scripts were compiled in one rolled-back production trans
 Production API now requires `WHISH_ENVIRONMENT=production`, Vercel production hosting, `WHISH_CHECKOUT_ENABLED=true` and separate `WHISH_LIVE_CHECKOUT_APPROVED=true`. Public configuration reflects those effective gates. An optional server-only `WHISH_LIVE_ALLOWED_USERS` comma-separated UUID list restricts live creation to the pilot customer until the first real payment is verified. Status and signed callbacks remain available for existing orders. Preview credentials stay sandbox-scoped. Native purchases remain disabled.
 
 Validation: 26 JavaScript checks and 30 isolated PostgreSQL checks passed. The new API tests verify that no flag combination enables live payments on previews and that nonpilot users cannot create a live charge. Actual live checkout, independent callbacks, user-confirmed payment and membership fulfillment must still be verified on the final deployment. Refund transfer/ledger reversal is not implemented; verified refunds enter Super Admin review.
+
+
+## First live customer payment — 28 October 2026
+
+The user confirmed debit from their Whish wallet and receipt in the company wallet. Read-only WENIK verification matched one production customer payment for USD 3, state success, fulfilled at 12:16:29 UTC, with paid_until 28 November 2026 at 12:16:29 UTC. This confirms live collection reported by the user and persisted membership fulfillment; it does not independently prove callback delivery or test partner payment/refund transfer.
+
+The customer website now shows a membership card immediately after sign-in. Active customers see their expiry and a View Membership link; inactive customers see the server-configured fee and Activate & Pay. The Me section retains a clearly labeled payment link. Returning to the website refreshes the card. The service worker no longer caches /api responses or serves old payment verification responses offline. Native purchase links and membership enforcement remain off.
