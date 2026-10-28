@@ -8,16 +8,17 @@ export default async function handler(req,res){
  const send=(status,data)=>res.status(status).json(data);
  try{
   const env=process.env;
+  const environment=env.WHISH_ENVIRONMENT||'sandbox';
+  const liveApproved=environment==='production'&&env.VERCEL_ENV==='production'&&env.WHISH_LIVE_CHECKOUT_APPROVED==='true';
+  const checkoutEnabled=env.WHISH_CHECKOUT_ENABLED==='true'&&(environment==='sandbox'||liveApproved);
   if(req.query.action==='config'){
    if(req.method!=='GET')return send(405,{error:'Method not allowed'});
    if(!env.SUPABASE_URL||!env.SUPABASE_PUBLISHABLE_KEY)return send(503,{error:'Payment page is not configured yet'});
-   return send(200,{supabaseUrl:env.SUPABASE_URL,publishableKey:env.SUPABASE_PUBLISHABLE_KEY,environment:env.WHISH_ENVIRONMENT||'sandbox',checkoutEnabled:env.WHISH_CHECKOUT_ENABLED==='true',nativeCheckoutEnabled:false});
+   return send(200,{supabaseUrl:env.SUPABASE_URL,publishableKey:env.SUPABASE_PUBLISHABLE_KEY,environment,checkoutEnabled,nativeCheckoutEnabled:false});
   }
   if(env.WHISH_CHECKOUT_ENABLED!=='true')return send(503,{error:'Checkout is not enabled yet'});
-  const environment=env.WHISH_ENVIRONMENT||'sandbox';
-  // Production remains gated until paid checkout, refund policy, and entitlement
-  // enforcement have been reviewed end-to-end. Never infer live mode from hostname.
-  if(environment!=='sandbox')return send(503,{error:'Live checkout is not enabled yet'});
+  // Production credentials must never enable a preview or bypass release approval.
+  if(environment!=='sandbox'&&!liveApproved)return send(503,{error:'Live checkout is not enabled yet'});
   const supabase=env.SUPABASE_URL,serviceKey=env.SUPABASE_SERVICE_ROLE_KEY;
   if(!supabase||!serviceKey)throw Error('Missing server configuration');
   const origin=new URL(env.VERCEL_ENV==='preview'&&env.VERCEL_URL?'https://'+env.VERCEL_URL:env.WHISH_SITE_URL).origin;
@@ -34,7 +35,7 @@ export default async function handler(req,res){
    setCollectUrl:(id,url)=>rest('whish_checkout_orders?id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{collect_url:url}}),
    reconcile:(id,environment,state)=>rpc('whish_reconcile_order',{p_order:id,p_environment:environment,p_state:state})
   };
-  const provider=createWhishPay({channel:env.WHISH_CHANNEL,secret:env.WHISH_SECRET,websiteUrl:env.WHISH_WEBSITE_URL,userAgent:'WENIK/1.0 ('+origin+'; billing)',environment});
+  const provider=createWhishPay({channel:env.WHISH_CHANNEL,secret:env.WHISH_SECRET,websiteUrl:env.WHISH_WEBSITE_URL,userAgent:'WENIK/1.0 ('+origin+'; billing)',environment,allowProduction:liveApproved});
   const app=createCheckoutService({store,provider,origin,callbackSecret:env.WHISH_CALLBACK_SECRET,environment});
   const action=req.query.action;
   if(action==='callback'){
@@ -50,6 +51,8 @@ export default async function handler(req,res){
   if(action==='create'){
    if(req.method!=='POST')return send(405,{error:'Method not allowed'});
    if(req.headers.origin&&req.headers.origin!==origin)return send(403,{error:'Origin not allowed'});
+   const pilotUsers=(env.WHISH_LIVE_ALLOWED_USERS||'').split(',').map(x=>x.trim()).filter(Boolean);
+   if(environment==='production'&&pilotUsers.length&&!pilotUsers.includes(user.id))return send(503,{error:'Live payments are being verified. Please try again later.'});
    const body=typeof req.body==='string'?JSON.parse(req.body):req.body;
    return send(200,await app.create(user.id,body?.kind,body?.statementId));
   }
