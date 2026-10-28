@@ -97,3 +97,12 @@ Validation: 26 JavaScript checks and 30 isolated PostgreSQL checks passed. The n
 The user confirmed debit from their Whish wallet and receipt in the company wallet. Read-only WENIK verification matched one production customer payment for USD 3, state success, fulfilled at 12:16:29 UTC, with paid_until 28 November 2026 at 12:16:29 UTC. This confirms live collection reported by the user and persisted membership fulfillment; it does not independently prove callback delivery or test partner payment/refund transfer.
 
 The customer website now shows a membership card immediately after sign-in. Active customers see their expiry and a View Membership link; inactive customers see the server-configured fee and Activate & Pay. The Me section retains a clearly labeled payment link. Returning to the website refreshes the card. The service worker no longer caches /api responses or serves old payment verification responses offline. Native purchase links and membership enforcement remain off.
+
+
+## Customer membership and QR access — 28 October 2026
+
+User approved open browsing with paid membership required for QR benefits, earning points and new gift reservations. A separate customer_membership_required setting keeps this customer requirement independent of partner membership enforcement. QR refresh and all three legacy/current partner QR lookup RPCs verify paid access; all lookup versions also require the QR expiry to remain valid. Unpaid profiles retain browsing access but return no QR token. New confirmed transactions and new points gift requests enforce the same server check. Existing approved gifts remain collectable and historical confirmed transactions remain editable.
+
+The customer website clears any old QR before verification, offers Activate Membership when unpaid, and refreshes after returning from payment. QR display expires at the earlier of token or membership expiry. Failed verification clears a stale QR. Native RPCs share the server restriction, but this update does not build a new native binary or add a native payment link.
+
+Validation: three UI behavior checks passed for paid, unpaid and failed verification. Hosted production-schema tests ran in a rolled-back transaction: paid QR/profile allowed; expired QR/profile denied; new transactions and gift requests denied after expiry; approved gifts collectable; ordinary customer cannot alter the requirement. The public catalog and partner browsing RPCs were not changed.

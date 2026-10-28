@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';
+const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const code=html.slice(html.indexOf('let qrExpiryTimer=null;'),html.indexOf("$('refreshQr').onclick=loadQr;")).replace("await import('https://esm.sh/qrcode@1.5.4')","({default:{toDataURL:async()=> 'data:test-qr'}})");
+async function render(active,fail=false){const nodes={};let qrCalls=0;const node=id=>nodes[id]??={src:'old-qr',textContent:'',disabled:false,classes:new Set(),classList:{add(k){nodes[id].classes.add(k)},remove(k){nodes[id].classes.delete(k)}},removeAttribute(k){delete this[k]}};
+ const context={$:node,clearTimeout(){},setTimeout(){return 1},Date,rpc:async name=>{if(fail)throw Error('Network failed');if(name==='customer_my_billing_status')return {active,paidUntil:'2030-01-01T00:00:00Z'};qrCalls++;return [{qr_token:'token',qr_expires_at:'2030-01-01T00:00:00Z'}]}};
+ await vm.runInNewContext(code+';loadQr()',context);return {nodes,qrCalls};}
+test('unpaid membership clears any previous QR and offers activation without minting a token',async()=>{const {nodes,qrCalls}=await render(false);assert.equal(qrCalls,0);assert.equal(nodes.qrImage.src,undefined);assert.ok(nodes.qrImage.classes.has('hidden'));assert.equal(nodes.qrMembershipPay.classes.has('hidden'),false);});
+test('paid membership can mint and display a QR',async()=>{const {nodes,qrCalls}=await render(true);assert.equal(qrCalls,1);assert.equal(nodes.qrImage.src,'data:test-qr');assert.equal(nodes.qrImage.classes.has('hidden'),false);assert.ok(nodes.qrMembershipPay.classes.has('hidden'));});
+test('verification failure clears a stale QR and allows a retry',async()=>{const {nodes,qrCalls}=await render(true,true);assert.equal(qrCalls,0);assert.equal(nodes.qrImage.src,undefined);assert.ok(nodes.qrImage.classes.has('hidden'));assert.equal(nodes.refreshQr.disabled,false);});

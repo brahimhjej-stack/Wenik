@@ -1320,7 +1320,7 @@ button,a,[role="button"]{touch-action:manipulation}
 
     <section id="iza" class="hidden"><div class="hero"><div class="eyebrow">IZA | إذا</div><h2>If the deal works… decide.</h2><div class="muted">Choose I’M IN or I’M OUT. You can change your mind.</div></div><div id="izaList"></div></section>
 
-    <section id="qr" class="hidden"><div class="hero"><div class="eyebrow">YOUR ACCESS</div><h2>My QR</h2><div class="muted">Show this code to a WENIK partner.</div></div><div class="card"><img id="qrImage"><div id="qrExpiry" class="muted" style="text-align:center"></div><button id="refreshQr" class="btn">REFRESH QR</button></div></section>
+    <section id="qr" class="hidden"><div class="hero"><div class="eyebrow">YOUR ACCESS</div><h2>My QR</h2><div class="muted">Show this code to a WENIK partner.</div></div><div class="card"><img id="qrImage" class="hidden" alt="Your WENIK membership QR"><div id="qrExpiry" class="muted" style="text-align:center"></div><button id="refreshQr" class="btn">REFRESH QR</button><a id="qrMembershipPay" class="btn hidden" href="customer-billing.html" style="display:block;text-align:center;text-decoration:none">ACTIVATE MEMBERSHIP · تفعيل الاشتراك</a></div></section>
 
     <section id="partners" class="hidden"><div class="hero"><div class="eyebrow">DISCOVER</div><h2>WENIK Partners</h2><input id="partnerSearch" class="field" placeholder="Search partner name"><select id="partnerArea" class="field"><option value="">All Areas</option></select><select id="partnerCategory" class="field"><option value="">All Categories</option></select></div><div id="partnerList" class="wenikPartnerGrid"></div></section>
 
@@ -1523,12 +1523,25 @@ async function loadIza(){
   if(focusId){tab('iza',$('izaBtn'));setTimeout(()=>$('iza-'+focusId)?.scrollIntoView({behavior:'smooth',block:'center'}),80)}
 }
 
+let qrExpiryTimer=null;
 async function loadQr(){
-  const r=(await rpc('customer_refresh_qr'))?.[0];
-  if(!r)return;
-  const{default:QRCode}=await import('https://esm.sh/qrcode@1.5.4');
-  $('qrImage').src=await QRCode.toDataURL(String(r.qr_token),{width:360,margin:1});
-  $('qrExpiry').textContent=r.qr_expires_at?'Valid until '+new Date(r.qr_expires_at).toLocaleTimeString():''
+  clearTimeout(qrExpiryTimer);
+  const image=$('qrImage'),expiry=$('qrExpiry'),button=$('refreshQr'),pay=$('qrMembershipPay');
+  image.classList.add('hidden');image.removeAttribute('src');pay.classList.add('hidden');button.classList.remove('hidden');button.disabled=true;
+  try{
+    const membership=await rpc('customer_my_billing_status');
+    if(membership?.active!==true){expiry.textContent='Activate your membership to show your QR · فعّل اشتراكك ليظهر رمزك';button.classList.add('hidden');pay.classList.remove('hidden');return;}
+    const r=(await rpc('customer_refresh_qr'))?.[0];
+    if(!r?.qr_token)throw Error('QR unavailable');
+    const{default:QRCode}=await import('https://esm.sh/qrcode@1.5.4');
+    image.src=await QRCode.toDataURL(String(r.qr_token),{width:360,margin:1});image.classList.remove('hidden');
+    expiry.textContent=r.qr_expires_at?'Valid until '+new Date(r.qr_expires_at).toLocaleTimeString():'';
+    const validUntil=Math.min(new Date(r.qr_expires_at).getTime(),new Date(membership.paidUntil).getTime());
+    if(Number.isFinite(validUntil))qrExpiryTimer=setTimeout(()=>{image.classList.add('hidden');image.removeAttribute('src');expiry.textContent='Refresh to check your membership and QR · حدّث رمزك';},Math.max(0,validUntil-Date.now()));
+  }catch(e){
+    expiry.textContent=e.message?.includes('CUSTOMER_MEMBERSHIP_REQUIRED')?'Activate your membership to show your QR · فعّل اشتراكك ليظهر رمزك':'Unable to verify your QR. Please try again · تعذّر التحقق، حاول مجدداً';
+    if(e.message?.includes('CUSTOMER_MEMBERSHIP_REQUIRED')){button.classList.add('hidden');pay.classList.remove('hidden');}
+  }finally{button.disabled=false;}
 }
 $('refreshQr').onclick=loadQr;
 
@@ -1741,7 +1754,7 @@ async function enter(){
   await Promise.all([loadHome(),loadIza(),refreshUnread(),loadPartnerDiscovery(),loadMembershipEntry()])
 }
 
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!$('shell').classList.contains('hidden'))loadMembershipEntry();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!$('shell').classList.contains('hidden')){loadMembershipEntry();if(!$('qr').classList.contains('hidden'))loadQr();}});
 const{data:{session}}=await sb.auth.getSession();
 if(session)enter();
 
@@ -1763,6 +1776,8 @@ async function __winGiftReserve(g,card){
   if(card?.dataset.busy==='1')return;
   try{
     if(card)card.dataset.busy='1';
+    const membership=await rpc('customer_my_billing_status');
+    if(membership?.active!==true){alert('Activate your WENIK membership to reserve gifts · فعّل اشتراكك لحجز الهدايا');location.assign('customer-billing.html');return;}
     const balance=Number(await rpc('wenik_customer_points_balance')||0);
     if(balance<g.points){alert('You need '+Number(g.points-balance).toLocaleString()+' more Points for this gift.');return}
     if(!confirm('Reserve '+g.title+' for '+Number(g.points).toLocaleString()+' Points?'))return;
