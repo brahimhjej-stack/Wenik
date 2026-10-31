@@ -51,3 +51,12 @@ The manual **WENIK Android and Apple build** workflow builds the selected ref wi
 5. Confirm privacy/account-deletion pages and store declarations against actual app data collection; complete metadata and genuine device screenshots.
 6. Run native checks for startup, auth persistence, QR and location permission behavior on Android and iPhone. Prior customer acceptance is retained; only native-specific or changed behavior needs repeating.
 7. Submit to internal testing/TestFlight before requesting public release. Production deployment, live payment enablement and store submission are separate steps.
+
+
+## Membership display update — 31 October 2026
+
+The current native Home screen and Me page now use the account-scoped customer_my_billing_status RPC. Home places the membership card after the hero and View Membership opens Me. Both cards show the configured monthly price, paid expiry and active status. App foreground and explicit refresh reload the same database record as the website; the Home refresh control refreshes membership too. No browser storage or anonymous profile determines paid access.
+
+The Android APK workflow now builds its existing preview profile (installable APK), matching the workflow name, instead of a store-only AAB. Store production AAB and iOS build profiles remain available through the manual build workflow. This change does not submit to either store or add native Whish checkout.
+
+Validation for this update: Android and iOS Hermes exports succeeded; TypeScript compiler and React type dependencies are now declared and the Expo tsconfig is committed. The pre-existing duplicate heroSub style entry in Wins was removed while retaining the final effective style. No live database or web release changes are included.
