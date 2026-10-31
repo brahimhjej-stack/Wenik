@@ -1,0 +1,62 @@
+name: WENIK Android and Apple build
+
+# Deliberate manual builds only: no store submission or release is performed.
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build
+        type: choice
+        required: true
+        default: ios
+        options: [android, ios, all]
+      profile:
+        description: EAS build profile (ios-simulator requires ios)
+        type: choice
+        required: true
+        default: production
+        options: [production, preview, ios-simulator]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-build-${{ github.ref }}-${{ inputs.platform }}-${{ inputs.profile }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --ignore-scripts
+      - name: Validate chosen build
+        env:
+          BUILD_PLATFORM: ${{ inputs.platform }}
+          BUILD_PROFILE: ${{ inputs.profile }}
+        run: |
+          if [ "$BUILD_PROFILE" = "ios-simulator" ] && [ "$BUILD_PLATFORM" != "ios" ]; then
+            echo 'Choose ios for the ios-simulator profile.' >&2
+            exit 1
+          fi
+      - name: Build using existing Expo project and signing credentials
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          BUILD_PLATFORM: ${{ inputs.platform }}
+          BUILD_PROFILE: ${{ inputs.profile }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo 'The existing EXPO_TOKEN repository secret is required.' >&2
+            exit 1
+          fi
+          npx eas-cli whoami
+          npx eas-cli build --platform "$BUILD_PLATFORM" --profile "$BUILD_PROFILE" --non-interactive

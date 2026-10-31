@@ -1,3 +1,4 @@
+import Membership from '../components/Membership';
 import AreaPicker from '../components/AreaPicker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadPartnerDirectory } from '../lib/partners';
@@ -39,6 +40,7 @@ function Hero(){
 }
 
 function Home(){
+ const [membershipRefresh,setMembershipRefresh]=useState(0);
  const scrollRef=useRef<ScrollView>(null);
  const adScroll=useRef<ScrollView>(null);const {width:windowWidth}=useWindowDimensions();const adWidth=windowWidth-28;const [adIndex,setAdIndex]=useState(0);
 
@@ -60,7 +62,7 @@ function Home(){
    if(!partners.error)setHomePartners(partners.data||[]);
    if(!ads.error)setFeatured((ads.data||[]).filter((x:any)=>x.image_url));
    if(!pts.error)setLivePoints(Number(pts.data??0));
-  }finally{homeRefreshBusy.current=false;setHomePartnersLoading(false);setRefreshing(false)}
+  }finally{setMembershipRefresh(v=>v+1);homeRefreshBusy.current=false;setHomePartnersLoading(false);setRefreshing(false)}
  }
  useEffect(()=>{
   if(screen==='home')refreshHome();
@@ -77,7 +79,7 @@ function Home(){
  const points=livePoints??profilePoints??0;
  let body;
  if(screen==='partners')body=<Partners initialCategory={directCategory} initialPartnerId={directPartnerId} onInitialPartnerOpened={()=>setDirectPartnerId(null)}/>;else if(screen==='rewards')body=<Rewards/>;else if(screen==='wins')body=<Wins/>;else if(screen==='iza')body=<Iza/>;else if(screen==='qr')body=<CustomerQr/>;else if(screen==='me')body=<Me/>;else body=<SafeAreaView style={s.safe}><ScrollView ref={scrollRef} contentContainerStyle={s.page} showsVerticalScrollIndicator={false}>
-   <View style={s.homeTop}><Pressable accessibilityLabel="Refresh Home" disabled={refreshing} onPress={()=>refreshHome(true)} style={[s.refreshBtn,refreshing&&{opacity:.5}]}><Text style={s.refreshIcon}>{refreshing?'…':'↻'}</Text></Pressable><Brand/><NotificationBell unread={unread} onPress={()=>setScreen('me')}/></View><Promo/><Hero/>
+   <View style={s.homeTop}><Pressable accessibilityLabel="Refresh Home" disabled={refreshing} onPress={()=>refreshHome(true)} style={[s.refreshBtn,refreshing&&{opacity:.5}]}><Text style={s.refreshIcon}>{refreshing?'…':'↻'}</Text></Pressable><Brand/><NotificationBell unread={unread} onPress={()=>setScreen('me')}/></View><Promo/><Hero/><Membership refreshKey={membershipRefresh} onView={()=>setScreen('me')}/>
    <View style={s.quickRow}>
     <Pressable style={s.quick} onPress={()=>setScreen('partners')}><Text style={s.quickIcon}>📍</Text><Text style={s.quickText}>NEAR ME</Text></Pressable>
     <Pressable style={s.quick} onPress={()=>{setDirectCategory('Restaurants');setScreen('partners')}}><Text style={s.quickIcon}>🍴</Text><Text style={s.quickText}>RESTAURANTS</Text></Pressable>
