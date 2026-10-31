@@ -29,7 +29,8 @@ jobs:
           import os,json,urllib.request,pathlib,zipfile,subprocess,re,hashlib
           metadata=json.loads(pathlib.Path(os.environ['RUNNER_TEMP'],'wenik-build.json').read_text())
           artifacts=metadata.get('artifacts') or {}
-          url=artifacts.get('buildUrl') or artifacts.get('applicationArchiveUrl')
+          url=artifacts.get('applicationArchiveUrl') or artifacts.get('buildUrl')
+          print(json.dumps({'appVersion':metadata.get('appVersion'),'appBuildVersion':metadata.get('appBuildVersion'),'status':metadata.get('status'),'artifactHost':urllib.request.urlparse(url).hostname if False else __import__('urllib.parse',fromlist=['urlparse']).urlparse(url).hostname}))
           if not url: raise RuntimeError('Completed build has no APK artifact')
           folder=pathlib.Path('install-diagnostics');folder.mkdir()
           apk=folder/'WENIK_Android_Membership_Update.apk'
