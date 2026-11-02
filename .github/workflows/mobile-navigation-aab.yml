@@ -1,4 +1,4 @@
-name: WENIK internal testing AAB
+name: WENIK partner images internal testing AAB
 on:
   push:
     branches: [fix/mobile-bottom-navigation-20261031]
@@ -32,14 +32,14 @@ jobs:
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: npx --yes eas-cli@27.2.0 build --platform android --profile production --local --non-interactive --freeze-credentials --output "$RUNNER_TEMP/WENIK-1.0.2.aab"
+        run: npx --yes eas-cli@27.2.0 build --platform android --profile production --local --non-interactive --freeze-credentials --output "$RUNNER_TEMP/WENIK-Partner-Images.aab"
       - name: Verify bundle archive and signing
         run: |
-          unzip -t "$RUNNER_TEMP/WENIK-1.0.2.aab" | tail -1
-          jarsigner -verify "$RUNNER_TEMP/WENIK-1.0.2.aab"
-          keytool -printcert -jarfile "$RUNNER_TEMP/WENIK-1.0.2.aab"
+          unzip -t "$RUNNER_TEMP/WENIK-Partner-Images.aab" | tail -1
+          jarsigner -verify "$RUNNER_TEMP/WENIK-Partner-Images.aab"
+          keytool -printcert -jarfile "$RUNNER_TEMP/WENIK-Partner-Images.aab"
       - uses: actions/upload-artifact@v4
         with:
-          name: WENIK-1.0.2-AAB
-          path: ${{ runner.temp }}/WENIK-1.0.2.aab
+          name: WENIK-Partner-Images-AAB
+          path: ${{ runner.temp }}/WENIK-Partner-Images.aab
           retention-days: 14
