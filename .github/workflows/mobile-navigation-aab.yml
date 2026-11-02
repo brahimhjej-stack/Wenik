@@ -1,0 +1,45 @@
+name: WENIK partner images internal testing AAB
+on:
+  push:
+    branches: [fix/mobile-bottom-navigation-20261031]
+    paths: [.github/workflows/mobile-navigation-aab.yml]
+permissions:
+  contents: read
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci --ignore-scripts
+      - name: Type check
+        working-directory: mobile
+        run: npx tsc --noEmit
+      - name: Build AAB locally with existing upload credentials
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: npx --yes eas-cli@27.2.0 build --platform android --profile production --local --non-interactive --freeze-credentials --output "$RUNNER_TEMP/WENIK-Partner-Images.aab"
+      - name: Verify bundle archive and signing
+        run: |
+          unzip -t "$RUNNER_TEMP/WENIK-Partner-Images.aab" | tail -1
+          jarsigner -verify "$RUNNER_TEMP/WENIK-Partner-Images.aab"
+          keytool -printcert -jarfile "$RUNNER_TEMP/WENIK-Partner-Images.aab"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WENIK-Partner-Images-AAB
+          path: ${{ runner.temp }}/WENIK-Partner-Images.aab
+          retention-days: 14

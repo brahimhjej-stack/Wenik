@@ -1,0 +1,46 @@
+name: WENIK navigation update APK
+on:
+  push:
+    branches: [fix/mobile-bottom-navigation-20261031]
+    paths: [.github/workflows/mobile-navigation-apk.yml]
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci --ignore-scripts
+      - name: Type check
+        working-directory: mobile
+        run: npx tsc --noEmit
+      - name: Build APK locally with existing Expo credentials
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EAS_LOCAL_BUILD_ARTIFACTS_DIR: ${{ runner.temp }}/wenik-apk
+        run: npx --yes eas-cli@27.2.0 build --platform android --profile preview --local --non-interactive --freeze-credentials --output "$RUNNER_TEMP/WENIK-1.0.2.apk"
+      - name: Verify APK
+        run: |
+          TOOLS="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          "$TOOLS/apksigner" verify --verbose --print-certs "$RUNNER_TEMP/WENIK-1.0.2.apk"
+          "$TOOLS/aapt" dump badging "$RUNNER_TEMP/WENIK-1.0.2.apk" | head -5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WENIK-1.0.2-APK
+          path: ${{ runner.temp }}/WENIK-1.0.2.apk
+          retention-days: 14

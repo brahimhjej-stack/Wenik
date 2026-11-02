@@ -1,4 +1,5 @@
 import Membership from '../components/Membership';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import AreaPicker from '../components/AreaPicker';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadPartnerDirectory } from '../lib/partners';
@@ -13,12 +14,24 @@ const C={bg:'#f8f7fb',panel:'#fff',line:'rgba(92,55,110,.12)',text:'#18141d',mut
 type Screen='home'|'partners'|'rewards'|'wins'|'iza'|'qr'|'me';
 const nav:[Screen,string][]=[['home','HOME'],['wins','WIN'],['iza','IZA'],['qr','QR'],['partners','PARTNERS'],['me','ME']];
 
+function NavIcon({id,color}:{id:Screen,color:string}){
+ const paths:Partial<Record<Screen,string>>={
+ home:'M3 10 12 3l9 7M5 9v12h5v-7h4v7h5V9',
+ wins:'M8 3h8v7a4 4 0 0 1-8 0V3ZM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4m-4 2v5m-4 2h8',
+ iza:'M4 9h4l11-5v16L8 15H4V9Zm4 6 2 6h4l-2-4M22 9v6',
+ partners:'M3 21v-2a5 5 0 0 1 10 0v2m2-8a5 5 0 0 1 6 5v3',
+ me:'M4 21v-2a8 8 0 0 1 16 0v2'};
+ return <Svg width={23} height={23} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round">
+ {id==='qr'?<><Rect x={3} y={3} width={6} height={6} rx={1}/><Rect x={15} y={3} width={6} height={6} rx={1}/><Rect x={3} y={15} width={6} height={6} rx={1}/><Path d="M15 15h3v3h3v3h-6v-3m6-6v3M12 3v3m0 6h-3m3 3v6"/></>:<><Path d={paths[id]}/>{id==='me'?<Circle cx={12} cy={6} r={4}/>:id==='partners'?<><Circle cx={8} cy={7} r={4}/><Path d="M16 3a4 4 0 0 1 0 8"/></>:null}</>}
+ </Svg>
+}
+
 function BottomNav({screen,setScreen,unread}:{screen:Screen,setScreen:(x:Screen)=>void,unread:number}){
  const insets=useSafeAreaInsets();
- return <View style={[s.navSafe,{paddingBottom:Math.max(insets.bottom,12)+8}]}> <View style={s.nav}>{nav.map(([id,label])=>{
+ return <View style={[s.navSafe,{paddingBottom:insets.bottom+12}]}> <View style={s.nav}>{nav.map(([id,label])=>{
   const on=screen===id;
-  return <Pressable key={id} style={[s.navItem,on&&s.navActive]} onPress={()=>setScreen(id)}>
-   <View><Text style={[s.navLabel,on&&s.navOn]}>{label}</Text>{id==='me'&&unread>0?<Text style={s.unread}>{unread>99?'99+':unread}</Text>:null}</View>
+  return <Pressable key={id} accessibilityRole="tab" accessibilityLabel={id==='qr'?'My QR code':label} accessibilityState={{selected:on}} style={[s.navItem,on&&s.navActive]} onPress={()=>setScreen(id)}>
+   <NavIcon id={id} color={on?C.purple:'#41364b'}/><View><Text style={[s.navLabel,on&&s.navOn]}>{label}</Text>{id==='me'&&unread>0?<Text style={s.unread}>{unread>99?'99+':unread}</Text>:null}</View>
   </Pressable>})}</View></View>
 }
 
@@ -129,7 +142,7 @@ const s=StyleSheet.create({
  action:{borderRadius:14,paddingVertical:11,paddingHorizontal:15},actionText:{color:'#fff',fontSize:11,fontWeight:'900',letterSpacing:.7},
  grid:{flexDirection:'row',flexWrap:'wrap',gap:10},tile:{width:'48.5%',minHeight:128,backgroundColor:'#fff',borderWidth:1,borderColor:C.line,borderRadius:22,padding:17,justifyContent:'flex-end'},
  tileKicker:{color:C.purple,fontSize:10,fontWeight:'900',letterSpacing:1.6,marginBottom:8},tileTitle:{color:'#18141d',fontSize:18,fontWeight:'900'},tileSub:{color:C.muted,fontSize:12,marginTop:5,lineHeight:17},
- navSafe:{backgroundColor:'#f8f7fb',paddingBottom:20},nav:{marginHorizontal:9,marginBottom:4,backgroundColor:'rgba(255,255,255,.96)',borderWidth:1,borderColor:'rgba(90,65,100,.10)',borderRadius:22,padding:7,flexDirection:'row',minHeight:62},
- navItem:{flex:1,alignItems:'center',justifyContent:'center',borderRadius:14,paddingVertical:9,paddingHorizontal:1},navActive:{backgroundColor:'rgba(239,21,157,.10)',borderWidth:1,borderColor:'rgba(143,36,255,.08)'},navLabel:{color:'#41364b',fontSize:10,fontWeight:'900'},navOn:{color:'#6f35e8'},
+ navSafe:{backgroundColor:'#f8f7fb',paddingTop:8},nav:{marginHorizontal:9,marginBottom:4,backgroundColor:'rgba(255,255,255,.96)',borderWidth:1,borderColor:'rgba(90,65,100,.10)',borderRadius:22,padding:5,flexDirection:'row',minHeight:74},
+ navItem:{flex:1,alignItems:'center',justifyContent:'center',borderRadius:14,minHeight:62,gap:5,paddingVertical:8,paddingHorizontal:1},navActive:{backgroundColor:'rgba(239,21,157,.10)',borderWidth:1,borderColor:'rgba(143,36,255,.08)'},navLabel:{color:'#41364b',fontSize:10,fontWeight:'900'},navOn:{color:'#6f35e8'},
  unread:{position:'absolute',right:-9,top:-10,backgroundColor:C.pink,color:'#fff',fontSize:7,fontWeight:'900',minWidth:16,height:16,borderRadius:8,textAlign:'center',lineHeight:16,paddingHorizontal:2}
 });
