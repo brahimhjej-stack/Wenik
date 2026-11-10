@@ -44,3 +44,5 @@ jobs:
           name: WENIK-1.0.3-APK
           path: ${{ runner.temp }}/WENIK-1.0.3.apk
           retention-days: 14
+
+# Build the partner categories update.
