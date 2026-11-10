@@ -104,6 +104,14 @@
 </section>
 
 <section id="partnersAdmin" class="panel">
+  <div class="card"><h2>Partner Display Order</h2>
+    <p class="muted">Choose a category, move partners up or down, then save.</p>
+    <select id="orderCategory" class="field" aria-label="Partner category"></select>
+    <button id="openPartnerOrder" class="btn secondary">ORDER PARTNERS</button>
+    <ol id="partnerOrderRows"></ol>
+    <button id="savePartnerOrder" class="btn" disabled>SAVE ORDER</button>
+    <div id="partnerOrderStatus" class="status" role="status"></div>
+  </div>
   <div class="card"><div class="row"><h2>Partners</h2><button id="showAddPartner" class="btn secondary" style="width:auto">ADD PARTNER</button></div>
   <input id="searchAdminPartner" class="field" type="search" placeholder="Search by partner name" aria-label="Search by partner name">
   <div id="partnerEditorStatus" class="status" role="status"></div><div id="adminPartnerResults"></div></div>
@@ -152,6 +160,7 @@
 <section id="super" class="panel"><div class="card"><div class="row"><div><h2>Super Admin</h2><div class="muted">Secure admin access control. Only Super Admin can create accounts, change roles or disable access.</div></div><button id="refreshAdmins" class="btn secondary" style="width:auto">REFRESH</button></div><div id="superStatus" class="status"></div></div><div class="card"><h2>Add Admin</h2><div class="muted">Create a secure WENIK management login.</div><input id="newAdminName" class="field" placeholder="Display name"><input id="newAdminEmail" class="field" type="email" placeholder="Admin email" autocomplete="off"><input id="newAdminPassword" class="field" type="password" minlength="8" placeholder="Temporary password · minimum 8 characters" autocomplete="new-password"><select id="newAdminRole" class="field"><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select><button id="createAdminBtn" class="btn">ADD ADMIN</button><div id="createAdminStatus" class="status"></div></div><div id="adminList"></div></section>
 <button id="logoutBtn" class="btn secondary">LOG OUT</button>
 </section></div>
+<script src="/wenik-partner-order.js"></script>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
 const sb=createClient('https://zkrnzwnbdoaqanqzznlw.supabase.co','sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k',{auth:{storageKey:'wenik-admin-auth'}}),$=id=>document.getElementById(id);
@@ -285,6 +294,56 @@ window.deleteHomeAd=async id=>{if(!confirm('Delete this dashboard banner?'))retu
 $('saveHomeAd').onclick=async()=>{try{const image=$('homeAdImage').value.trim();if(!image)throw Error('Image URL is required.');await rpc('admin_upsert_home_ad',{p_id:$('homeAdId').value||null,p_image_url:image,p_title:$('homeAdTitle').value.trim()||null,p_cta_type:$('homeAdCtaType').value,p_cta_url:$('homeAdCtaUrl').value.trim()||null,p_sort_order:Number($('homeAdSort').value||100),p_priority:Number($('homeAdPriority').value||0),p_starts_at:isoOrNull('homeAdStart'),p_ends_at:isoOrNull('homeAdEnd'),p_is_active:$('homeAdActive').value==='true',p_partner_id:null,p_partner_ad_id:null});setStatus('homeAdStatus','Dashboard banner saved.',true);clearHomeAdForm();await loadHomeAds()}catch(e){setStatus('homeAdStatus',e.message)}};
 $('clearHomeAd').onclick=clearHomeAdForm;$('refreshHomeAds').onclick=loadHomeAds;
 
+const {partnerCategories,categoryFamilyMatch,rankPartners}=window.wenikPartnerOrder;
+$('orderCategory').replaceChildren(...partnerCategories.map(c=>new Option(c,c)));
+let orderDraft=[],orderCategory='';
+const orderStatus=$('partnerOrderStatus'),orderRows=$('partnerOrderRows'),saveOrder=$('savePartnerOrder'),openOrder=$('openPartnerOrder');
+function renderOrder(focusIndex,focusOffset){
+  orderRows.replaceChildren(...orderDraft.map((p,i)=>{
+    const li=document.createElement('li');
+    li.append(document.createTextNode(p.business_name+' '));
+    for(const [offset,label] of [[-1,'↑'],[1,'↓']]){
+      const button=document.createElement('button');
+      button.className='btn secondary';button.textContent=label;
+      button.setAttribute('aria-label',(offset<0?'Move up: ':'Move down: ')+p.business_name);
+      const j=i+offset;
+      button.disabled=j<0||j>=orderDraft.length;
+      button.onclick=()=>{[orderDraft[i],orderDraft[j]]=[orderDraft[j],orderDraft[i]];saveOrder.disabled=false;orderStatus.textContent='Unsaved order';renderOrder(j,offset)};
+      li.append(button);
+      if(i===focusIndex && offset===focusOffset)queueMicrotask(()=>{(button.disabled?li.querySelector('button:not(:disabled)'):button)?.focus()});
+    }
+    return li;
+  }));
+}
+$('orderCategory').onchange=()=>{orderCategory='';orderRows.replaceChildren();saveOrder.disabled=true;orderStatus.textContent=''};
+openOrder.onclick=async()=>{
+  const category=$('orderCategory').value;
+  openOrder.disabled=true;$('orderCategory').disabled=true;saveOrder.disabled=true;orderRows.replaceChildren();orderStatus.textContent='Loading partners…';
+  try{
+    const rows=[];
+    for(let start=0;;start+=500){
+      const {data,error}=await sb.rpc('public_partner_directory_v2').order('business_name').order('partner_id').range(start,start+499);
+      if(error)throw error;
+      rows.push(...(data||[]));
+      if((data||[]).length<500)break;
+    }
+    const orders=await rpc('public_partner_category_order');
+    orderCategory=category;
+    orderDraft=rankPartners(rows.filter(p=>categoryFamilyMatch(p.category,category)),orders,category);
+    renderOrder();
+    orderStatus.textContent=orderDraft.length?'':'No partners in this category.';
+  }catch(e){orderStatus.textContent=e.message}
+  finally{openOrder.disabled=false;$('orderCategory').disabled=false}
+};
+saveOrder.onclick=async()=>{
+  if(!orderCategory)return;
+  saveOrder.disabled=true;openOrder.disabled=true;$('orderCategory').disabled=true;
+  orderRows.querySelectorAll('button').forEach(b=>b.disabled=true);
+  orderStatus.textContent='Saving…';
+  try{await rpc('admin_set_partner_category_order',{p_category:orderCategory,p_partner_ids:orderDraft.map(p=>p.partner_id)});orderStatus.textContent='Order saved.'}
+  catch(e){orderStatus.textContent=e.message;saveOrder.disabled=false}
+  finally{openOrder.disabled=false;$('orderCategory').disabled=false;renderOrder()}
+};
 $('createPartnerBtn').onclick=async()=>{try{const business_name=$('newPartnerBusiness').value.trim(),category=$('newPartnerCategory').value.trim(),area=$('newPartnerArea').value.trim(),display_name=$('newPartnerName').value.trim(),username=$('newPartnerUsername').value.trim().toLowerCase(),password=$('newPartnerPassword').value;if(!business_name||!category||!username||!password)throw Error('Business, category, username and password are required.');if(password.length<8)throw Error('Password must be at least 8 characters.');$('createPartnerBtn').disabled=true;setStatus('createPartnerStatus','Creating Partner account...',true);const{data,error}=await sb.functions.invoke('admin-create-partner',{body:{business_name,category,area:area||null,display_name:display_name||business_name,username,password}});if(error)throw error;if(data?.error)throw Error(data.error);for(const id of ['newPartnerBusiness','newPartnerCategory','newPartnerArea','newPartnerName','newPartnerUsername','newPartnerPassword'])$(id).value='';setStatus('createPartnerStatus','Partner created · 3 months FREE until '+new Date(data.partner.trial_ends_at).toLocaleDateString()+'.',true);await loadAdminPartners();await loadSubscriptions()}catch(e){setStatus('createPartnerStatus',e.message||'Could not create Partner.')}finally{$('createPartnerBtn').disabled=false}};
 
 async function loadSubscriptions(){try{const[list,alerts]=await Promise.all([rpc('admin_partner_subscriptions'),rpc('admin_partner_subscription_alerts')]);const amap=new Map((alerts||[]).map(a=>[a.partner_id,a]));const due=(alerts||[]).filter(a=>a.alert_level!=='ok');$('subscriptionAlerts').innerHTML=due.length?'<div class="card"><div class="row"><div><h3>⚠ Subscription Alerts</h3><div class="muted">'+due.length+' partner(s) need attention.</div></div><span class="pill">'+due.length+' ALERTS</span></div></div>':'<div class="card good">✓ No subscription payments due soon.</div>';$('subscriptionList').innerHTML=(list||[]).map(s=>{const a=amap.get(s.partner_id)||{},access=s.access_until?new Date(s.access_until).toLocaleDateString():'—';let alarm='';if(a.alert_level==='expired')alarm='<div class="status error">PAYMENT OVERDUE · ACCESS EXPIRED</div>';else if(a.alert_level==='urgent')alarm='<div class="status error">PAYMENT DUE IN '+Math.max(0,Number(a.days_remaining||0))+' DAY(S)</div>';else if(a.alert_level==='due_soon')alarm='<div class="status">PAYMENT DUE SOON · '+Number(a.days_remaining||0)+' DAY(S)</div>';else if(a.alert_level==='suspended')alarm='<div class="status error">ACCOUNT SUSPENDED</div>';const safeName=String(s.business_name||'').replace(/'/g,'');const suspended=String(s.subscription_status||'')==='suspended';return '<div class="card"><div class="row"><div><b>'+esc(s.business_name)+'</b><div class="muted">Access until '+esc(access)+(s.paid_until?' · Paid':' · 3 months FREE')+'</div>'+alarm+'</div><span class="pill">'+esc(String(s.subscription_status||'').toUpperCase())+'</span></div><div class="two"><input id="payAmount-'+s.partner_id+'" class="field" type="number" min="0.01" step="0.01" placeholder="Amount"><select id="payMethod-'+s.partner_id+'" class="field"><option value="manual">Manual</option><option value="whish">Whish</option></select></div><div class="two"><input id="payMonths-'+s.partner_id+'" class="field" type="number" min="1" max="36" value="1" placeholder="Months"><input id="payRef-'+s.partner_id+'" class="field" placeholder="Payment reference (optional)"></div><div class="actions"><button class="btn" onclick="confirmPartnerPayment(\''+s.partner_id+'\',\''+safeName+'\')">CONFIRM PAYMENT</button><button class="btn '+(suspended?'ok':'danger')+'" onclick="setPartnerSuspended(\''+s.partner_id+'\','+(!suspended)+',\''+safeName+'\')">'+(suspended?'REACTIVATE':'SUSPEND ACCOUNT')+'</button></div></div>'}).join('')||'<div class="card muted">No partner subscriptions.</div>'}catch(e){$('subscriptionList').innerHTML='<div class="card error">'+esc(e.message)+'</div>'}}
@@ -339,7 +398,7 @@ $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs
     btn.textContent='👁齯';
     btn.addEventListener('click',function(){
       var showing=input.type==='text';
-      input.type=showing?'password'*'text';
+      input.type=showing?'password':'text';
       btn.setAttribute('aria-label',showing?'Show password':'Hide password');
       btn.setAttribute('title',showing?'Show password':'Hide password');
       btn.textContent=showing?'👁鎫':'🙉';

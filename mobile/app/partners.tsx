@@ -3,17 +3,41 @@ import { ActivityIndicator, Image, Modal, Pressable, SafeAreaView, ScrollView, S
 import { supabase } from '../lib/supabase';
 
 type Partner={partner_id:string;business_name:string;area?:string;category?:string;address?:string;logo_url?:string;benefit_title?:string;benefit_type?:string;benefit_value?:number;benefit_conditions?:string};
-const categories=['All','Restaurants','Cafés','Sweets','Fashion','Shoes & Bags','Beauty','Hair Salons','Fitness','Perfumes','Optics','Jewelry','Electronics','Furniture','Hotels','Entertainment','Automotive','Education','Services','Swimming Pools'];
+const normPartner=(v:unknown)=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const partnerCategories=['Restaurants','Cafés','Sweets','Fashion','Lingerie','Shoes & Bags','Beauty','Hair Salons','Fitness','Perfumes','Optics','Jewelry','Electronics','Furniture','Hotels','Entertainment','Automotive','Education','Events & Services','Services','Swimming Pools'];
+function categoryFamilyMatch(actual:unknown,wanted:string){const a=normPartner(actual),w=normPartner(wanted);if(!wanted)return true;if(w==='events & services')return /event|photograph|photo studio|مناسبات|تصوير/.test(a);if(w==='lingerie')return /lingerie|underwear|لانجري|لانجيري|ملابس داخلية/.test(a);if(w==='fashion'&&/lingerie|underwear|لانجري|لانجيري|ملابس داخلية/.test(a))return false;if(a===w||(a && (a.includes(w)||w.includes(a))))return true;const groups={restaurants:/restaurant|food|مطعم|اكل|أكل/,cafes:/cafe|coffee|قهو|كاف/,sweets:/sweet|dessert|حلويات/,fashion:/fashion|cloth|wear|ملابس|البسة|ألبسة/,shoesbags:/shoe|bag|احذية|أحذية|شنط|حقائب/,beauty:/beauty|cosmetic|تجميل/,hair:/hair|salon|barber|صالون|حلاق/,fitness:/fitness|gym|رياض/,perfumes:/perfume|عطر/,optics:/optic|eyewear|نظارات/,jewelry:/jewel|ذهب|مجوهر/,electronics:/elect|phone|tech|كهرب|هاتف/,furniture:/furniture|اثاث|أثاث/,hotels:/hotel|resort|فندق|منتجع/,entertainment:/entertain|kids|play|اطفال|أطفال|ترفيه/,automotive:/auto|car|سيار/,education:/education|school|institute|تعليم|معهد/,services:/service|خدمات/,pools:/pool|swim|مسبح|مسابح/};const key=w.includes('restaurant')?'restaurants':w.includes('cafe')?'cafes':w.includes('sweet')?'sweets':w==='fashion'?'fashion':w.includes('shoe')||w.includes('bag')?'shoesbags':w==='beauty'?'beauty':w.includes('hair')||w.includes('salon')?'hair':w.includes('fitness')?'fitness':w.includes('perfume')?'perfumes':w.includes('optic')?'optics':w.includes('jewel')?'jewelry':w.includes('elect')?'electronics':w.includes('furniture')?'furniture':w.includes('hotel')?'hotels':w.includes('entertain')?'entertainment':w.includes('auto')?'automotive':w.includes('education')?'education':w.includes('service')?'services':w.includes('pool')?'pools':'';return key?groups[key as keyof typeof groups].test(a):false}
+function rankPartners(rows:Partner[],orders:Record<string,string[]>,category:string){
+  const positions=new Map((orders?.[category.toLowerCase()]||[]).map((id,i)=>[id,i]));
+  return rows.sort((a,b)=>(positions.get(a.partner_id)??Infinity)-(positions.get(b.partner_id)??Infinity));
+}
+const categories=['All',...partnerCategories];
 const norm=(v:any)=>String(v??'').trim().toLowerCase();
 function discount(x:Partner){const v=Number(x.benefit_value);if(Number.isFinite(v)&&v>0&&v<=100)return Math.round(v)+'% OFF';return x.benefit_title?'WENIK OFFER':''}
 
 export default function Partners(){
  const [rows,setRows]=useState<Partner[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(''),[cat,setCat]=useState('All'),[selected,setSelected]=useState<Partner|null>(null),[hero,setHero]=useState('');
- useEffect(()=>{supabase.rpc('public_partner_directory_v2').then(({data})=>{setRows(data||[]);setLoading(false)})},[]);
- const list=useMemo(()=>rows.filter(x=>{
+ const [orders,setOrders]=useState<Record<string,string[]>>({});
+ useEffect(()=>{
+   let active=true;
+   async function load(){
+     const orderRequest=supabase.rpc('public_partner_category_order');
+     const partners:Partner[]=[];
+     for(let start=0;;start+=500){
+       const {data,error}=await supabase.rpc('public_partner_directory_v2').order('business_name').order('partner_id').range(start,start+499);
+       if(error||!data)break;
+       partners.push(...data);
+       if(data.length<500)break;
+     }
+     const {data}=await orderRequest;
+     if(active){setRows(partners);setOrders(data||{});setLoading(false)}
+   }
+   load();
+   return()=>{active=false};
+ },[]);
+ const list=useMemo(()=>rankPartners(rows.filter(x=>{
    const hay=norm([x.business_name,x.area,x.category,x.address,x.benefit_title].join(' '));
-   return (!q||hay.includes(norm(q)))&&(cat==='All'||norm(x.category).includes(norm(cat.replace(/s$/,''))));
- }),[rows,q,cat]);
+   return (!q||hay.includes(norm(q)))&&(cat==='All'||categoryFamilyMatch(x.category,cat));
+ }),orders,cat),[rows,q,cat,orders]);
  async function open(x:Partner){setSelected(x);setHero(x.logo_url||'');const {data}=await supabase.rpc('public_partner_ads',{p_partner_id:x.partner_id});const img=(data||[]).find((a:any)=>a?.image_url)?.image_url;if(img)setHero(img)}
  return <SafeAreaView style={s.safe}><View style={s.head}><Text style={s.title}>PARTNERS</Text><Text style={s.sub}>Discover WENIK partners</Text></View>
   <TextInput style={s.search} placeholder="Search partners, area or category" placeholderTextColor="#777783" value={q} onChangeText={setQ}/>
