@@ -1,3 +1,4 @@
+import { partnerCategories, categoryFamilyMatch, rankPartners } from '../lib/partner-order';
 import AreaPicker from '../components/AreaPicker';
 import { loadPartnerDirectory } from '../lib/partners';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -14,6 +15,7 @@ function discount(x:Partner){const v=Number(x.benefit_value);if(Number.isFinite(
 export default function Partners({initialPartnerId,initialCategory,onInitialPartnerOpened}:{initialPartnerId?:string|null,initialCategory?:string,onInitialPartnerOpened?:()=>void}={}){
  const [rows,setRows]=useState<Partner[]>([]),[loading,setLoading]=useState(true),[q,setQ]=useState(''),[cat,setCat]=useState(initialCategory||'All'),[area,setArea]=useState('All'),[selected,setSelected]=useState<Partner|null>(null),[hero,setHero]=useState(''),[ads,setAds]=useState<Ad[]>([]),[visibleCount,setVisibleCount]=useState(24);
  const [refreshing,setRefreshing]=useState(false),[loadError,setLoadError]=useState(false);
+ const [orders,setOrders]=useState<Record<string,string[]>>({});
  const requestBusy=useRef(false);
  useEffect(()=>{
   let active=true;
@@ -21,7 +23,8 @@ export default function Partners({initialPartnerId,initialCategory,onInitialPart
    if(requestBusy.current)return;
    requestBusy.current=true;setRefreshing(true);
    try{
-    const {data,error}=await loadPartnerDirectory({force});
+    const [{data,error},orderResult]=await Promise.all([loadPartnerDirectory({force}),supabase.rpc('public_partner_category_order')]);
+    if(active&&!orderResult.error)setOrders(orderResult.data||{});
     if(!active)return;
     setLoadError(!!error);
     if(!error)setRows(data||[]);
@@ -35,16 +38,16 @@ export default function Partners({initialPartnerId,initialCategory,onInitialPart
  async function manualRefresh(){
   if(requestBusy.current)return;
   requestBusy.current=true;setRefreshing(true);
-  try{const {data,error}=await loadPartnerDirectory({force:true});setLoadError(!!error);if(!error)setRows(data||[])}
+  try{const [{data,error},orderResult]=await Promise.all([loadPartnerDirectory({force:true}),supabase.rpc('public_partner_category_order')]);if(!orderResult.error)setOrders(orderResult.data||{});setLoadError(!!error);if(!error)setRows(data||[])}
   finally{requestBusy.current=false;setRefreshing(false)}
  }
  useEffect(()=>setCat(initialCategory||'All'),[initialCategory]);
  const areas=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>String(x.area||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b))],[rows]);
- const categories=useMemo(()=>['All',...Array.from(new Set(rows.map(x=>String(x.category||'').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b))],[rows]);
- const list=useMemo(()=>rows.filter(x=>{
+ const categories=['All',...partnerCategories];
+ const list=useMemo(()=>rankPartners(rows.filter(x=>{
    const hay=norm([x.business_name,x.area,x.category,x.address,x.benefit_title].join(' '));
-   return (!q||hay.includes(norm(q)))&&(cat==='All'||(cat==='Restaurants'?/food|restaurant|مطعم/.test(norm(x.category)):cat==='Shopping'?/fashion|shop|cloth|shoe|bag|electronic|furniture|jewel|perfume/.test(norm(x.category)):norm(x.category)===norm(cat)))&&(area==='All'||norm(x.area)===norm(area));
- }),[rows,q,cat,area]);
+   return (!q||hay.includes(norm(q)))&&(cat==='All'||(cat==='Restaurants'?/food|restaurant|مطعم/.test(norm(x.category)):cat==='Shopping'?/fashion|shop|cloth|shoe|bag|electronic|furniture|jewel|perfume/.test(norm(x.category)):categoryFamilyMatch(x.category,cat)))&&(area==='All'||norm(x.area)===norm(area));
+ }),orders,cat==='All'?'':cat),[rows,q,cat,area,orders]);
  useEffect(()=>{setVisibleCount(24)},[q,cat,area]);
  const visibleList=list.slice(0,visibleCount);
  async function open(x:Partner){setSelected({...x,instagram_url:x.instagram_url||(x as any).social_links?.instagram,facebook_url:x.facebook_url||(x as any).social_links?.facebook,website_url:x.website_url||(x as any).social_links?.website});setHero(x.logo_url||'');setAds([]);const {data}=await supabase.rpc('public_partner_ads',{p_partner_id:x.partner_id});const next=(data||[]).filter((a:any)=>a?.image_url).slice(0,5);setAds(next);if(next[0]?.image_url)setHero(next[0].image_url)}
