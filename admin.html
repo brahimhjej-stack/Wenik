@@ -125,7 +125,7 @@
   <!-- WENIK ADMIN CREATE PARTNER UI -->
   <div class="card"><h2>Add Partner</h2><div class="muted">WENIK creates the Partner account. Use Edit in Partners to complete the business profile and discount. WENIK Admin manages contracted gifts. A 3-month FREE trial starts automatically.</div>
     <input id="newPartnerBusiness" class="field" placeholder="Business name">
-    <div class="two"><input id="newPartnerCategory" class="field" placeholder="Category"><input id="newPartnerArea" class="field" placeholder="Area (optional)"></div>
+    <div class="two"><select id="newPartnerCategory" class="field" aria-label="Category" required><option value="" disabled selected>Select a category</option></select><input id="newPartnerArea" class="field" placeholder="Area (optional)"></div>
     <input id="newPartnerName" class="field" placeholder="Partner / manager display name">
     <div class="two"><input id="newPartnerUsername" class="field" placeholder="Login username"><input id="newPartnerPassword" class="field" type="password" minlength="8" placeholder="Temporary password · minimum 8 characters"></div>
     <button id="createPartnerBtn" class="btn">ADD PARTNER</button><div id="createPartnerStatus" class="status"></div>
@@ -295,6 +295,7 @@ $('saveHomeAd').onclick=async()=>{try{const image=$('homeAdImage').value.trim();
 $('clearHomeAd').onclick=clearHomeAdForm;$('refreshHomeAds').onclick=loadHomeAds;
 
 const {partnerCategories,categoryFamilyMatch,rankPartners}=window.wenikPartnerOrder;
+$('newPartnerCategory').append(...partnerCategories.map(c=>new Option(c,c)));
 $('orderCategory').replaceChildren(...partnerCategories.map(c=>new Option(c,c)));
 let orderDraft=[],orderCategory='';
 const orderStatus=$('partnerOrderStatus'),orderRows=$('partnerOrderRows'),saveOrder=$('savePartnerOrder'),openOrder=$('openPartnerOrder');
