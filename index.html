@@ -1341,7 +1341,7 @@ button,a,[role="button"]{touch-action:manipulation}
   <button onclick="tab('me',this)">ME <span id="navUnread" class="dot hidden">0</span></button>
 </nav>
 
-<script src="/wenik-partner-order.js"></script>
+<script src="/wenik-partner-order.js?v=cafes-20261111"></script>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
 
@@ -1587,7 +1587,7 @@ const WENIK_AREA_FAMILIES={
 };
 function areaKey(v=''){return String(v).replace(/\s+/g,'')}
 function areaAliases(area){const key=areaKey(area);return [area,...(WENIK_AREA_ALIASES[key]||[])].map(normPartner)}
-function displayPartnerCategory(v=''){if(/^(clothing|clothes)$/i.test(String(v).trim()))return 'Fashion';return /^(food|restaurant|restaurants)$/i.test(String(v).trim())?'Restaurants':v}
+function displayPartnerCategory(v=''){v=window.wenikPartnerOrder.canonicalPartnerCategory(v);if(/^(clothing|clothes)$/i.test(String(v).trim()))return 'Fashion';return /^(food|restaurant|restaurants)$/i.test(String(v).trim())?'Restaurants':v}
 function ensureWenikPartnerDiscoveryStyles(){if(document.getElementById('wenikPartnerDiscoveryV5Styles'))return;const s=document.createElement('style');s.id='wenikPartnerDiscoveryV5Styles';s.textContent=`
 .wenikAreaSearchWrap{position:relative;flex:1;min-width:0}.wenikAreaSearchInput{width:100%;min-height:46px;border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:0 42px 0 14px;background:rgba(255,255,255,.08);color:inherit;font:inherit;box-sizing:border-box}.wenikAreaSearchInput::placeholder{color:rgba(255,255,255,.55)}.wenikAreaSearchChevron{position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;opacity:.7}.wenikAreaSearchMenu{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:999;max-height:340px;overflow-y:auto;background:#fff;border:1px solid #e5e1ee;border-radius:16px;box-shadow:0 16px 38px rgba(23,12,44,.24);padding:6px;color:#17131f;-webkit-overflow-scrolling:touch}.wenikAreaSearchMenu.hidden{display:none}.wenikAreaOption{display:block;width:100%;min-height:52px;border:0;border-bottom:1px solid #eeeaf3;background:#fff;color:#17131f;text-align:left;padding:13px 16px;border-radius:0;font:inherit;font-size:17px;font-weight:650;line-height:1.25;cursor:pointer}.wenikAreaOption:first-child{background:#f1e8ff;color:#4d188f;border-radius:11px 11px 4px 4px}.wenikAreaOption:last-child{border-bottom:0;border-radius:0 0 11px 11px}.wenikAreaOption:hover,.wenikAreaOption:focus{background:#f5efff;color:#42147f;outline:none}.wenikPartnerCard{position:relative;overflow:hidden}.wenikOff{position:absolute!important;top:10px!important;left:10px!important;right:auto!important;z-index:8!important;margin:0!important;max-width:calc(100% - 20px);white-space:nowrap;padding:6px 10px!important;border-radius:999px!important;line-height:1.1!important}
 `;document.head.appendChild(s)}
@@ -1995,11 +1995,11 @@ $('winGiftSearch')?.addEventListener('input',loadWinGiftGallery);$('winGiftMore'
     if(!meta)return;
     const partner=partnerFor(card);
     let area=cleanArea(partner?.area||'');
-    let category=String(partner?.category||'').trim();
+    let category=window.wenikPartnerOrder.canonicalPartnerCategory(partner?.category);
     if(!area||!category){
       const raw=(meta.textContent||'').replace(/^📍\s*/,'').trim();
       const parts=raw.split(/\s*[•·]\s*/).map(x=>x.trim()).filter(Boolean);
-      if(parts.length>=2){if(!area)area=cleanArea(parts[0]);if(!category)category=parts[1]}
+      if(parts.length>=2){if(!area)area=cleanArea(parts[0]);if(!category)category=window.wenikPartnerOrder.canonicalPartnerCategory(parts[1])}
     }
     const wanted=area&&category?'📍 '+area+' · '+category:area?'📍 '+area:category?category:'';
     if(wanted&&meta.textContent!==wanted)meta.textContent=wanted;

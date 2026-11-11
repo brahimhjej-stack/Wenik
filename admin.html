@@ -160,7 +160,7 @@
 <section id="super" class="panel"><div class="card"><div class="row"><div><h2>Super Admin</h2><div class="muted">Secure admin access control. Only Super Admin can create accounts, change roles or disable access.</div></div><button id="refreshAdmins" class="btn secondary" style="width:auto">REFRESH</button></div><div id="superStatus" class="status"></div></div><div class="card"><h2>Add Admin</h2><div class="muted">Create a secure WENIK management login.</div><input id="newAdminName" class="field" placeholder="Display name"><input id="newAdminEmail" class="field" type="email" placeholder="Admin email" autocomplete="off"><input id="newAdminPassword" class="field" type="password" minlength="8" placeholder="Temporary password · minimum 8 characters" autocomplete="new-password"><select id="newAdminRole" class="field"><option value="admin">Admin</option><option value="super_admin">Super Admin</option></select><button id="createAdminBtn" class="btn">ADD ADMIN</button><div id="createAdminStatus" class="status"></div></div><div id="adminList"></div></section>
 <button id="logoutBtn" class="btn secondary">LOG OUT</button>
 </section></div>
-<script src="/wenik-partner-order.js?v=categories-20261111"></script>
+<script src="/wenik-partner-order.js?v=cafes-20261111"></script>
 <script type="module">
 import{createClient}from'https://esm.sh/@supabase/supabase-js@2';
 const sb=createClient('https://zkrnzwnbdoaqanqzznlw.supabase.co','sb_publishable_Q8pOXn-3YAUo_6OX6c2bKg_mLKH8O0k',{auth:{storageKey:'wenik-admin-auth'}}),$=id=>document.getElementById(id);
@@ -188,8 +188,9 @@ function editAdminPartner(x){
   for(const [k,title] of Object.entries(partnerFields)){
     const label=document.createElement('label');label.textContent=title;
     const input=k==='category'?$('newPartnerCategory').cloneNode(true):document.createElement('input');input.className='field';input.id='ap_'+k;
-    if(k==='category'&&x.category&&!Array.from(input.options).some(o=>o.value===x.category))input.add(new Option(x.category,x.category));
-    input.value=k==='percent'?(x.discount?.benefit_value??''):k==='conditions'?(x.discount?.conditions??''):(x[k]??x.social_links?.[k]??'');
+    const category=k==='category'?window.wenikPartnerOrder.canonicalPartnerCategory(x.category):'';
+    if(category&&!Array.from(input.options).some(o=>o.value===category))input.add(new Option(category,category));
+    input.value=k==='category'?category:k==='percent'?(x.discount?.benefit_value??''):k==='conditions'?(x.discount?.conditions??''):(x[k]??x.social_links?.[k]??'');
     if(k==='percent'){input.type='number';input.min='0.01';input.max='100';input.step='any'}
     if(k==='business_name'||k==='category')input.required=true;
     if((k==='percent'||k==='conditions')&&x.discount&&x.discount.benefit_type!=='discount_percent'){input.value='';input.disabled=true}
@@ -425,7 +426,7 @@ $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs
 </script>
 
 <script type="module" src="/wenik-points.js"></script>
-<script type="module" src="/wenik-gift-points-admin.js?v=partner-categories-2"></script>
+<script type="module" src="/wenik-gift-points-admin.js?v=cafes-20261111"></script>
 
 <script id="wenikAdminDashboardUploadV1">
 (function(){
@@ -519,5 +520,5 @@ $('logoutBtn').onclick=async()=>{await sb.auth.signOut();location.reload()};tabs
 })();
 </script>
 
-<script type="module" src="/wenik-gift-points-admin.js"></script>
+
 </body></html>
