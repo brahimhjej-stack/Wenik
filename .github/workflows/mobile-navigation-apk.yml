@@ -1,4 +1,4 @@
-name: WENIK navigation update APK
+name: WENIK Partners Google Play bundle
 on:
   push:
     branches: [fix/mobile-partner-full-page]
@@ -28,21 +28,20 @@ jobs:
       - name: Type check
         working-directory: mobile
         run: npx tsc --noEmit
-      - name: Build APK locally with existing Expo credentials
+      - name: Build AAB locally with existing Expo credentials
         working-directory: mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
           EAS_LOCAL_BUILD_ARTIFACTS_DIR: ${{ runner.temp }}/wenik-apk
-        run: npx --yes eas-cli@27.2.0 build --platform android --profile preview --local --non-interactive --freeze-credentials --output "$RUNNER_TEMP/WENIK-Partners-Update.apk"
-      - name: Verify APK
+        run: npx --yes eas-cli@27.2.0 build --platform android --profile production --local --non-interactive --freeze-credentials --output "$RUNNER_TEMP/WENIK-Partners-Update.aab"
+      - name: Verify signed Android App Bundle
         run: |
-          TOOLS="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
-          "$TOOLS/apksigner" verify --verbose --print-certs "$RUNNER_TEMP/WENIK-Partners-Update.apk"
-          "$TOOLS/aapt" dump badging "$RUNNER_TEMP/WENIK-Partners-Update.apk" | head -5
+          unzip -tq "$RUNNER_TEMP/WENIK-Partners-Update.aab"
+          jarsigner -verify "$RUNNER_TEMP/WENIK-Partners-Update.aab"
       - uses: actions/upload-artifact@v4
         with:
-          name: WENIK-Partners-Update-APK
-          path: ${{ runner.temp }}/WENIK-Partners-Update.apk
+          name: WENIK-Partners-Play-AAB
+          path: ${{ runner.temp }}/WENIK-Partners-Update.aab
           retention-days: 14
 
-# Build the full-page partner categories preview.
+# Build the partner categories update.
