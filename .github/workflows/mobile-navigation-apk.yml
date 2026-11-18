@@ -44,4 +44,4 @@ jobs:
           path: ${{ runner.temp }}/WENIK-Partners-Update.aab
           retention-days: 14
 
-# Build the partner categories update.
+# Rebuild with optional portrait hardware support.
